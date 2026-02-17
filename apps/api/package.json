@@ -16,6 +16,7 @@
     "hono": "latest"
   },
   "devDependencies": {
+    "@types/node": "latest",
     "tsx": "latest",
     "typescript": "latest"
   }

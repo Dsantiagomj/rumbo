@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { APP_NAME } from '@rumbo/shared';
+import { useEffect, useState } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -33,16 +33,12 @@ export function App() {
 
       <div className="mt-4 rounded-lg border border-border bg-muted p-6 text-center">
         <p className="text-sm text-muted-foreground">API Connection</p>
-        {connectionState === 'loading' && (
-          <p className="mt-2 text-sm">Checking...</p>
-        )}
+        {connectionState === 'loading' && <p className="mt-2 text-sm">Checking...</p>}
         {connectionState === 'connected' && (
           <div className="mt-2">
             <p className="font-medium text-primary">Connected</p>
             {healthData && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                {healthData.timestamp}
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{healthData.timestamp}</p>
             )}
           </div>
         )}

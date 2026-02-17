@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
   --color-background: #ffffff;
@@ -14,7 +14,7 @@
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
 
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
