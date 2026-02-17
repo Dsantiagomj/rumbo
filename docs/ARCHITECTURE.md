@@ -8,8 +8,8 @@ High-level view of how all components connect.
 graph TB
     subgraph Clients
         WEB[Web App<br/>React + Vite]
-        DESKTOP[Desktop App<br/>Tauri - future]
-        MOBILE[Mobile App<br/>React Native - future]
+        DESKTOP[Desktop App<br/>Tauri]
+        MOBILE[Mobile App<br/>React Native]
     end
 
     subgraph Monorepo Packages
@@ -67,10 +67,10 @@ How code is organized and dependencies flow between packages.
 ```mermaid
 graph LR
     subgraph apps
-        WEB[apps/web<br/>React + Vite + Tailwind]
+        WEB[apps/web<br/>React + Vite]
         API_APP[apps/api<br/>Hono + BullMQ]
-        MOBILE_APP[apps/mobile<br/>React Native - future]
-        DESKTOP_APP[apps/desktop<br/>Tauri - future]
+        MOBILE_APP[apps/mobile<br/>React Native]
+        DESKTOP_APP[apps/desktop<br/>Tauri]
     end
 
     subgraph packages
@@ -125,6 +125,7 @@ erDiagram
         enum type
         string name
         decimal balance
+        string currency
         jsonb metadata
     }
 
@@ -132,6 +133,7 @@ erDiagram
         uuid id PK
         uuid product_id FK
         uuid category_id FK
+        uuid transfer_id
         enum type
         decimal amount
         string currency
@@ -157,6 +159,7 @@ erDiagram
         uuid user_id FK
         uuid category_id FK
         decimal amount
+        string currency
         enum period
     }
 
@@ -166,6 +169,7 @@ erDiagram
         uuid category_id FK
         enum amount_type
         decimal amount
+        string currency
         int due_day
         enum frequency
     }
@@ -183,6 +187,7 @@ erDiagram
         uuid user_id FK
         string name
         decimal target_amount
+        string currency
         decimal current_amount
         date target_date
     }
@@ -192,7 +197,29 @@ erDiagram
 
 **Transaction types**: income, expense, transfer
 
+Transfer implementation (double entry):
+- A transfer creates two transactions with the same `transfer_id`.
+- Source account: `expense` for the amount.
+- Destination account: `income` for the amount.
+- Reporting should exclude transfer pairs from income/expense totals unless explicitly requested.
+
 **Recurring expense amount types**: fixed (same every period), variable (amount changes, date stays)
+
+## Balance Convention and Currency Rules
+
+Balance sign convention:
+- **Asset accounts** (savings, checking, cash, investments): `balance` is the user's owned value. Positive means they have money/assets.
+- **Liability accounts** (credit cards, loans): `balance` is the amount owed. Positive means debt.
+
+How transactions affect balances:
+- **Asset accounts**: `income` increases balance, `expense` decreases balance.
+- **Liability accounts**: `income` decreases balance (payments reduce debt), `expense` increases balance (charges increase debt).
+
+Currency rules (MVP):
+- Every financial product has a `currency` (COP or USD).
+- Transactions must match the product currency.
+- Budgets and savings goals are single-currency.
+- Transfers are only allowed between accounts with the same currency.
 
 ## Financial Product Onboarding Flow
 
@@ -348,8 +375,8 @@ graph TB
 graph TB
     subgraph User Devices
         BROWSER[Web Browser]
-        PHONE[Mobile - future]
-        PC[Desktop - future]
+        PHONE[Mobile]
+        PC[Desktop]
     end
 
     subgraph Railway
@@ -364,7 +391,6 @@ graph TB
     end
 
     subgraph Cloudflare
-        PAGES[Cloudflare Pages<br/>Static frontend]
         R2_STORAGE[Cloudflare R2<br/>File storage]
     end
 
@@ -373,11 +399,9 @@ graph TB
         AI_PROVIDERS[AI Providers<br/>OpenAI / Anthropic]
     end
 
-    BROWSER --> PAGES
+    BROWSER --> API_SVC
     PHONE --> API_SVC
-    PC --> PAGES
-
-    PAGES --> API_SVC
+    PC --> API_SVC
     API_SVC --> PG_DB
     API_SVC --> REDIS_DB
     API_SVC --> R2_STORAGE
@@ -396,18 +420,18 @@ Async flow showing how bank statement import works across multiple services.
 ```mermaid
 sequenceDiagram
     actor User
-    participant Web as Web App
+    participant Client as Client App
     participant API as Hono API
     participant Queue as BullMQ
     participant AI as Vercel AI SDK
     participant DB as PostgreSQL
     participant R2 as Cloudflare R2
 
-    User->>Web: Upload bank statement (PDF/CSV)
-    Web->>API: POST /products/:id/import-statement
+    User->>Client: Upload bank statement (PDF/CSV)
+    Client->>API: POST /products/:id/import-statement
     API->>R2: Store original file
     API->>Queue: Enqueue parsing job
-    API-->>Web: 202 Accepted (job queued)
+    API-->>Client: 202 Accepted (job queued)
 
     Queue->>R2: Fetch file
     Queue->>AI: Parse statement content
@@ -417,12 +441,12 @@ sequenceDiagram
     AI-->>Queue: Categorized transactions
 
     Queue->>DB: Save transactions (status: pending_review)
-    Queue-->>Web: Notify: parsing complete
+    Queue-->>Client: Notify: parsing complete
 
-    Web-->>User: Show parsed transactions
-    User->>Web: Review, resolve uncategorized, confirm
-    Web->>API: POST /products/:id/confirm-import
+    Client-->>User: Show parsed transactions
+    User->>Client: Review, resolve uncategorized, confirm
+    Client->>API: POST /products/:id/confirm-import
     API->>DB: Update transactions (status: confirmed)
     API->>DB: Recalculate analytics
-    API-->>Web: Import complete
+    API-->>Client: Import complete
 ```

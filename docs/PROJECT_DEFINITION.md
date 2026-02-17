@@ -53,9 +53,9 @@ Any adult in Colombia who manages personal finances and wants control over their
 
 ## Platform and Locale
 
-- **Platform**: Web, mobile, and desktop equally (responsive PWA + desktop app)
+- **Platform**: Web, mobile, and desktop are MVP targets.
 - **Language**: Colombian Spanish (es-CO)
-- **Currencies**: COP (primary) + USD
+- **Currencies**: COP + USD (both supported in MVP)
 
 ## Core Features
 
@@ -121,7 +121,7 @@ Calendar view of the user's financial obligations:
 
 Multi-channel notification system, all configurable by the user:
 
-- Push notifications (mobile/browser)
+- Push notifications (mobile, desktop)
 - Email reminders
 - In-app notifications
 

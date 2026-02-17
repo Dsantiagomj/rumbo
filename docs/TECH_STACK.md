@@ -14,8 +14,8 @@ rumbo/
 ├── apps/
 │   ├── web/              → React + Vite (web application)
 │   ├── api/              → Hono (REST API)
-│   ├── mobile/           → React Native (future)
-│   └── desktop/          → Tauri (future, reuses web code)
+│   ├── mobile/           → React Native (MVP target)
+│   └── desktop/          → Tauri (MVP target, reuses web code)
 ├── packages/
 │   ├── shared/           → Types, validations (Zod), constants, utilities
 │   ├── db/               → Drizzle schema, migrations, seed
@@ -45,11 +45,13 @@ Desktop (Tauri) reuses the web application code directly. Mobile (React Native) 
 | React | UI framework |
 | Vite | Build tool and dev server |
 | Tailwind CSS | Utility-first styling |
-| Shadcn/ui | Component library (copied into project, based on Radix primitives) |
+| Shadcn/ui | Component library (Radix-based) |
 | React Router | Client-side routing |
-| TanStack Query | Server state management, caching, and synchronization |
-| Zustand | Client state management (UI state: theme, sidebar, modals, filters) |
+| TanStack Query | Server state management |
+| Zustand | Client state management |
 | Zod | Schema validation (shared with backend via packages/shared) |
+
+Mobile uses React Native with its own UI components, but shares types and business logic via `packages/shared`.
 
 ### Frontend Architecture: Feature Sliced Design (FSD)
 
@@ -195,9 +197,9 @@ REST API with OpenAPI specification:
 
 | Platform | Technology | Status |
 |----------|-----------|--------|
-| Web | React + Vite | Core (first platform) |
-| Desktop | Tauri (wraps web app in native window) | Planned |
-| Mobile | React Native (shares business logic, native UI) | Planned |
+| Web | React + Vite | MVP target |
+| Desktop | Tauri (wraps web app in native window) | MVP target |
+| Mobile | React Native (shares business logic, native UI) | MVP target |
 
 ### Desktop Architecture: Tauri
 
