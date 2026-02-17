@@ -7,6 +7,12 @@ build/
 .next/
 .turbo/
 
+# Rust build artifacts (Tauri)
+apps/desktop/src-tauri/target/
+
+# Expo
+apps/mobile/.expo/
+
 # Environment variables
 .env
 .env.*
