@@ -33,6 +33,7 @@ Thumbs.db
 .agents/
 .mcp.json
 docs/plans/
+docs/designs/
 
 # Test coverage
 coverage/
