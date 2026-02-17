@@ -6,6 +6,7 @@ dist/
 build/
 .next/
 .turbo/
+.vite/
 
 # Rust build artifacts (Tauri)
 apps/desktop/src-tauri/target/
@@ -30,6 +31,8 @@ Thumbs.db
 # Claude Code
 .claude/
 .agents/
+.mcp.json
+docs/plans/
 
 # Test coverage
 coverage/
