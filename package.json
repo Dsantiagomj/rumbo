@@ -1,0 +1,29 @@
+{
+  "name": "rumbo",
+  "private": true,
+  "packageManager": "pnpm@10.6.2",
+  "scripts": {
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "infra:reset": "docker compose down -v && docker compose up -d",
+    "dev": "pnpm infra:up && turbo dev --filter=@rumbo/api --filter=@rumbo/web",
+    "dev:web": "turbo dev --filter=@rumbo/web",
+    "dev:api": "turbo dev --filter=@rumbo/api",
+    "dev:mobile": "turbo dev --filter=@rumbo/mobile",
+    "dev:desktop": "turbo dev --filter=@rumbo/desktop",
+    "build": "turbo build",
+    "db:generate": "turbo db:generate --filter=@rumbo/db",
+    "db:migrate": "turbo db:migrate --filter=@rumbo/db",
+    "db:seed": "turbo db:seed --filter=@rumbo/db",
+    "db:studio": "turbo db:studio --filter=@rumbo/db",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:e2e": "turbo test:e2e"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "latest",
+    "turbo": "latest"
+  }
+}
