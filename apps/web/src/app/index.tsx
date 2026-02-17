@@ -16,8 +16,8 @@ export function App() {
 
   useEffect(() => {
     fetch(`${API_URL}/health`)
-      .then((res) => res.json())
-      .then((data: HealthStatus) => {
+      .then((res) => res.json() as Promise<HealthStatus>)
+      .then((data) => {
         setHealthData(data);
         setConnectionState('connected');
       })
