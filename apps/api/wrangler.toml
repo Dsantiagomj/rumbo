@@ -1,0 +1,11 @@
+name = "rumbo-api"
+main = "src/worker.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+ENVIRONMENT = "production"
+
+[env.staging]
+name = "rumbo-api-staging"
+[env.staging.vars]
+ENVIRONMENT = "staging"
