@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Rumbo",
+    "slug": "rumbo",
+    "version": "0.0.0",
+    "scheme": "rumbo",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.rumbo.app",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.rumbo.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#16a34a"
+      }
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
