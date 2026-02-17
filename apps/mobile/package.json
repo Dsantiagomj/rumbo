@@ -1,0 +1,6 @@
+{
+  "name": "@rumbo/mobile",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Rumbo mobile app (React Native / Expo) - not yet scaffolded"
+}
