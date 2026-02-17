@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo/metro-runtime": "^6.1.2",
     "@rumbo/shared": "workspace:*",
     "expo": "latest",
     "expo-constants": "latest",
@@ -18,14 +19,15 @@
     "expo-router": "latest",
     "expo-splash-screen": "latest",
     "expo-status-bar": "latest",
-    "react": "latest",
-    "react-native": "latest",
+    "react": "^19.1.0",
+    "react-native": "^0.81.5",
     "react-native-safe-area-context": "latest",
-    "react-native-screens": "latest"
+    "react-native-screens": "^4.16.0",
+    "whatwg-fetch": "^3.6.20"
   },
   "devDependencies": {
     "@babel/core": "latest",
-    "@types/react": "latest",
+    "@types/react": "^19.1.17",
     "typescript": "latest"
   }
 }
