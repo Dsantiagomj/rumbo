@@ -14,6 +14,10 @@ apps/desktop/src-tauri/target/
 # Expo
 apps/mobile/.expo/
 
+# Android signing
+*.jks
+*.keystore
+
 # Environment variables
 .env
 .env.*
@@ -39,8 +43,8 @@ docs/designs/
 coverage/
 .coverage
 
-# Drizzle
-drizzle/meta/
+# EAS root config (real config is in apps/mobile/)
+/app.json
 
 # Logs
 *.log
