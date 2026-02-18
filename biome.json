@@ -41,14 +41,15 @@
       "**/*.json",
       "**/*.css",
       "!node_modules",
-      "!dist",
+      "!**/dist",
       "!.turbo",
       "!coverage",
       "!*.gen.ts",
       "!apps/desktop/src-tauri/target",
       "!apps/desktop/src-tauri/gen",
       "!apps/mobile/.expo",
-      "!**/.vite"
+      "!**/.vite",
+      "!.claude"
     ]
   }
 }
