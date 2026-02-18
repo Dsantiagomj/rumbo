@@ -31,27 +31,5 @@ jobs:
         working-directory: apps/mobile
         run: eas build --platform android --non-interactive --profile production
 
-  build-ios:
-    name: EAS Build (iOS)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.node-version'
-          cache: 'pnpm'
-
-      - run: pnpm install --frozen-lockfile
-
-      - uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Build for iOS
-        working-directory: apps/mobile
-        run: eas build --platform ios --non-interactive --profile production
+  # TODO: Add iOS build job when Apple Developer account is available
+  # Requires: eas credentials --platform ios to configure signing
