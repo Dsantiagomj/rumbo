@@ -1,5 +1,15 @@
 import { APP_NAME } from '@rumbo/shared';
 import { useEffect, useState } from 'react';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from '@/shared/ui';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -31,21 +41,31 @@ export function App() {
       <h1 className="text-4xl font-bold tracking-tight">{APP_NAME}</h1>
       <p className="text-muted-foreground">Personal finance management</p>
 
-      <div className="mt-4 rounded-lg border border-border bg-muted p-6 text-center">
-        <p className="text-sm text-muted-foreground">API Connection</p>
-        {connectionState === 'loading' && <p className="mt-2 text-sm">Checking...</p>}
-        {connectionState === 'connected' && (
-          <div className="mt-2">
-            <p className="font-medium text-primary">Connected</p>
-            {healthData && (
-              <p className="mt-1 text-xs text-muted-foreground">{healthData.timestamp}</p>
-            )}
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>API Connection</CardTitle>
+          <CardDescription>
+            {connectionState === 'loading' && 'Checking...'}
+            {connectionState === 'connected' && 'Connected'}
+            {connectionState === 'disconnected' && 'Disconnected'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {connectionState === 'connected' && healthData && (
+            <p className="text-xs text-muted-foreground">{healthData.timestamp}</p>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="demo-input">Demo input</Label>
+            <Input id="demo-input" placeholder="Type something..." />
           </div>
-        )}
-        {connectionState === 'disconnected' && (
-          <p className="mt-2 font-medium text-destructive">Disconnected</p>
-        )}
-      </div>
+          <div className="flex gap-2">
+            <Button>Primary</Button>
+            <Button variant="outline">Outline</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="destructive">Destructive</Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

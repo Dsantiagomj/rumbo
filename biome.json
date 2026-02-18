@@ -48,6 +48,7 @@
       "!apps/desktop/src-tauri/target",
       "!apps/desktop/src-tauri/gen",
       "!apps/mobile/.expo",
+      "!apps/mobile/expo-env.d.ts",
       "!**/.vite",
       "!.claude"
     ]

@@ -11,10 +11,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo-google-fonts/roboto": "^0.4.2",
     "@expo/metro-runtime": "^6.1.2",
     "@rumbo/shared": "workspace:*",
     "expo": "latest",
     "expo-constants": "latest",
+    "expo-font": "^14.0.11",
     "expo-linking": "latest",
     "expo-router": "latest",
     "expo-splash-screen": "latest",

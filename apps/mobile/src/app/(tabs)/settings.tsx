@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { colors, fontFamily } from '@/config/theme';
 
 export default function SettingsScreen() {
   return (
@@ -14,16 +15,17 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.light.background,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#0a0a0a',
+    fontFamily: fontFamily.bold,
+    color: colors.light.foreground,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#737373',
+    fontFamily: fontFamily.regular,
+    color: colors.light.mutedForeground,
   },
 });
