@@ -1,12 +1,12 @@
 {
   "productName": "Rumbo",
   "version": "0.0.0",
-  "identifier": "com.rumbo.app",
+  "identifier": "com.rumbo.desktop",
   "build": {
     "beforeDevCommand": "cd ../.. && pnpm --filter @rumbo/web dev",
     "devUrl": "http://localhost:5173",
     "beforeBuildCommand": "cd ../.. && pnpm --filter @rumbo/web build",
-    "frontendDist": "../../apps/web/dist"
+    "frontendDist": "../../web/dist"
   },
   "app": {
     "windows": [
