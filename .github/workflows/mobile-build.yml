@@ -6,8 +6,8 @@ on:
       - 'v*'
 
 jobs:
-  build:
-    name: EAS Build
+  build-android:
+    name: EAS Build (Android)
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +27,31 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build for all platforms
+      - name: Build for Android
         working-directory: apps/mobile
-        run: eas build --platform all --non-interactive --profile production
+        run: eas build --platform android --non-interactive --profile production
+
+  build-ios:
+    name: EAS Build (iOS)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build for iOS
+        working-directory: apps/mobile
+        run: eas build --platform ios --non-interactive --profile production
