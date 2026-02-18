@@ -10,10 +10,7 @@ app.use('*', logger());
 app.use(
   '*',
   cors({
-    origin: [
-      'http://localhost:5173',
-      'https://rumbo.pages.dev',
-    ],
+    origin: ['http://localhost:5173', 'https://rumbo.pages.dev'],
     credentials: true,
   }),
 );
