@@ -1,5 +1,6 @@
 import { APP_NAME } from '@rumbo/shared';
 import { StyleSheet, Text, View } from 'react-native';
+import { colors, fontFamily, radius } from '@/config/theme';
 
 export default function DashboardScreen() {
   return (
@@ -18,29 +19,33 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.light.background,
     padding: 24,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#0a0a0a',
+    fontFamily: fontFamily.bold,
+    color: colors.light.foreground,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#737373',
+    fontFamily: fontFamily.regular,
+    color: colors.light.mutedForeground,
     marginBottom: 32,
   },
   card: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
+    backgroundColor: colors.light.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.light.border,
     padding: 24,
     width: '100%',
     alignItems: 'center',
   },
   cardText: {
     fontSize: 14,
-    color: '#737373',
+    fontFamily: fontFamily.regular,
+    color: colors.light.mutedForeground,
   },
 });
