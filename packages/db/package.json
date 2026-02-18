@@ -11,9 +11,14 @@
     "./schema": {
       "types": "./src/schema/index.ts",
       "default": "./src/schema/index.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
     }
   },
   "scripts": {
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -23,12 +28,14 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@rumbo/shared": "workspace:*",
-    "drizzle-orm": "latest"
+    "drizzle-orm": "latest",
+    "postgres": "^3.4.8"
   },
   "devDependencies": {
     "@types/node": "latest",
     "drizzle-kit": "latest",
     "tsx": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "vitest": "latest"
   }
 }
