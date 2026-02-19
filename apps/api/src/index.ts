@@ -10,6 +10,8 @@ const env: Bindings = {
   BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET ?? '',
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? '',
   CORS_ORIGINS: process.env.CORS_ORIGINS ?? '',
+  RESEND_API_KEY: process.env.RESEND_API_KEY ?? '',
+  EMAIL_FROM: process.env.EMAIL_FROM ?? 'Rumbo <onboarding@resend.dev>',
 };
 
 console.log(`Rumbo API starting on http://localhost:${port}`);
