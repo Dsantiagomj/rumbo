@@ -14,10 +14,34 @@ export type Bindings = {
   CORS_ORIGINS: string;
 };
 
-// biome-ignore lint/complexity/noBannedTypes: Variables will be populated as features are added (e.g., user session)
-export type Variables = {};
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type AuthSession = {
+  id: string;
+  userId: string;
+  token: string;
+  expiresAt: Date;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type Variables = {
+  user?: AuthUser;
+  session?: AuthSession;
+};
 
 export type AppEnv = { Bindings: Bindings; Variables: Variables };
+export type AuthedEnv = { Bindings: Bindings; Variables: { user: AuthUser; session: AuthSession } };
 
 const app = new OpenAPIHono<AppEnv>({
   defaultHook: (result, c) => {
