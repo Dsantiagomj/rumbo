@@ -1,10 +1,10 @@
+import type { RemixiconComponentType } from '@remixicon/react';
 import { RiExchangeLine, RiHomeLine, RiWalletLine } from '@remixicon/react';
-import type { ComponentType } from 'react';
 
 export type NavItem = {
   label: string;
   path: string;
-  icon: ComponentType<{ className?: string; size?: number }>;
+  icon: RemixiconComponentType;
 };
 
 export const navItems: NavItem[] = [
