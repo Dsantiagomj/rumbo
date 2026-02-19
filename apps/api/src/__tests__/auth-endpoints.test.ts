@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 type AuthUser = { id: string; email: string; name: string; emailVerified: boolean };
 type AuthResponse = { token?: string; user?: AuthUser };
+type ErrorResponse = { message?: string; code?: string };
 
 function createTestAuthConfig(db: InstanceType<typeof Database>) {
   return {
@@ -77,7 +78,10 @@ describe('Auth endpoints (email + password)', () => {
         password: 'securepassword123',
       });
 
-      expect(res.ok).toBe(false);
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBeLessThan(500);
+      const data = (await res.json()) as ErrorResponse;
+      expect(data.message).toBeDefined();
     });
 
     it('does not store password in plain text', async () => {
@@ -131,7 +135,10 @@ describe('Auth endpoints (email + password)', () => {
         password: 'wrongpassword',
       });
 
-      expect(res.ok).toBe(false);
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBeLessThan(500);
+      const data = (await res.json()) as ErrorResponse;
+      expect(data.message).toBeDefined();
     });
 
     it('rejects non-existent email', async () => {
@@ -140,7 +147,10 @@ describe('Auth endpoints (email + password)', () => {
         password: 'anypassword123',
       });
 
-      expect(res.ok).toBe(false);
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      expect(res.status).toBeLessThan(500);
+      const data = (await res.json()) as ErrorResponse;
+      expect(data.message).toBeDefined();
     });
   });
 

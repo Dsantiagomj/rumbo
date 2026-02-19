@@ -11,6 +11,7 @@ export type Bindings = {
   DATABASE_URL: string;
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
+  CORS_ORIGINS: string;
 };
 
 // biome-ignore lint/complexity/noBannedTypes: Variables will be populated as features are added (e.g., user session)
@@ -48,7 +49,14 @@ app.use('*', logger());
 app.use(
   '*',
   cors({
-    origin: ['http://localhost:5173', 'https://rumbo.pages.dev'],
+    origin: (origin, c) => {
+      const env = c.env as Partial<Bindings> | undefined;
+      const allowed = (env?.CORS_ORIGINS ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return allowed.includes(origin) ? origin : null;
+    },
     credentials: true,
   }),
 );

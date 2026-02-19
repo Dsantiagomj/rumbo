@@ -67,6 +67,7 @@ describe('getAuth', () => {
       BETTER_AUTH_SECRET: 'test-secret-that-is-at-least-32-chars-long',
       BETTER_AUTH_URL: 'http://localhost:3000',
       ENVIRONMENT: 'test',
+      CORS_ORIGINS: 'http://localhost:5173',
     });
 
     expect(auth).toBeDefined();
