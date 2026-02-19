@@ -2,13 +2,13 @@ import { APP_NAME } from '@rumbo/shared';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, fontFamily, radius } from '@/config/theme';
 
-export default function DashboardScreen() {
+export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{APP_NAME}</Text>
-      <Text style={styles.subtitle}>Personal Finance</Text>
+      <Text style={styles.subtitle}>Personal finance management</Text>
       <View style={styles.card}>
-        <Text style={styles.cardText}>Dashboard coming soon</Text>
+        <Text style={styles.cardText}>Welcome to Rumbo</Text>
       </View>
     </View>
   );

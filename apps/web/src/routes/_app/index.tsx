@@ -13,7 +13,7 @@ import {
   Label,
 } from '@/shared/ui';
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_app/')({
   component: HomePage,
 });
 
@@ -22,7 +22,7 @@ function HomePage() {
   const statusLabel = isPending ? 'Checking...' : isError ? 'Disconnected' : 'Connected';
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
+    <div className="flex flex-col items-center justify-center gap-6 py-12">
       <h1 className="text-4xl font-bold tracking-tight">{APP_NAME}</h1>
       <p className="text-muted-foreground">Personal finance management</p>
 
