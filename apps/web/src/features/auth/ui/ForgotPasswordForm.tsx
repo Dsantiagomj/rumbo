@@ -20,10 +20,18 @@ export function ForgotPasswordForm() {
   });
 
   async function onSubmit(values: ForgotPasswordFormValues) {
-    await authClient.forgetPassword({
+    const { error } = await authClient.forgetPassword({
       email: values.email,
       redirectTo: '/reset-password',
     });
+
+    if (error) {
+      sileo.error({
+        title: 'Something went wrong',
+        description: 'Please try again later.',
+      });
+      return;
+    }
 
     // Always show success message regardless of whether email exists (security best practice)
     sileo.success({

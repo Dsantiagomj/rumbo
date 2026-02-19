@@ -63,10 +63,10 @@ function VerifyEmailPage() {
           {status === 'success' && (
             <>
               <p className="text-sm text-muted-foreground">
-                Your email has been verified successfully. You can now sign in to your account.
+                Your email has been verified. You are now signed in.
               </p>
               <Button asChild className="w-full">
-                <Link to="/login">Go to sign in</Link>
+                <Link to="/">Go to dashboard</Link>
               </Button>
             </>
           )}

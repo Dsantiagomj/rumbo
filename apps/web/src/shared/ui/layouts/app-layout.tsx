@@ -17,15 +17,16 @@ export function AppLayout({ children }: AppLayoutProps) {
   const initials = user.name
     ? user.name
         .split(' ')
+        .filter(Boolean)
         .map((n) => n[0])
         .join('')
         .toUpperCase()
         .slice(0, 2)
-    : user.email[0].toUpperCase();
+    : (user.email[0] ?? '?').toUpperCase();
 
   const handleLogout = async () => {
     await authClient.signOut();
-    navigate({ to: '/login' });
+    await navigate({ to: '/login' });
   };
 
   return (
