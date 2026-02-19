@@ -44,7 +44,7 @@
       "!**/dist",
       "!.turbo",
       "!coverage",
-      "!*.gen.ts",
+      "!**/*.gen.ts",
       "!apps/desktop/src-tauri/target",
       "!apps/desktop/src-tauri/gen",
       "!apps/mobile/.expo",
