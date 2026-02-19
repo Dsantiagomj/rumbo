@@ -19,6 +19,7 @@ export const Route = createFileRoute('/')({
 
 function HomePage() {
   const { data, isPending, isError } = useQuery(healthQueryOptions());
+  const statusLabel = isPending ? 'Checking...' : isError ? 'Disconnected' : 'Connected';
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
@@ -28,11 +29,7 @@ function HomePage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>API Connection</CardTitle>
-          <CardDescription>
-            {isPending && 'Checking...'}
-            {data && 'Connected'}
-            {isError && 'Disconnected'}
-          </CardDescription>
+          <CardDescription>{statusLabel}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {data && <p className="text-xs text-muted-foreground">{data.timestamp}</p>}
