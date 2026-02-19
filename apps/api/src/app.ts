@@ -2,6 +2,7 @@ import { OpenAPIHono } from '@hono/zod-openapi';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { createAuth } from './lib/auth.js';
 import { onError, onNotFound } from './lib/error-handler.js';
 import { health } from './modules/health/index.js';
 
@@ -54,6 +55,12 @@ app.use(
 
 // Routes
 app.route('/health', health);
+
+// Auth routes (Better Auth handles /api/auth/* automatically)
+app.on(['POST', 'GET'], '/api/auth/**', (c) => {
+  const auth = createAuth(c.env);
+  return auth.handler(c.req.raw);
+});
 
 // OpenAPI documentation
 app.doc('/openapi.json', {
