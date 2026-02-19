@@ -36,11 +36,12 @@ export type AuthSession = {
 };
 
 export type Variables = {
-  user: AuthUser;
-  session: AuthSession;
+  user?: AuthUser;
+  session?: AuthSession;
 };
 
 export type AppEnv = { Bindings: Bindings; Variables: Variables };
+export type AuthedEnv = { Bindings: Bindings; Variables: { user: AuthUser; session: AuthSession } };
 
 const app = new OpenAPIHono<AppEnv>({
   defaultHook: (result, c) => {

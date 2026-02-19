@@ -3,7 +3,7 @@ import { getMigrations } from 'better-auth/db';
 import Database from 'better-sqlite3';
 import { Hono } from 'hono';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import type { AppEnv, AuthUser } from '../../app.js';
+import type { AppEnv, AuthedEnv } from '../../app.js';
 
 let testAuth: ReturnType<typeof betterAuth>;
 
@@ -18,6 +18,7 @@ type ErrorBody = { error: { message: string; code: string; status: number } };
 
 describe('authMiddleware', () => {
   let app: Hono<AppEnv>;
+  let protectedApp: Hono<AuthedEnv>;
   let db: InstanceType<typeof Database>;
   let sessionCookie: string;
 
@@ -44,11 +45,13 @@ describe('authMiddleware', () => {
     app.get('/public', (c) => c.json({ message: 'public' }));
 
     // Protected routes — auth required
-    app.use('/protected/*', authMiddleware);
-    app.get('/protected/me', (c) => {
+    protectedApp = new Hono<AuthedEnv>();
+    protectedApp.use('*', authMiddleware);
+    protectedApp.get('/me', (c) => {
       const user = c.get('user');
       return c.json({ id: user.id, email: user.email, name: user.name });
     });
+    app.route('/protected', protectedApp);
 
     // Sign up a user and capture session cookie
     const signUpRes = await app.request('/api/auth/sign-up/email', {
@@ -115,7 +118,7 @@ describe('authMiddleware', () => {
     });
 
     expect(res.status).toBe(200);
-    const data = (await res.json()) as AuthUser;
+    const data = (await res.json()) as { id: string; email: string; name: string };
     expect(typeof data.id).toBe('string');
     expect(typeof data.email).toBe('string');
     expect(typeof data.name).toBe('string');
