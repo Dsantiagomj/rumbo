@@ -13,7 +13,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: latest
-        version: 2.4.2
+        version: 2.4.3
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -50,6 +50,9 @@ importers:
       hono:
         specifier: ^4.11.10
         version: 4.11.10
+      resend:
+        specifier: ^6.9.2
+        version: 6.9.2
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.13
@@ -818,55 +821,55 @@ packages:
   '@better-fetch/fetch@1.1.21':
     resolution: {integrity: sha512-/ImESw0sskqlVR94jB+5+Pxjf+xBwDZF/N5+y2/q4EqD7IARUTSpPfIo8uf39SYpCxyOCtbyYpUrZ3F/k0zT4A==}
 
-  '@biomejs/biome@2.4.2':
-    resolution: {integrity: sha512-vVE/FqLxNLbvYnFDYg3Xfrh1UdFhmPT5i+yPT9GE2nTUgI4rkqo5krw5wK19YHBd7aE7J6r91RRmb8RWwkjy6w==}
+  '@biomejs/biome@2.4.3':
+    resolution: {integrity: sha512-cBrjf6PNF6yfL8+kcNl85AjiK2YHNsbU0EvDOwiZjBPbMbQ5QcgVGFpjD0O52p8nec5O8NYw7PKw3xUR7fPAkQ==}
     engines: {node: '>=14.21.3'}
     hasBin: true
 
-  '@biomejs/cli-darwin-arm64@2.4.2':
-    resolution: {integrity: sha512-3pEcKCP/1POKyaZZhXcxFl3+d9njmeAihZ17k8lL/1vk+6e0Cbf0yPzKItFiT+5Yh6TQA4uKvnlqe0oVZwRxCA==}
+  '@biomejs/cli-darwin-arm64@2.4.3':
+    resolution: {integrity: sha512-eOafSFlI/CF4id2tlwq9CVHgeEqvTL5SrhWff6ZORp6S3NL65zdsR3ugybItkgF8Pf4D9GSgtbB6sE3UNgOM9w==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [darwin]
 
-  '@biomejs/cli-darwin-x64@2.4.2':
-    resolution: {integrity: sha512-P7hK1jLVny+0R9UwyGcECxO6sjETxfPyBm/1dmFjnDOHgdDPjPqozByunrwh4xPKld8sxOr5eAsSqal5uKgeBg==}
+  '@biomejs/cli-darwin-x64@2.4.3':
+    resolution: {integrity: sha512-V2+av4ilbWcBMNufTtMMXVW00nPwyIjI5qf7n9wSvUaZ+tt0EvMGk46g9sAFDJBEDOzSyoRXiSP6pCvKTOEbPA==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [darwin]
 
-  '@biomejs/cli-linux-arm64-musl@2.4.2':
-    resolution: {integrity: sha512-/x04YK9+7erw6tYEcJv9WXoBHcULI/wMOvNdAyE9S3JStZZ9yJyV67sWAI+90UHuDo/BDhq0d96LDqGlSVv7WA==}
+  '@biomejs/cli-linux-arm64-musl@2.4.3':
+    resolution: {integrity: sha512-QuFzvsGo8BA4Xm7jGX5idkw6BqFblcCPySMTvq0AhGYnhUej5VJIDJbmTKfHqwjHepZiC4fA+T5i6wmiZolZNw==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [linux]
 
-  '@biomejs/cli-linux-arm64@2.4.2':
-    resolution: {integrity: sha512-DI3Mi7GT2zYNgUTDEbSjl3e1KhoP76OjQdm8JpvZYZWtVDRyLd3w8llSr2TWk1z+U3P44kUBWY3X7H9MD1/DGQ==}
+  '@biomejs/cli-linux-arm64@2.4.3':
+    resolution: {integrity: sha512-0m+O0x9FgK99FAwDK+fiDtjs2wnqq7bvfj17KJVeCkTwT/liI+Q9njJG7lwXK0iSJVXeFNRIxukpVI3SifMYAA==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [linux]
 
-  '@biomejs/cli-linux-x64-musl@2.4.2':
-    resolution: {integrity: sha512-wbBmTkeAoAYbOQ33f6sfKG7pcRSydQiF+dTYOBjJsnXO2mWEOQHllKlC2YVnedqZFERp2WZhFUoO7TNRwnwEHQ==}
+  '@biomejs/cli-linux-x64-musl@2.4.3':
+    resolution: {integrity: sha512-qEc0OCpj/uytruQ4wLM0yWNJLZy0Up8H1Er5MW3SrstqM6J2d4XqdNA86xzCy8MQCHpoVZ3lFye3GBlIL4/ljw==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [linux]
 
-  '@biomejs/cli-linux-x64@2.4.2':
-    resolution: {integrity: sha512-GK2ErnrKpWFigYP68cXiCHK4RTL4IUWhK92AFS3U28X/nuAL5+hTuy6hyobc8JZRSt+upXt1nXChK+tuHHx4mA==}
+  '@biomejs/cli-linux-x64@2.4.3':
+    resolution: {integrity: sha512-NVqh0saIU0u5OfOp/0jFdlKRE59+XyMvWmtx0f6Nm/2OpdxBl04coRIftBbY9d1gfu+23JVv4CItAqPYrjYh5w==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [linux]
 
-  '@biomejs/cli-win32-arm64@2.4.2':
-    resolution: {integrity: sha512-k2uqwLYrNNxnaoiW3RJxoMGnbKda8FuCmtYG3cOtVljs3CzWxaTR+AoXwKGHscC9thax9R4kOrtWqWN0+KdPTw==}
+  '@biomejs/cli-win32-arm64@2.4.3':
+    resolution: {integrity: sha512-gRO96vrIARilv/Cp2ZnmNNL5LSZg3RO75GPp13hsLO3N4YVpE7saaMDp2bcyV48y2N2Pbit1brkGVGta0yd6VQ==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [win32]
 
-  '@biomejs/cli-win32-x64@2.4.2':
-    resolution: {integrity: sha512-9ma7C4g8Sq3cBlRJD2yrsHXB1mnnEBdpy7PhvFrylQWQb4PoyCmPucdX7frvsSBQuFtIiKCrolPl/8tCZrKvgQ==}
+  '@biomejs/cli-win32-x64@2.4.3':
+    resolution: {integrity: sha512-vSm/vOJe06pf14aGHfHl3Ar91Nlx4YYmohElDJ+17UbRwe99n987S/MhAlQOkONqf1utJor04ChkCPmKb8SWdw==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
@@ -2695,6 +2698,9 @@ packages:
   '@speed-highlight/core@1.2.14':
     resolution: {integrity: sha512-G4ewlBNhUtlLvrJTb88d2mdy2KRijzs4UhnlrOSRT4bmjh/IqNElZa3zkrZ+TC47TwtlDWzVLFADljF1Ijp5hA==}
 
+  '@stablelib/base64@1.0.1':
+    resolution: {integrity: sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ==}
+
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
@@ -4142,6 +4148,9 @@ packages:
   fast-json-stable-stringify@2.1.0:
     resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
 
+  fast-sha256@1.3.0:
+    resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
+
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
@@ -5302,6 +5311,9 @@ packages:
     resolution: {integrity: sha512-NCrCHhWmnQklfH4MtJMRjZ2a8c80qXeMlQMv2uVp9ISJMTt562SbGd6n2oq0PaPgKm7Z6pL9E2UlLIhC+SHL3w==}
     engines: {node: '>=4.0.0'}
 
+  postal-mime@2.7.3:
+    resolution: {integrity: sha512-MjhXadAJaWgYzevi46+3kLak8y6gbg0ku14O1gO/LNOuay8dO+1PtcSGvAdgDR0DoIsSaiIA8y/Ddw6MnrO0Tw==}
+
   postcss-selector-parser@7.1.1:
     resolution: {integrity: sha512-orRsuYpJVw8LdAwqqLykBj9ecS5/cRHlI5+nvTo8LcCKmzDmqVORXtOIYEEQuL9D4BxtA1lm5isAqzQZCoQ6Eg==}
     engines: {node: '>=4'}
@@ -5568,6 +5580,15 @@ packages:
     resolution: {integrity: sha512-nYzyjnFcPNGR3lx9lwPPPnuQxv6JWEZd2Ci0u9opN7N5zUEPIhY/GbL3vMGOr2UXwEg9WwSyV9X9Y/kLFgPsOg==}
     engines: {node: '>= 4.0.0'}
 
+  resend@6.9.2:
+    resolution: {integrity: sha512-uIM6CQ08tS+hTCRuKBFbOBvHIGaEhqZe8s4FOgqsVXSbQLAhmNWpmUhG3UAtRnmcwTWFUqnHa/+Vux8YGPyDBA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@react-email/render': '*'
+    peerDependenciesMeta:
+      '@react-email/render':
+        optional: true
+
   resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
     engines: {node: '>=4'}
@@ -5829,6 +5850,9 @@ packages:
     resolution: {integrity: sha512-WjlahMgHmCJpqzU8bIBy4qtsZdU9lRlcZE3Lvyej6t4tuOuv1vk57OW3MBrj6hXBFx/nNoC9MPMTcr5YA7NQbg==}
     engines: {node: '>=6'}
 
+  standardwebhooks@1.0.0:
+    resolution: {integrity: sha512-BbHGOQK9olHPMvQNHWul6MYlrRTAOKn03rOe4A8O3CLWhNf4YHBqq2HJKKC+sfqpxiBY52pNeesD6jIiLDz8jg==}
+
   statuses@1.5.0:
     resolution: {integrity: sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==}
     engines: {node: '>= 0.6'}
@@ -5937,6 +5961,9 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  svix@1.84.1:
+    resolution: {integrity: sha512-K8DPPSZaW/XqXiz1kEyzSHYgmGLnhB43nQCMeKjWGCUpLIpAMMM8kx3rVVOSm6Bo6EHyK1RQLPT4R06skM/MlQ==}
 
   tagged-tag@1.0.0:
     resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
@@ -6214,6 +6241,10 @@ packages:
   utils-merge@1.0.1:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
+
+  uuid@10.0.0:
+    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    hasBin: true
 
   uuid@7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
@@ -7161,39 +7192,39 @@ snapshots:
 
   '@better-fetch/fetch@1.1.21': {}
 
-  '@biomejs/biome@2.4.2':
+  '@biomejs/biome@2.4.3':
     optionalDependencies:
-      '@biomejs/cli-darwin-arm64': 2.4.2
-      '@biomejs/cli-darwin-x64': 2.4.2
-      '@biomejs/cli-linux-arm64': 2.4.2
-      '@biomejs/cli-linux-arm64-musl': 2.4.2
-      '@biomejs/cli-linux-x64': 2.4.2
-      '@biomejs/cli-linux-x64-musl': 2.4.2
-      '@biomejs/cli-win32-arm64': 2.4.2
-      '@biomejs/cli-win32-x64': 2.4.2
+      '@biomejs/cli-darwin-arm64': 2.4.3
+      '@biomejs/cli-darwin-x64': 2.4.3
+      '@biomejs/cli-linux-arm64': 2.4.3
+      '@biomejs/cli-linux-arm64-musl': 2.4.3
+      '@biomejs/cli-linux-x64': 2.4.3
+      '@biomejs/cli-linux-x64-musl': 2.4.3
+      '@biomejs/cli-win32-arm64': 2.4.3
+      '@biomejs/cli-win32-x64': 2.4.3
 
-  '@biomejs/cli-darwin-arm64@2.4.2':
+  '@biomejs/cli-darwin-arm64@2.4.3':
     optional: true
 
-  '@biomejs/cli-darwin-x64@2.4.2':
+  '@biomejs/cli-darwin-x64@2.4.3':
     optional: true
 
-  '@biomejs/cli-linux-arm64-musl@2.4.2':
+  '@biomejs/cli-linux-arm64-musl@2.4.3':
     optional: true
 
-  '@biomejs/cli-linux-arm64@2.4.2':
+  '@biomejs/cli-linux-arm64@2.4.3':
     optional: true
 
-  '@biomejs/cli-linux-x64-musl@2.4.2':
+  '@biomejs/cli-linux-x64-musl@2.4.3':
     optional: true
 
-  '@biomejs/cli-linux-x64@2.4.2':
+  '@biomejs/cli-linux-x64@2.4.3':
     optional: true
 
-  '@biomejs/cli-win32-arm64@2.4.2':
+  '@biomejs/cli-win32-arm64@2.4.3':
     optional: true
 
-  '@biomejs/cli-win32-x64@2.4.2':
+  '@biomejs/cli-win32-x64@2.4.3':
     optional: true
 
   '@cloudflare/kv-asset-handler@0.4.2': {}
@@ -9107,6 +9138,8 @@ snapshots:
 
   '@speed-highlight/core@1.2.14': {}
 
+  '@stablelib/base64@1.0.1': {}
+
   '@standard-schema/spec@1.1.0': {}
 
   '@tailwindcss/node@4.2.0':
@@ -10552,6 +10585,8 @@ snapshots:
 
   fast-json-stable-stringify@2.1.0: {}
 
+  fast-sha256@1.3.0: {}
+
   fast-uri@3.1.0: {}
 
   fastq@1.20.1:
@@ -11707,6 +11742,8 @@ snapshots:
 
   pngjs@3.4.0: {}
 
+  postal-mime@2.7.3: {}
+
   postcss-selector-parser@7.1.1:
     dependencies:
       cssesc: 3.0.0
@@ -12062,6 +12099,11 @@ snapshots:
       rc: 1.2.8
       resolve: 1.7.1
 
+  resend@6.9.2:
+    dependencies:
+      postal-mime: 2.7.3
+      svix: 1.84.1
+
   resolve-from@4.0.0: {}
 
   resolve-from@5.0.0: {}
@@ -12416,6 +12458,11 @@ snapshots:
     dependencies:
       type-fest: 0.7.1
 
+  standardwebhooks@1.0.0:
+    dependencies:
+      '@stablelib/base64': 1.0.1
+      fast-sha256: 1.3.0
+
   statuses@1.5.0: {}
 
   statuses@2.0.2: {}
@@ -12511,6 +12558,11 @@ snapshots:
       supports-color: 7.2.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  svix@1.84.1:
+    dependencies:
+      standardwebhooks: 1.0.0
+      uuid: 10.0.0
 
   tagged-tag@1.0.0: {}
 
@@ -12753,6 +12805,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   utils-merge@1.0.1: {}
+
+  uuid@10.0.0: {}
 
   uuid@7.0.3: {}
 
