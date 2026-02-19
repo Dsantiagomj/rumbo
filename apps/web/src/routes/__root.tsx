@@ -1,7 +1,9 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
+import { Toaster } from 'sileo';
 import { queryClient } from '@/shared/api';
+import 'sileo/styles.css';
 
 const RouterDevtools = import.meta.env.DEV
   ? lazy(() =>
@@ -27,6 +29,7 @@ function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <Toaster position="top-right" />
       {RouterDevtools && (
         <Suspense fallback={null}>
           <RouterDevtools position="bottom-right" />
