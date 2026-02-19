@@ -6,10 +6,11 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import type { Bindings } from '../app.js';
 
 let cachedAuth: ReturnType<typeof betterAuth> | null = null;
-let cachedDbUrl: string | null = null;
+let cachedCacheKey: string | null = null;
 
 export function getAuth(env: Bindings) {
-  if (cachedAuth && cachedDbUrl === env.DATABASE_URL) {
+  const cacheKey = `${env.DATABASE_URL}|${env.BETTER_AUTH_SECRET}|${env.BETTER_AUTH_URL}`;
+  if (cachedAuth && cachedCacheKey === cacheKey) {
     return cachedAuth;
   }
 
@@ -32,7 +33,7 @@ export function getAuth(env: Bindings) {
       enabled: true,
     },
   });
-  cachedDbUrl = env.DATABASE_URL;
+  cachedCacheKey = cacheKey;
 
   return cachedAuth;
 }
