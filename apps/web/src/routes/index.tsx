@@ -1,4 +1,5 @@
 import { APP_NAME } from '@rumbo/shared';
+import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import {
   Button,
@@ -20,7 +21,11 @@ type HealthStatus = {
 
 type ConnectionState = 'loading' | 'connected' | 'disconnected';
 
-export function App() {
+export const Route = createFileRoute('/')({
+  component: HomePage,
+});
+
+function HomePage() {
   const [connectionState, setConnectionState] = useState<ConnectionState>('loading');
   const [healthData, setHealthData] = useState<HealthStatus | null>(null);
 
