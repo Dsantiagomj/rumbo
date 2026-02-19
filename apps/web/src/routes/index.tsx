@@ -1,6 +1,7 @@
 import { APP_NAME } from '@rumbo/shared';
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { healthQueryOptions } from '@/shared/api';
 import {
   Button,
   Card,
@@ -12,37 +13,12 @@ import {
   Label,
 } from '@/shared/ui';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-type HealthStatus = {
-  status: 'ok';
-  timestamp: string;
-};
-
-type ConnectionState = 'loading' | 'connected' | 'disconnected';
-
 export const Route = createFileRoute('/')({
   component: HomePage,
 });
 
 function HomePage() {
-  const [connectionState, setConnectionState] = useState<ConnectionState>('loading');
-  const [healthData, setHealthData] = useState<HealthStatus | null>(null);
-
-  useEffect(() => {
-    fetch(`${API_URL}/health`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json() as Promise<HealthStatus>;
-      })
-      .then((data) => {
-        setHealthData(data);
-        setConnectionState('connected');
-      })
-      .catch(() => {
-        setConnectionState('disconnected');
-      });
-  }, []);
+  const { data, isPending, isError } = useQuery(healthQueryOptions());
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
@@ -53,15 +29,13 @@ function HomePage() {
         <CardHeader>
           <CardTitle>API Connection</CardTitle>
           <CardDescription>
-            {connectionState === 'loading' && 'Checking...'}
-            {connectionState === 'connected' && 'Connected'}
-            {connectionState === 'disconnected' && 'Disconnected'}
+            {isPending && 'Checking...'}
+            {data && 'Connected'}
+            {isError && 'Disconnected'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {connectionState === 'connected' && healthData && (
-            <p className="text-xs text-muted-foreground">{healthData.timestamp}</p>
-          )}
+          {data && <p className="text-xs text-muted-foreground">{data.timestamp}</p>}
           <div className="space-y-2">
             <Label htmlFor="demo-input">Demo input</Label>
             <Input id="demo-input" placeholder="Type something..." />
