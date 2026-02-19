@@ -1,6 +1,6 @@
 import { account, session, user, verification } from '@rumbo/db/schema';
 import { describe, expect, it } from 'vitest';
-import { createAuth } from '../auth.js';
+import { getAuth } from '../auth.js';
 
 /**
  * Better Auth expects these exact columns (camelCase ORM names)
@@ -60,9 +60,9 @@ describe('Better Auth schema compatibility', () => {
   });
 });
 
-describe('createAuth', () => {
+describe('getAuth', () => {
   it('returns an auth instance with a handler', () => {
-    const auth = createAuth({
+    const auth = getAuth({
       DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
       BETTER_AUTH_SECRET: 'test-secret-that-is-at-least-32-chars-long',
       BETTER_AUTH_URL: 'http://localhost:3000',

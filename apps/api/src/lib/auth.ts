@@ -5,11 +5,18 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { drizzle } from 'drizzle-orm/neon-http';
 import type { Bindings } from '../app.js';
 
-export function createAuth(env: Bindings) {
+let cachedAuth: ReturnType<typeof betterAuth> | null = null;
+let cachedDbUrl: string | null = null;
+
+export function getAuth(env: Bindings) {
+  if (cachedAuth && cachedDbUrl === env.DATABASE_URL) {
+    return cachedAuth;
+  }
+
   const sql = neon(env.DATABASE_URL);
   const db = drizzle(sql, { schema });
 
-  return betterAuth({
+  cachedAuth = betterAuth({
     database: drizzleAdapter(db, {
       provider: 'pg',
       schema: {
@@ -25,4 +32,7 @@ export function createAuth(env: Bindings) {
       enabled: true,
     },
   });
+  cachedDbUrl = env.DATABASE_URL;
+
+  return cachedAuth;
 }
