@@ -1,4 +1,5 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { onError, onNotFound } from './lib/error-handler.js';
@@ -53,5 +54,23 @@ app.use(
 
 // Routes
 app.route('/health', health);
+
+// OpenAPI documentation
+app.doc('/openapi.json', {
+  openapi: '3.1.0',
+  info: {
+    title: 'Rumbo API',
+    version: '0.1.0',
+    description: 'Personal finance management API for the Colombian context',
+  },
+});
+
+app.get(
+  '/reference',
+  apiReference({
+    url: '/openapi.json',
+    theme: 'default',
+  }),
+);
 
 export { app };
