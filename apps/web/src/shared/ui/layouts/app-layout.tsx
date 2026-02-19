@@ -50,9 +50,22 @@ export function AppLayout({ children }: AppLayoutProps) {
           })}
         </nav>
 
-        {/* User area */}
+        {/* Settings + User area */}
         <div className="border-t border-sidebar-border p-2">
-          <div className="flex items-center gap-3 rounded-md px-2.5 py-2">
+          <Link
+            to="/settings"
+            className={`relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
+              location.pathname === '/settings'
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:-translate-y-1/2 before:w-0.5 before:rounded-full before:bg-sidebar-primary'
+                : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+            }`}
+          >
+            <RiSettingsLine className="h-5 w-5 shrink-0" />
+            <span className="whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
+              Settings
+            </span>
+          </Link>
+          <div className="mt-1 flex items-center gap-3 rounded-md px-2.5 py-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-sm font-semibold text-sidebar-accent-foreground">
               U
             </div>
