@@ -15,9 +15,10 @@
   },
   "dependencies": {
     "@hono/node-server": "latest",
+    "@hono/zod-openapi": "^1.2.2",
     "@rumbo/db": "workspace:*",
     "@rumbo/shared": "workspace:*",
-    "hono": "latest"
+    "hono": "^4.11.10"
   },
   "devDependencies": {
     "@types/node": "latest",
