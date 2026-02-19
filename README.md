@@ -14,7 +14,7 @@ Personal finance management app for the Colombian context.
 
 ```bash
 # 1. Clone the repository
-git clone git@github.com:dsmjcremora/rumbo.git
+git clone https://github.com/Dsantiagomj/rumbo.git
 cd rumbo
 
 # 2. Install dependencies
