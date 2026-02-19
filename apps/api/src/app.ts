@@ -1,6 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { onError, onNotFound } from './lib/error-handler.js';
 import { health } from './modules/health/index.js';
 
 export type Bindings = {
@@ -15,7 +16,30 @@ export type Variables = {};
 
 export type AppEnv = { Bindings: Bindings; Variables: Variables };
 
-const app = new OpenAPIHono<AppEnv>();
+const app = new OpenAPIHono<AppEnv>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      return c.json(
+        {
+          error: {
+            message: 'Validation failed',
+            code: 'VALIDATION_ERROR',
+            status: 422,
+            details: result.error.issues.map((issue) => ({
+              path: issue.path,
+              message: issue.message,
+            })),
+          },
+        },
+        422,
+      );
+    }
+  },
+});
+
+// Error handling
+app.onError(onError);
+app.notFound(onNotFound);
 
 // Middleware
 app.use('*', logger());
