@@ -79,7 +79,15 @@ app.use(
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean);
-      return allowed.includes(origin) ? origin : null;
+      return allowed.some((pattern) => {
+        if (pattern.startsWith('*.')) {
+          const suffix = pattern.slice(1); // ".rumbo.pages.dev"
+          return origin.endsWith(suffix) && origin.includes('://');
+        }
+        return pattern === origin;
+      })
+        ? origin
+        : null;
     },
     credentials: true,
   }),

@@ -144,9 +144,9 @@ describe('validation errors (defaultHook)', () => {
     expect(body.error.code).toBe('VALIDATION_ERROR');
     expect(body.error.status).toBe(422);
     expect(body.error.details).toBeInstanceOf(Array);
-    expect(body.error.details!.length).toBeGreaterThanOrEqual(1);
+    expect(body.error.details?.length).toBeGreaterThanOrEqual(1);
 
-    const paths = body.error.details!.map((d) => d.path.join('.'));
+    const paths = body.error.details?.map((d) => d.path.join('.'));
     expect(paths).toContain('email');
   });
 

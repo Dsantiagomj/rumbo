@@ -1,10 +1,20 @@
+import { QueryClientProvider } from '@tanstack/react-query';
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
+import { queryClient } from '@/shared/api';
 
-const Devtools = import.meta.env.DEV
+const RouterDevtools = import.meta.env.DEV
   ? lazy(() =>
       import('@tanstack/router-devtools').then((mod) => ({
         default: mod.TanStackRouterDevtools,
+      })),
+    )
+  : null;
+
+const QueryDevtools = import.meta.env.DEV
+  ? lazy(() =>
+      import('@tanstack/react-query-devtools').then((mod) => ({
+        default: mod.ReactQueryDevtools,
       })),
     )
   : null;
@@ -15,13 +25,18 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Outlet />
-      {Devtools && (
+      {RouterDevtools && (
         <Suspense fallback={null}>
-          <Devtools position="bottom-right" />
+          <RouterDevtools position="bottom-right" />
         </Suspense>
       )}
-    </>
+      {QueryDevtools && (
+        <Suspense fallback={null}>
+          <QueryDevtools initialIsOpen={false} />
+        </Suspense>
+      )}
+    </QueryClientProvider>
   );
 }
