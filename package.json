@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.6.2",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",
     "infra:reset": "docker compose down -v && docker compose up -d",

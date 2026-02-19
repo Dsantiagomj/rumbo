@@ -2,7 +2,7 @@ import { OpenAPIHono } from '@hono/zod-openapi';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { createAuth } from './lib/auth.js';
+import { getAuth } from './lib/auth.js';
 import { onError, onNotFound } from './lib/error-handler.js';
 import { health } from './modules/health/index.js';
 
@@ -11,6 +11,7 @@ export type Bindings = {
   DATABASE_URL: string;
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
+  CORS_ORIGINS: string;
 };
 
 // biome-ignore lint/complexity/noBannedTypes: Variables will be populated as features are added (e.g., user session)
@@ -48,7 +49,14 @@ app.use('*', logger());
 app.use(
   '*',
   cors({
-    origin: ['http://localhost:5173', 'https://rumbo.pages.dev'],
+    origin: (origin, c) => {
+      const env = c.env as Partial<Bindings> | undefined;
+      const allowed = (env?.CORS_ORIGINS ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return allowed.includes(origin) ? origin : null;
+    },
     credentials: true,
   }),
 );
@@ -58,7 +66,7 @@ app.route('/health', health);
 
 // Auth routes (Better Auth handles /api/auth/* automatically)
 app.on(['POST', 'GET'], '/api/auth/**', (c) => {
-  const auth = createAuth(c.env);
+  const auth = getAuth(c.env);
   return auth.handler(c.req.raw);
 });
 

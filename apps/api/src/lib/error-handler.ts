@@ -1,10 +1,10 @@
 import type { Context, ErrorHandler, NotFoundHandler } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import type { ZodError } from 'zod';
+import { ZodError } from 'zod';
 
 function isZodError(err: Error): err is ZodError {
-  return err.constructor.name === 'ZodError' && 'issues' in err;
+  return err instanceof ZodError;
 }
 
 function isDev(c: Context): boolean {
