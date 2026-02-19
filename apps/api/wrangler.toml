@@ -10,4 +10,4 @@ CORS_ORIGINS = "https://rumbo.pages.dev"
 name = "rumbo-api-staging"
 [env.staging.vars]
 ENVIRONMENT = "staging"
-CORS_ORIGINS = "https://staging.rumbo.pages.dev"
+CORS_ORIGINS = "*.rumbo.pages.dev"
