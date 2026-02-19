@@ -1,5 +1,13 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { lazy, Suspense } from 'react';
+
+const Devtools = import.meta.env.DEV
+  ? lazy(() =>
+      import('@tanstack/router-devtools').then((mod) => ({
+        default: mod.TanStackRouterDevtools,
+      })),
+    )
+  : null;
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -9,7 +17,11 @@ function RootLayout() {
   return (
     <>
       <Outlet />
-      {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-right" />}
+      {Devtools && (
+        <Suspense fallback={null}>
+          <Devtools position="bottom-right" />
+        </Suspense>
+      )}
     </>
   );
 }
