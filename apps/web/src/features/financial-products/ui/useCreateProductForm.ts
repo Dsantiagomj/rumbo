@@ -7,6 +7,11 @@ import { ApiError } from '@/shared/api';
 import { type CreateProductFormValues, createProductFormSchema } from '../model/form-schemas';
 import { useCreateProductMutation } from '../model/queries';
 
+function negateDecimal(value: string): string {
+  if (value.startsWith('-')) return value;
+  return value === '0' || value === '0.00' ? value : `-${value}`;
+}
+
 type Step = 'type' | 'details' | 'review';
 const STEPS: Step[] = ['type', 'details', 'review'];
 
@@ -69,14 +74,25 @@ export function useCreateProductForm() {
   }
 
   async function handleSubmit(values: CreateProductFormValues) {
+    const isDebt =
+      values.type === 'credit_card' ||
+      values.type === 'loan_free_investment' ||
+      values.type === 'loan_mortgage';
+
+    const balance = isDebt ? negateDecimal(values.balance) : values.balance;
+    const metadata = { ...values.metadata };
+    if (isDebt && typeof metadata.balanceUsd === 'string' && metadata.balanceUsd) {
+      metadata.balanceUsd = negateDecimal(metadata.balanceUsd);
+    }
+
     try {
       await mutation.mutateAsync({
         type: values.type,
         name: values.name,
         institution: values.institution,
-        balance: values.balance,
+        balance,
         currency: values.currency,
-        metadata: values.metadata,
+        metadata,
       });
       navigate({ to: '/products' });
     } catch (error) {
