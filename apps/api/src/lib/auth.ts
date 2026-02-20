@@ -1,23 +1,12 @@
-import { neon } from '@neondatabase/serverless';
 import * as schema from '@rumbo/db/schema';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
 import type { Bindings } from '../app.js';
+import { createDb } from './db.js';
 import { createResendClient, sendResetPasswordEmail, sendVerificationEmail } from './email.js';
+import { hashPassword, verifyPassword } from './password.js';
 
 const authCache = new Map<string, ReturnType<typeof betterAuth>>();
-
-async function createDb(env: Bindings) {
-  if (env.ENVIRONMENT === 'development') {
-    const { default: postgres } = await import('postgres');
-    const { drizzle } = await import('drizzle-orm/postgres-js');
-    const sql = postgres(env.DATABASE_URL);
-    return drizzle(sql, { schema });
-  }
-  const sql = neon(env.DATABASE_URL);
-  return drizzleNeon(sql, { schema });
-}
 
 export async function getAuth(env: Bindings) {
   const cacheKey = `${env.DATABASE_URL}|${env.BETTER_AUTH_SECRET}|${env.BETTER_AUTH_URL}|${env.RESEND_API_KEY}`;
@@ -57,15 +46,28 @@ export async function getAuth(env: Bindings) {
       enabled: true,
       minPasswordLength: 8,
       maxPasswordLength: 128,
+      password: {
+        hash: hashPassword,
+        verify: verifyPassword,
+      },
       sendResetPassword: async ({ user, url }) => {
-        await sendResetPasswordEmail(resend, emailFrom, user.email, url);
+        const token = new URL(url).searchParams.get('token') ?? '';
+        const frontendUrl = `${trustedOrigins[0]}/reset-password?token=${token}`;
+        await sendResetPasswordEmail(resend, emailFrom, user.email, frontendUrl);
       },
     },
     emailVerification: {
       sendOnSignUp: true,
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url }) => {
-        await sendVerificationEmail(resend, emailFrom, user.email, url);
+        try {
+          const token = new URL(url).searchParams.get('token') ?? '';
+          const frontendUrl = `${trustedOrigins[0]}/verify-email?token=${token}`;
+          console.log('[auth] verification email url:', frontendUrl);
+          await sendVerificationEmail(resend, emailFrom, user.email, frontendUrl);
+        } catch (error) {
+          console.error('[auth] failed to send verification email:', error);
+        }
       },
     },
   });
