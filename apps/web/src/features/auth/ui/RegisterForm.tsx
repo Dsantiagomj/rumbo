@@ -16,6 +16,7 @@ export function RegisterForm() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
+    mode: 'onBlur',
     defaultValues: {
       name: '',
       email: '',
@@ -25,26 +26,33 @@ export function RegisterForm() {
   });
 
   async function onSubmit(values: RegisterFormValues) {
-    const { error } = await authClient.signUp.email({
-      name: values.name,
-      email: values.email,
-      password: values.password,
-    });
-
-    if (error) {
-      sileo.error({
-        title: 'Registration failed',
-        description: error.message ?? 'Please try again with different credentials.',
+    try {
+      const { error } = await authClient.signUp.email({
+        name: values.name,
+        email: values.email,
+        password: values.password,
       });
-      return;
+
+      if (error) {
+        sileo.error({
+          title: 'Registration failed',
+          description: error.message ?? 'Please try again with different credentials.',
+        });
+        return;
+      }
+
+      sileo.success({
+        title: 'Account created!',
+        description: 'Check your email to verify your account.',
+      });
+
+      await navigate({ to: '/login' });
+    } catch {
+      sileo.error({
+        title: 'Connection error',
+        description: 'Unable to reach the server. Please try again.',
+      });
     }
-
-    sileo.success({
-      title: 'Account created!',
-      description: 'Check your email to verify your account.',
-    });
-
-    await navigate({ to: '/login' });
   }
 
   return (

@@ -17,6 +17,7 @@ export function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
+    mode: 'onBlur',
     defaultValues: {
       email: '',
       password: '',
@@ -24,20 +25,27 @@ export function LoginForm() {
   });
 
   async function onSubmit(values: LoginFormValues) {
-    const { error } = await authClient.signIn.email({
-      email: values.email,
-      password: values.password,
-    });
-
-    if (error) {
-      sileo.error({
-        title: 'Sign in failed',
-        description: error.message ?? 'Please check your credentials and try again.',
+    try {
+      const { error } = await authClient.signIn.email({
+        email: values.email,
+        password: values.password,
       });
-      return;
-    }
 
-    await navigate({ to: redirectTo ?? '/' });
+      if (error) {
+        sileo.error({
+          title: 'Sign in failed',
+          description: error.message ?? 'Please check your credentials and try again.',
+        });
+        return;
+      }
+
+      await navigate({ to: redirectTo ?? '/' });
+    } catch {
+      sileo.error({
+        title: 'Connection error',
+        description: 'Unable to reach the server. Please try again.',
+      });
+    }
   }
 
   return (

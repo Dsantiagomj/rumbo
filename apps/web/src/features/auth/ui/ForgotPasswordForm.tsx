@@ -14,30 +14,37 @@ export function ForgotPasswordForm() {
     formState: { errors, isSubmitting },
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
+    mode: 'onBlur',
     defaultValues: {
       email: '',
     },
   });
 
   async function onSubmit(values: ForgotPasswordFormValues) {
-    const { error } = await authClient.forgetPassword({
-      email: values.email,
-      redirectTo: '/reset-password',
-    });
-
-    if (error) {
-      sileo.error({
-        title: 'Something went wrong',
-        description: 'Please try again later.',
+    try {
+      const { error } = await authClient.forgetPassword({
+        email: values.email,
+        redirectTo: '/reset-password',
       });
-      return;
-    }
 
-    // Always show success message regardless of whether email exists (security best practice)
-    sileo.success({
-      title: 'Check your email',
-      description: "If an account with that email exists, we've sent a reset link.",
-    });
+      if (error) {
+        sileo.error({
+          title: 'Something went wrong',
+          description: 'Please try again later.',
+        });
+        return;
+      }
+
+      sileo.success({
+        title: 'Check your email',
+        description: "If an account with that email exists, we've sent a reset link.",
+      });
+    } catch {
+      sileo.error({
+        title: 'Connection error',
+        description: 'Unable to reach the server. Please try again.',
+      });
+    }
   }
 
   return (

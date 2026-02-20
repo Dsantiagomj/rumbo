@@ -20,6 +20,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
+    mode: 'onBlur',
     defaultValues: {
       password: '',
       confirmPassword: '',
@@ -27,25 +28,33 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   });
 
   async function onSubmit(values: ResetPasswordFormValues) {
-    const { error } = await authClient.resetPassword({
-      newPassword: values.password,
-      token,
-    });
-
-    if (error) {
-      sileo.error({
-        title: 'Reset failed',
-        description: error.message ?? 'Token expired or invalid. Please request a new reset link.',
+    try {
+      const { error } = await authClient.resetPassword({
+        newPassword: values.password,
+        token,
       });
-      return;
+
+      if (error) {
+        sileo.error({
+          title: 'Reset failed',
+          description:
+            error.message ?? 'Token expired or invalid. Please request a new reset link.',
+        });
+        return;
+      }
+
+      sileo.success({
+        title: 'Password reset!',
+        description: 'Your password has been updated. You can now sign in.',
+      });
+
+      await navigate({ to: '/login' });
+    } catch {
+      sileo.error({
+        title: 'Connection error',
+        description: 'Unable to reach the server. Please try again.',
+      });
     }
-
-    sileo.success({
-      title: 'Password reset!',
-      description: 'Your password has been updated. You can now sign in.',
-    });
-
-    await navigate({ to: '/login' });
   }
 
   return (
