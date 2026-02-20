@@ -9,6 +9,7 @@ export const financialProducts = pgTable('financial_products', {
     .references(() => user.id, { onDelete: 'cascade' }),
   type: productTypeEnum('type').notNull(),
   name: text('name').notNull(),
+  institution: text('institution').notNull(),
   balance: numeric('balance', { precision: 15, scale: 2 }).notNull().default('0'),
   currency: varchar('currency', { length: 3 }).notNull().default('COP'),
   metadata: jsonb('metadata').$type<Record<string, unknown>>().default({}),
