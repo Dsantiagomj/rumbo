@@ -6,9 +6,9 @@ export const Route = createFileRoute('/_app/products')({
 
 function ProductsPage() {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 py-12">
-      <h1 className="text-2xl font-bold">Products</h1>
-      <p className="text-muted-foreground">Coming soon</p>
+    <div className="flex flex-col items-center justify-center gap-2 py-12">
+      <h1 className="text-3xl font-semibold">Products</h1>
+      <p className="text-sm text-muted-foreground">Coming soon</p>
     </div>
   );
 }

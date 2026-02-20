@@ -46,7 +46,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Navigation */}
         <nav className="flex flex-1 flex-col gap-0.5 p-2">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive =
+              item.path === '/'
+                ? location.pathname === '/'
+                : location.pathname.startsWith(item.path);
             const Icon = item.icon;
 
             return (
@@ -73,7 +76,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <Link
             to="/settings"
             className={`relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
-              location.pathname === '/settings'
+              location.pathname === '/settings' || location.pathname.startsWith('/settings/')
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:-translate-y-1/2 before:w-0.5 before:rounded-full before:bg-sidebar-primary'
                 : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
             }`}
@@ -194,7 +197,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Mobile bottom tabs */}
         <nav className="flex md:hidden items-center justify-around border-t border-border bg-background pb-[env(safe-area-inset-bottom)]">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive =
+              item.path === '/'
+                ? location.pathname === '/'
+                : location.pathname.startsWith(item.path);
             const Icon = item.icon;
 
             return (
