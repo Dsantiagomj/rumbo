@@ -8,7 +8,6 @@ Personal finance management app for the Colombian context.
 |------|---------|---------|
 | Node.js | 24+ | [nodejs.org](https://nodejs.org) or use `.node-version` with [fnm](https://github.com/Schniz/fnm)/nvm |
 | pnpm | 10.6.2 | `corepack enable && corepack prepare pnpm@10.6.2 --activate` |
-| Docker | Latest | [docker.com](https://www.docker.com/products/docker-desktop/) |
 
 ## Quick Start
 
@@ -22,16 +21,13 @@ pnpm install
 
 # 3. Set up environment variables
 cp .env.example .env
-# Edit .env with your values (see Environment Variables below)
+# Edit .env with your Neon connection string and Resend API key
 
-# 4. Start local infrastructure (PostgreSQL + Redis)
-pnpm infra:up
-
-# 5. Run database migrations and seed
+# 4. Run database migrations and seed
 pnpm db:migrate
 pnpm db:seed
 
-# 6. Start development
+# 5. Start development
 pnpm dev          # API + Web
 ```
 
@@ -40,8 +36,8 @@ pnpm dev          # API + Web
 Copy `.env.example` to `.env` and configure:
 
 ```bash
-# Database — for local dev, use the Docker PostgreSQL instance
-DATABASE_URL=postgresql://rumbo:rumbo_dev@localhost:5432/rumbo?sslmode=disable
+# Database — Neon PostgreSQL (get connection string from https://console.neon.tech)
+DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
 
 # API
 API_PORT=3000
@@ -53,11 +49,8 @@ VITE_API_URL=http://localhost:3000
 # Auth (Better Auth)
 BETTER_AUTH_SECRET=dev-secret-change-in-production
 BETTER_AUTH_URL=http://localhost:3000
+APP_URL=http://localhost:5173
 ```
-
-**For local development**: The `DATABASE_URL` above connects to the Docker PostgreSQL instance started by `pnpm infra:up`. No external database needed.
-
-**For production**: Uses Neon PostgreSQL. Get the connection string from the [Neon dashboard](https://console.neon.tech).
 
 ## Project Structure
 
@@ -75,7 +68,6 @@ rumbo/
 ├── tooling/
 │   ├── biome/        # @rumbo/biome-config — Linter + formatter config
 │   └── typescript/   # @rumbo/typescript-config — Base TSConfig
-├── docker-compose.yml
 ├── turbo.json
 ├── biome.json
 └── pnpm-workspace.yaml
@@ -92,8 +84,6 @@ pnpm dev:web        # API + Web
 pnpm dev:mobile     # API + Mobile (Expo)
 pnpm dev:desktop    # API + Desktop (Tauri)
 ```
-
-All `dev:*` commands automatically start Docker infrastructure (PostgreSQL + Redis).
 
 ### Database
 
@@ -119,23 +109,6 @@ pnpm test:e2e       # Run E2E tests (Playwright)
 ```bash
 pnpm build          # Build all packages and apps
 ```
-
-### Infrastructure
-
-```bash
-pnpm infra:up       # Start PostgreSQL + Redis containers
-pnpm infra:down     # Stop containers (preserves data)
-pnpm infra:reset    # Stop containers, delete volumes, restart fresh
-```
-
-## Local Infrastructure
-
-Docker Compose provides:
-
-| Service | Port | Credentials |
-|---------|------|-------------|
-| PostgreSQL 18 | 5432 | `rumbo` / `rumbo_dev` / db: `rumbo` |
-| Redis 8 | 6379 | No auth |
 
 ## Git Workflow
 
@@ -200,19 +173,11 @@ corepack enable
 corepack prepare pnpm@10.6.2 --activate
 ```
 
-### Docker containers won't start
-
-Check if ports 5432 or 6379 are already in use:
-```bash
-lsof -i :5432
-lsof -i :6379
-```
-
 ### Database connection errors
 
-1. Make sure Docker is running: `pnpm infra:up`
-2. Check the container is healthy: `docker ps`
-3. For local dev, use `sslmode=disable` in DATABASE_URL (Docker PostgreSQL doesn't use SSL)
+1. Verify your `DATABASE_URL` in `.env` points to your Neon database
+2. Ensure `sslmode=require` is set (Neon requires SSL)
+3. Check your Neon project is active at [console.neon.tech](https://console.neon.tech)
 
 ### Pre-push hook fails
 
