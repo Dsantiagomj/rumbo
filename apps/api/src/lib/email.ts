@@ -19,7 +19,6 @@ export async function sendVerificationEmail(resend: Resend, from: string, to: st
     });
   } catch (error) {
     console.error('Failed to send verification email:', { to, error });
-    throw new Error('Failed to send verification email');
   }
 }
 
@@ -43,6 +42,5 @@ export async function sendResetPasswordEmail(
     });
   } catch (error) {
     console.error('Failed to send reset password email:', { to, error });
-    throw new Error('Failed to send reset password email');
   }
 }
