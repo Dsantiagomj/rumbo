@@ -64,7 +64,7 @@ export const METADATA_FIELD_CONFIG: Record<string, MetadataFieldConfig> = {
   monthlyPayment: { label: 'Cuota mensual', placeholder: '500000', type: 'text' },
   totalTerm: { label: 'Plazo total (meses)', placeholder: '60', type: 'number' },
   remainingTerm: { label: 'Plazo restante (meses)', placeholder: '48', type: 'number' },
-  originalAmount: { label: 'Monto original', placeholder: '10000000', type: 'text' },
+  originalAmount: { label: 'Monto total', placeholder: '10000000', type: 'text' },
   startDate: { label: 'Fecha de inicio', placeholder: '', type: 'date' },
   maturityDate: { label: 'Fecha de vencimiento', placeholder: '', type: 'date' },
   autoRenewal: { label: 'Renovacion automatica', placeholder: '', type: 'boolean' },

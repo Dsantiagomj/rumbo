@@ -32,6 +32,7 @@ type ProductDetailsStepProps = {
 
 export function ProductDetailsStep({ form, selectedType }: ProductDetailsStepProps) {
   const isCreditCard = selectedType === 'credit_card';
+  const isLoan = selectedType === 'loan_free_investment' || selectedType === 'loan_mortgage';
   const network = form.watch('metadata.network') as CreditCardNetwork | undefined;
   const hasDualCurrency =
     isCreditCard && network && (DUAL_CURRENCY_NETWORKS as readonly string[]).includes(network);
@@ -135,7 +136,7 @@ export function ProductDetailsStep({ form, selectedType }: ProductDetailsStepPro
             name="balance"
             render={({ field }) => (
               <FormItem className="col-span-2">
-                <FormLabel>Saldo actual</FormLabel>
+                <FormLabel>{isLoan ? 'Deuda actual' : 'Saldo actual'}</FormLabel>
                 <FormControl>
                   <Input placeholder="0.00" inputMode="decimal" {...field} />
                 </FormControl>

@@ -10,7 +10,7 @@ export function LoanMetadataFields({ form }: MetadataRendererProps) {
         name="metadata.originalAmount"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Monto original</FormLabel>
+            <FormLabel>Monto total</FormLabel>
             <FormControl>
               <Input placeholder="10000000" {...field} value={(field.value as string) ?? ''} />
             </FormControl>

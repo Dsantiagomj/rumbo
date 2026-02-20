@@ -71,7 +71,13 @@ export function ReviewStep({ form, onEditStep }: ReviewStepProps) {
           <ReviewRow label="Nombre" value={values.name} />
           <ReviewRow label="Institucion" value={values.institution} />
           <ReviewRow
-            label={values.type === 'credit_card' ? 'Saldo consumido (COP)' : 'Saldo'}
+            label={
+              values.type === 'credit_card'
+                ? 'Saldo consumido (COP)'
+                : values.type === 'loan_free_investment' || values.type === 'loan_mortgage'
+                  ? 'Deuda actual'
+                  : 'Saldo'
+            }
             value={formatBalance(values.balance, values.currency as Currency)}
           />
           {values.type === 'credit_card' && metadata.balanceUsd ? (
