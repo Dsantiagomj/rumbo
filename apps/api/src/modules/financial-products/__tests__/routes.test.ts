@@ -13,6 +13,7 @@ let testDb: ReturnType<typeof drizzle>;
 
 vi.mock('../../../lib/auth.js', () => ({
   getAuth: () => testAuth,
+  pendingEmailPromises: [],
 }));
 
 vi.mock('../../../lib/db.js', () => ({

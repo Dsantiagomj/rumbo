@@ -2,7 +2,7 @@ import { OpenAPIHono } from '@hono/zod-openapi';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { getAuth } from './lib/auth.js';
+import { getAuth, pendingEmailPromises } from './lib/auth.js';
 import { authMiddleware } from './lib/auth-middleware.js';
 import { onError, onNotFound } from './lib/error-handler.js';
 import { financialProductsRouter } from './modules/financial-products/index.js';
@@ -13,6 +13,7 @@ export type Bindings = {
   DATABASE_URL: string;
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
+  APP_URL: string;
   CORS_ORIGINS: string;
   RESEND_API_KEY: string;
   EMAIL_FROM: string;
@@ -106,7 +107,17 @@ app.route('/api/financial-products', financialProductsRouter);
 // Auth routes (Better Auth handles /api/auth/* automatically)
 app.on(['POST', 'GET'], '/api/auth/**', async (c) => {
   const auth = await getAuth(c.env);
-  return auth.handler(c.req.raw);
+  const response = await auth.handler(c.req.raw);
+
+  // Keep worker alive until background email sends complete.
+  // Better Auth fires sendResetPassword without awaiting it (timing attack prevention),
+  // so on Cloudflare Workers the isolate would die before Resend finishes.
+  if (pendingEmailPromises.length > 0) {
+    const drain = Promise.allSettled(pendingEmailPromises.splice(0));
+    c.executionCtx?.waitUntil(drain);
+  }
+
+  return response;
 });
 
 // OpenAPI documentation

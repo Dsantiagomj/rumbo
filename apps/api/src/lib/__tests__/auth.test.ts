@@ -70,6 +70,7 @@ describe('getAuth', () => {
       CORS_ORIGINS: 'http://localhost:5173',
       RESEND_API_KEY: 're_test_api_key',
       EMAIL_FROM: 'Rumbo <noreply@rumbo.app>',
+      APP_URL: 'http://localhost:5173',
     });
 
     expect(auth).toBeDefined();

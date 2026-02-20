@@ -217,6 +217,7 @@ financialProductsRouter.openapi(updateProductRoute, async (c) => {
   const db = await createDb(c.env);
 
   // If metadata is included, validate it against the product's type
+  let sanitizedMetadata = body.metadata;
   if (body.metadata !== undefined) {
     const existing = await getProduct(db, user.id, id);
 
@@ -252,9 +253,15 @@ financialProductsRouter.openapi(updateProductRoute, async (c) => {
         422,
       );
     }
+
+    sanitizedMetadata = metadataResult.data;
   }
 
-  const product = await updateProduct(db, user.id, id, body);
+  const updatePayload = {
+    ...body,
+    ...(sanitizedMetadata !== undefined ? { metadata: sanitizedMetadata } : {}),
+  };
+  const product = await updateProduct(db, user.id, id, updatePayload);
 
   if (!product) {
     return c.json(
