@@ -4,7 +4,7 @@ import { getAuth } from './auth.js';
 
 export const authMiddleware = createMiddleware<AuthedEnv>(async (c, next) => {
   try {
-    const auth = getAuth(c.env);
+    const auth = await getAuth(c.env);
     const result = await auth.api.getSession({ headers: c.req.raw.headers });
 
     if (!result) {
