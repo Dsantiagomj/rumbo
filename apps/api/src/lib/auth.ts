@@ -3,30 +3,30 @@ import * as schema from '@rumbo/db/schema';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
-import { drizzle as drizzlePostgres } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import type { Bindings } from '../app.js';
 import { createResendClient, sendResetPasswordEmail, sendVerificationEmail } from './email.js';
 
 const authCache = new Map<string, ReturnType<typeof betterAuth>>();
 
-function createDb(env: Bindings) {
+async function createDb(env: Bindings) {
   if (env.ENVIRONMENT === 'development') {
+    const { default: postgres } = await import('postgres');
+    const { drizzle } = await import('drizzle-orm/postgres-js');
     const sql = postgres(env.DATABASE_URL);
-    return drizzlePostgres(sql, { schema });
+    return drizzle(sql, { schema });
   }
   const sql = neon(env.DATABASE_URL);
   return drizzleNeon(sql, { schema });
 }
 
-export function getAuth(env: Bindings) {
+export async function getAuth(env: Bindings) {
   const cacheKey = `${env.DATABASE_URL}|${env.BETTER_AUTH_SECRET}|${env.BETTER_AUTH_URL}|${env.RESEND_API_KEY}`;
   const cached = authCache.get(cacheKey);
   if (cached) {
     return cached;
   }
 
-  const db = createDb(env);
+  const db = await createDb(env);
   const resend = createResendClient(env.RESEND_API_KEY);
   const emailFrom = env.EMAIL_FROM;
 
