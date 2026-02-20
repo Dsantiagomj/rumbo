@@ -65,6 +65,7 @@ export async function getAuth(env: Bindings) {
     },
     emailAndPassword: {
       enabled: true,
+      requireEmailVerification: true,
       minPasswordLength: 8,
       maxPasswordLength: 128,
       password: {
