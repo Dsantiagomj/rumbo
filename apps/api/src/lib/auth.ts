@@ -48,8 +48,15 @@ export function getAuth(env: Bindings) {
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     trustedOrigins,
+    rateLimit: {
+      enabled: true,
+      window: 60,
+      max: 100,
+    },
     emailAndPassword: {
       enabled: true,
+      minPasswordLength: 8,
+      maxPasswordLength: 128,
       sendResetPassword: async ({ user, url }) => {
         await sendResetPasswordEmail(resend, emailFrom, user.email, url);
       },

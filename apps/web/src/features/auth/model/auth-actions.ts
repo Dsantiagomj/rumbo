@@ -1,8 +1,24 @@
 import { sileo } from 'sileo';
 
+type AuthError = { message?: string; code?: string } | null;
+
 interface AuthActionOptions {
   errorTitle: string;
   errorFallback: string;
+}
+
+const errorMessagesByCode: Record<string, string> = {
+  INVALID_CREDENTIALS: 'Invalid email or password.',
+  USER_ALREADY_EXISTS: 'Unable to create account with that email.',
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: 'Unable to create account with that email.',
+  EMAIL_NOT_VERIFIED: 'Please verify your email before signing in.',
+  RATE_LIMITED: 'Too many attempts. Please try again later.',
+  TOKEN_EXPIRED: 'This link has expired. Please request a new one.',
+};
+
+function resolveAuthErrorMessage(error: AuthError, fallback: string) {
+  if (!error?.code) return fallback;
+  return errorMessagesByCode[error.code] ?? fallback;
 }
 
 /**
@@ -10,7 +26,7 @@ interface AuthActionOptions {
  * Returns true on success, false on error.
  */
 export async function handleAuthAction(
-  action: () => Promise<{ error: { message?: string } | null }>,
+  action: () => Promise<{ error: AuthError }>,
   { errorTitle, errorFallback }: AuthActionOptions,
 ): Promise<boolean> {
   try {
@@ -18,7 +34,7 @@ export async function handleAuthAction(
     if (error) {
       sileo.error({
         title: errorTitle,
-        description: error.message ?? errorFallback,
+        description: resolveAuthErrorMessage(error, errorFallback),
       });
       return false;
     }

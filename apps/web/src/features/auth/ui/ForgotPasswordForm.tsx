@@ -23,7 +23,7 @@ export function ForgotPasswordForm() {
 
   async function onSubmit(values: ForgotPasswordFormValues) {
     const ok = await handleAuthAction(
-      () => authClient.forgetPassword({ email: values.email, redirectTo: '/reset-password' }),
+      () => authClient.requestPasswordReset({ email: values.email, redirectTo: '/reset-password' }),
       { errorTitle: 'Something went wrong', errorFallback: 'Please try again later.' },
     );
     if (!ok) return;
