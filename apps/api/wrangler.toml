@@ -14,5 +14,7 @@ EMAIL_FROM = "Rumbo <noreply@rumbo.dsmj.dev>"
 name = "rumbo-api-staging"
 [env.staging.vars]
 ENVIRONMENT = "staging"
-CORS_ORIGINS = "*.rumbo.pages.dev"
+CORS_ORIGINS = "*.rumbo.pages.dev,http://localhost:5173,http://localhost:5174,http://localhost:8081"
+BETTER_AUTH_URL = "https://rumbo-api-staging.dsmj.workers.dev"
 APP_URL = "https://staging.rumbo.pages.dev"
+EMAIL_FROM = "Rumbo <noreply@rumbo.dsmj.dev>"
