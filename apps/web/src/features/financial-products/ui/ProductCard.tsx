@@ -25,7 +25,7 @@ export function ProductCard({ product, icon: Icon }: ProductCardProps) {
       : null;
 
   return (
-    <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+    <Card className="ring-0 border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
       <CardContent className="flex items-center gap-4 py-4">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
           <Icon className="h-5 w-5 text-muted-foreground" />
@@ -35,7 +35,7 @@ export function ProductCard({ product, icon: Icon }: ProductCardProps) {
           <p className="truncate text-sm text-muted-foreground">{product.institution}</p>
           {snippet && <p className="truncate text-xs text-muted-foreground mt-0.5">{snippet}</p>}
           {usagePercent !== null && (
-            <div className="mt-1.5 h-1.5 w-full rounded-full bg-muted">
+            <div className="mt-1.5 h-1.5 w-full max-w-48 rounded-full bg-muted">
               <div
                 className="h-full rounded-full bg-primary"
                 style={{ width: `${usagePercent}%` }}
@@ -43,7 +43,9 @@ export function ProductCard({ product, icon: Icon }: ProductCardProps) {
             </div>
           )}
         </div>
-        <p className={`font-semibold tabular-nums ${isNegative ? 'text-destructive' : ''}`}>
+        <p
+          className={`font-semibold tabular-nums whitespace-nowrap ${isNegative ? 'text-destructive' : ''}`}
+        >
           {formatBalance(product.balance, product.currency)}
         </p>
         <RiArrowRightSLine className="h-5 w-5 shrink-0 text-muted-foreground" />

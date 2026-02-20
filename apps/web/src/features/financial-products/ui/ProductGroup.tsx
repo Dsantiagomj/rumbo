@@ -1,4 +1,6 @@
+import { RiArrowDownSLine } from '@remixicon/react';
 import type { Currency, ProductResponse } from '@rumbo/shared';
+import { useState } from 'react';
 import type { ProductGroup as ProductGroupType } from '../model/constants';
 import { formatBalance } from '../model/constants';
 import { ProductCard } from './ProductCard';
@@ -21,6 +23,8 @@ function computeSubtotals(products: ProductResponse[]): { currency: Currency; to
 }
 
 export function ProductGroup({ group, products }: ProductGroupProps) {
+  const [isOpen, setIsOpen] = useState(true);
+
   if (products.length === 0) return null;
 
   const Icon = group.icon;
@@ -28,7 +32,11 @@ export function ProductGroup({ group, products }: ProductGroupProps) {
 
   return (
     <section>
-      <div className="mb-3 flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="mb-3 flex w-full items-center gap-2 text-left"
+      >
         <Icon className="h-5 w-5 text-muted-foreground" />
         <h2 className="text-lg font-semibold">{group.label}</h2>
         <span className="text-sm text-muted-foreground">({products.length})</span>
@@ -42,11 +50,26 @@ export function ProductGroup({ group, products }: ProductGroupProps) {
             </span>
           ))}
         </span>
-      </div>
-      <div className="grid gap-2">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} icon={group.icon} />
-        ))}
+        <RiArrowDownSLine
+          className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200 ${
+            isOpen ? '' : '-rotate-90'
+          }`}
+        />
+      </button>
+
+      {/* Collapsible content with CSS grid animation */}
+      <div
+        className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+          isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="grid gap-3">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} icon={group.icon} />
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

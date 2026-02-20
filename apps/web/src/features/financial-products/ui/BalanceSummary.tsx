@@ -1,39 +1,54 @@
 import type { Currency, ProductResponse } from '@rumbo/shared';
 import { CURRENCIES } from '@rumbo/shared';
-import { Card, CardContent } from '@/shared/ui';
-import { formatBalance } from '../model/constants';
+import { CURRENCY_LABELS, formatBalance } from '../model/constants';
 
 type BalanceSummaryProps = {
   products: ProductResponse[];
+  activeCurrency: Currency;
+  onCurrencyChange: (currency: Currency) => void;
 };
 
-export function BalanceSummary({ products }: BalanceSummaryProps) {
+export function BalanceSummary({
+  products,
+  activeCurrency,
+  onCurrencyChange,
+}: BalanceSummaryProps) {
   const totals = products.reduce<Partial<Record<Currency, number>>>((acc, p) => {
     acc[p.currency] = (acc[p.currency] ?? 0) + Number.parseFloat(p.balance);
     return acc;
   }, {});
 
-  const currencies = CURRENCIES.filter((currency) => totals[currency] !== undefined);
-  if (currencies.length === 0) return null;
+  const currencies = CURRENCIES;
+  const total = totals[activeCurrency] ?? 0;
+  const isNegative = total < 0;
 
   return (
-    <div className={currencies.length > 1 ? 'grid gap-4 sm:grid-cols-2' : ''}>
-      {currencies.map((currency) => {
-        const total = totals[currency] ?? 0;
-        const isNegative = total < 0;
-        return (
-          <Card key={currency}>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Balance total {currency}</p>
-              <p
-                className={`text-2xl font-bold tracking-tight ${isNegative ? 'text-destructive' : ''}`}
-              >
-                {formatBalance(String(total), currency)}
-              </p>
-            </CardContent>
-          </Card>
-        );
-      })}
+    <div className="text-center md:text-left py-4">
+      <p className="text-sm text-muted-foreground">Balance total</p>
+      <p className={`mt-1 text-4xl font-bold tabular-nums ${isNegative ? 'text-destructive' : ''}`}>
+        {formatBalance(String(total), activeCurrency)}
+      </p>
+      <p className="mt-2 text-xs text-muted-foreground">{CURRENCY_LABELS[activeCurrency]}</p>
+
+      {/* Currency tabs */}
+      {currencies.length > 1 && (
+        <div className="flex items-center justify-center md:justify-start gap-1 pt-3">
+          {currencies.map((currency) => (
+            <button
+              key={currency}
+              type="button"
+              onClick={() => onCurrencyChange(currency)}
+              className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
+                currency === activeCurrency
+                  ? 'bg-foreground text-background'
+                  : 'text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {currency}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

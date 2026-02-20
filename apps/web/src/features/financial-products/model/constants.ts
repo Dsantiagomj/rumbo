@@ -8,6 +8,11 @@ import {
 } from '@remixicon/react';
 import type { Currency, ProductResponse, ProductType } from '@rumbo/shared';
 
+export const CURRENCY_LABELS: Record<Currency, string> = {
+  COP: 'COP - Pesos Colombianos',
+  USD: 'USD - Dolares',
+};
+
 export type ProductGroup = {
   key: string;
   label: string;
