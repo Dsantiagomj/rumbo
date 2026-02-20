@@ -61,9 +61,10 @@ export function ProductsList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Productos</h1>
-        <Button size="icon" variant="outline" asChild>
+        <Button size="sm" variant="outline" asChild>
           <Link to="/products/new">
-            <RiAddLine className="h-5 w-5" />
+            <RiAddLine className="h-4 w-4" />
+            Agregar
           </Link>
         </Button>
       </div>

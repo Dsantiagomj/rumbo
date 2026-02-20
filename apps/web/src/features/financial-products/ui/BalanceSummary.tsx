@@ -17,14 +17,17 @@ export function BalanceSummary({ products }: BalanceSummaryProps) {
   if (currencies.length === 0) return null;
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className={currencies.length > 1 ? 'grid gap-4 sm:grid-cols-2' : ''}>
       {currencies.map((currency) => {
         const total = totals[currency] ?? 0;
+        const isNegative = total < 0;
         return (
           <Card key={currency}>
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">Balance total {currency}</p>
-              <p className="text-2xl font-bold tracking-tight">
+              <p
+                className={`text-2xl font-bold tracking-tight ${isNegative ? 'text-destructive' : ''}`}
+              >
                 {formatBalance(String(total), currency)}
               </p>
             </CardContent>
