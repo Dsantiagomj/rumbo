@@ -1,14 +1,9 @@
 import type { ProductType } from '@rumbo/shared';
-import { currencySchema, PRODUCT_TYPE_METADATA_MAP, productTypeSchema } from '@rumbo/shared';
+import { createProductSchema, PRODUCT_TYPE_METADATA_MAP } from '@rumbo/shared';
 import { z } from 'zod';
 
-export const createProductFormSchema = z
-  .object({
-    type: productTypeSchema,
-    name: z.string().min(1, 'El nombre es requerido').max(100),
-    institution: z.string().min(1, 'La institucion es requerida').max(100),
-    balance: z.string().regex(/^-?\d+(\.\d{1,2})?$/, 'Formato de monto invalido'),
-    currency: currencySchema,
+export const createProductFormSchema = createProductSchema
+  .extend({
     metadata: z.record(z.string(), z.unknown()).default({}),
   })
   .superRefine((data, ctx) => {

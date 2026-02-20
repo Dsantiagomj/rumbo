@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PRODUCT_TYPE_METADATA_MAP } from '@rumbo/shared';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -33,14 +34,28 @@ export function useCreateProductForm() {
   const isLastStep = stepIndex === STEPS.length - 1;
 
   async function goToNext() {
-    let fieldsToValidate: (keyof CreateProductFormValues)[] = [];
     if (currentStep === 'type') {
-      fieldsToValidate = ['type'];
+      const isValid = await form.trigger(['type']);
+      if (isValid && stepIndex < STEPS.length - 1) {
+        setCurrentStep(STEPS[stepIndex + 1]);
+      }
     } else if (currentStep === 'details') {
-      fieldsToValidate = ['name', 'institution', 'balance', 'currency'];
-    }
-    const isValid = await form.trigger(fieldsToValidate);
-    if (isValid && stepIndex < STEPS.length - 1) {
+      const isValid = await form.trigger(['name', 'institution', 'balance', 'currency']);
+      if (!isValid) return;
+
+      const type = form.getValues('type');
+      const metadata = form.getValues('metadata');
+      const metadataSchema = PRODUCT_TYPE_METADATA_MAP[type];
+      const result = metadataSchema.safeParse(metadata);
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          form.setError(`metadata.${issue.path.join('.')}` as keyof CreateProductFormValues, {
+            message: issue.message,
+          });
+        }
+        return;
+      }
+
       setCurrentStep(STEPS[stepIndex + 1]);
     }
   }

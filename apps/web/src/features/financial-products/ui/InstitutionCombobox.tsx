@@ -36,6 +36,9 @@ export type InstitutionComboboxProps = {
 
 export function InstitutionCombobox({ value, onChange }: InstitutionComboboxProps) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const isCustomValue = search.length > 0 && !INSTITUTIONS.some((i) => i.name === search);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -52,9 +55,33 @@ export function InstitutionCombobox({ value, onChange }: InstitutionComboboxProp
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Buscar institucion..." />
+          <CommandInput placeholder="Buscar institucion..." onValueChange={setSearch} />
           <CommandList>
-            <CommandEmpty>No se encontro la institucion.</CommandEmpty>
+            <CommandEmpty>
+              <button
+                type="button"
+                className="w-full px-2 py-1.5 text-left text-xs hover:bg-muted rounded-md"
+                onClick={() => {
+                  onChange(search);
+                  setOpen(false);
+                }}
+              >
+                Usar: <span className="font-medium">{search}</span>
+              </button>
+            </CommandEmpty>
+            {isCustomValue && (
+              <CommandGroup heading="Personalizado">
+                <CommandItem
+                  value={`custom-${search}`}
+                  onSelect={() => {
+                    onChange(search);
+                    setOpen(false);
+                  }}
+                >
+                  Usar: <span className="font-medium">{search}</span>
+                </CommandItem>
+              </CommandGroup>
+            )}
             {Object.entries(groupedInstitutions).map(([type, institutions]) => (
               <CommandGroup key={type} heading={INSTITUTION_TYPE_LABELS[type] ?? type}>
                 {institutions.map((inst) => (
