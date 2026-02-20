@@ -3,7 +3,9 @@ import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { getAuth } from './lib/auth.js';
+import { authMiddleware } from './lib/auth-middleware.js';
 import { onError, onNotFound } from './lib/error-handler.js';
+import { financialProductsRouter } from './modules/financial-products/index.js';
 import { health } from './modules/health/index.js';
 
 export type Bindings = {
@@ -97,6 +99,9 @@ app.use(
 
 // Routes
 app.route('/health', health);
+
+app.use('/api/financial-products/*', authMiddleware);
+app.route('/api/financial-products', financialProductsRouter);
 
 // Auth routes (Better Auth handles /api/auth/* automatically)
 app.on(['POST', 'GET'], '/api/auth/**', async (c) => {

@@ -1,5 +1,5 @@
 import { financialProducts } from '@rumbo/db/schema';
-import type { CreateProduct, UpdateProduct } from '@rumbo/shared/schemas';
+import type { CreateProduct, Currency, UpdateProduct } from '@rumbo/shared/schemas';
 import { and, eq } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
 
@@ -77,7 +77,7 @@ function serializeProduct(product: typeof financialProducts.$inferSelect) {
     name: product.name,
     institution: product.institution,
     balance: product.balance,
-    currency: product.currency,
+    currency: product.currency as Currency,
     metadata: product.metadata,
     createdAt: product.createdAt.toISOString(),
     updatedAt: product.updatedAt.toISOString(),
