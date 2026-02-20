@@ -19,16 +19,28 @@ function fromBase64(b64: string): Uint8Array {
   return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: Web Crypto types not available without DOM lib
+const subtle = (crypto as any).subtle as {
+  importKey(
+    format: string,
+    keyData: ArrayBuffer | Uint8Array,
+    algorithm: string,
+    extractable: boolean,
+    usages: string[],
+  ): Promise<CryptoKey>;
+  deriveBits(
+    algorithm: { name: string; salt: Uint8Array; iterations: number; hash: string },
+    key: CryptoKey,
+    length: number,
+  ): Promise<ArrayBuffer>;
+};
+
 export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(password),
-    'PBKDF2',
-    false,
-    ['deriveBits'],
-  );
-  const bits = await crypto.subtle.deriveBits(
+  const key = await subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, [
+    'deriveBits',
+  ]);
+  const bits = await subtle.deriveBits(
     { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: ALGORITHM },
     key,
     KEY_LENGTH * 8,
@@ -43,21 +55,17 @@ export async function verifyPassword({
   hash: string;
   password: string;
 }): Promise<boolean> {
-  const parts = hash.split(':');
-  if (parts[0] !== 'pbkdf2' || parts.length !== 4) return false;
+  const [prefix, iterStr, saltStr, hashStr] = hash.split(':');
+  if (prefix !== 'pbkdf2' || !iterStr || !saltStr || !hashStr) return false;
 
-  const iterations = Number.parseInt(parts[1], 10);
-  const salt = fromBase64(parts[2]);
-  const storedHash = fromBase64(parts[3]);
+  const iterations = Number.parseInt(iterStr, 10);
+  const salt = fromBase64(saltStr);
+  const storedHash = fromBase64(hashStr);
 
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(password),
-    'PBKDF2',
-    false,
-    ['deriveBits'],
-  );
-  const bits = await crypto.subtle.deriveBits(
+  const key = await subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, [
+    'deriveBits',
+  ]);
+  const bits = await subtle.deriveBits(
     { name: 'PBKDF2', salt, iterations, hash: ALGORITHM },
     key,
     storedHash.length * 8,
@@ -68,7 +76,7 @@ export async function verifyPassword({
   if (computed.length !== storedHash.length) return false;
   let diff = 0;
   for (let i = 0; i < computed.length; i++) {
-    diff |= computed[i] ^ storedHash[i];
+    diff |= (computed[i] as number) ^ (storedHash[i] as number);
   }
   return diff === 0;
 }
