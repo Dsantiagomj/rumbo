@@ -19,7 +19,8 @@ import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
-import { Route as AppProductsRouteImport } from './routes/_app/products'
+import { Route as AppProductsIndexRouteImport } from './routes/_app/products.index'
+import { Route as AppProductsNewRouteImport } from './routes/_app/products.new'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -69,40 +70,46 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
-const AppProductsRoute = AppProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
+const AppProductsIndexRoute = AppProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProductsNewRoute = AppProductsNewRouteImport.update({
+  id: '/products/new',
+  path: '/products/new',
   getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/products': typeof AppProductsRoute
   '/settings': typeof AppSettingsRoute
   '/transactions': typeof AppTransactionsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
+  '/products/new': typeof AppProductsNewRoute
+  '/products/': typeof AppProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/products': typeof AppProductsRoute
   '/settings': typeof AppSettingsRoute
   '/transactions': typeof AppTransactionsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
+  '/products/new': typeof AppProductsNewRoute
+  '/products': typeof AppProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
-  '/_app/products': typeof AppProductsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/transactions': typeof AppTransactionsRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -110,36 +117,39 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/products/new': typeof AppProductsNewRoute
+  '/_app/products/': typeof AppProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/verify-email'
-    | '/products'
     | '/settings'
     | '/transactions'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/products/new'
+    | '/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/verify-email'
-    | '/products'
     | '/settings'
     | '/transactions'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/products/new'
+    | '/products'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
     | '/verify-email'
-    | '/_app/products'
     | '/_app/settings'
     | '/_app/transactions'
     | '/_auth/forgot-password'
@@ -147,6 +157,8 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/_auth/reset-password'
     | '/_app/'
+    | '/_app/products/new'
+    | '/_app/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -227,28 +239,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/products': {
-      id: '/_app/products'
+    '/_app/products/': {
+      id: '/_app/products/'
       path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof AppProductsRouteImport
+      fullPath: '/products/'
+      preLoaderRoute: typeof AppProductsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/products/new': {
+      id: '/_app/products/new'
+      path: '/products/new'
+      fullPath: '/products/new'
+      preLoaderRoute: typeof AppProductsNewRouteImport
       parentRoute: typeof AppRoute
     }
   }
 }
 
 interface AppRouteChildren {
-  AppProductsRoute: typeof AppProductsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppProductsNewRoute: typeof AppProductsNewRoute
+  AppProductsIndexRoute: typeof AppProductsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppProductsRoute: AppProductsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTransactionsRoute: AppTransactionsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppProductsNewRoute: AppProductsNewRoute,
+  AppProductsIndexRoute: AppProductsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
