@@ -112,9 +112,14 @@ app.on(['POST', 'GET'], '/api/auth/**', async (c) => {
   // Keep worker alive until background email sends complete.
   // Better Auth fires sendResetPassword without awaiting it (timing attack prevention),
   // so on Cloudflare Workers the isolate would die before Resend finishes.
+  // On Node.js dev server, executionCtx doesn't exist (getter throws), so we catch and ignore.
   if (pendingEmailPromises.length > 0) {
     const drain = Promise.allSettled(pendingEmailPromises.splice(0));
-    c.executionCtx?.waitUntil(drain);
+    try {
+      c.executionCtx.waitUntil(drain);
+    } catch {
+      // Node.js dev server — no executionCtx, promises resolve on their own
+    }
   }
 
   return response;
