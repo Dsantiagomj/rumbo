@@ -13,6 +13,14 @@ export function useTypeSelector(form: UseFormReturn<CreateProductFormValues>) {
     if (previousType !== type) {
       form.setValue('metadata', {}, { shouldValidate: false });
     }
+    if (type === 'cash') {
+      form.setValue('name', 'Efectivo');
+      form.setValue('institution', 'N/A');
+      form.setValue('currency', 'COP');
+    } else if (previousType === 'cash') {
+      form.setValue('name', '');
+      form.setValue('institution', '');
+    }
   }
 
   return {

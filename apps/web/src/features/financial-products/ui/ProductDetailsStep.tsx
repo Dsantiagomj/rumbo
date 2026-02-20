@@ -30,12 +30,56 @@ type ProductDetailsStepProps = {
   selectedType: ProductType;
 };
 
+function getBalanceLabel(type: ProductType): string {
+  if (type === 'credit_card') return 'Saldo consumido (COP)';
+  if (type === 'loan_free_investment' || type === 'loan_mortgage') return 'Deuda actual';
+  return 'Saldo actual (COP)';
+}
+
 export function ProductDetailsStep({ form, selectedType }: ProductDetailsStepProps) {
   const isCreditCard = selectedType === 'credit_card';
-  const isLoan = selectedType === 'loan_free_investment' || selectedType === 'loan_mortgage';
+  const isCash = selectedType === 'cash';
   const network = form.watch('metadata.network') as CreditCardNetwork | undefined;
   const hasDualCurrency =
     isCreditCard && network && (DUAL_CURRENCY_NETWORKS as readonly string[]).includes(network);
+
+  if (isCash) {
+    return (
+      <div className="space-y-4">
+        <FormField
+          control={form.control}
+          name="balance"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Saldo en pesos (COP)</FormLabel>
+              <FormControl>
+                <Input placeholder="0.00" inputMode="decimal" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="metadata.balanceUsd"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Saldo en dolares (USD)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="0.00"
+                  inputMode="decimal"
+                  {...field}
+                  value={(field.value as string) ?? ''}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -100,7 +144,7 @@ export function ProductDetailsStep({ form, selectedType }: ProductDetailsStepPro
             name="balance"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Saldo consumido (COP)</FormLabel>
+                <FormLabel>{getBalanceLabel(selectedType)}</FormLabel>
                 <FormControl>
                   <Input placeholder="0.00" inputMode="decimal" {...field} />
                 </FormControl>
@@ -136,7 +180,7 @@ export function ProductDetailsStep({ form, selectedType }: ProductDetailsStepPro
             name="balance"
             render={({ field }) => (
               <FormItem className="col-span-2">
-                <FormLabel>{isLoan ? 'Deuda actual' : 'Saldo actual'}</FormLabel>
+                <FormLabel>{getBalanceLabel(selectedType)}</FormLabel>
                 <FormControl>
                   <Input placeholder="0.00" inputMode="decimal" {...field} />
                 </FormControl>

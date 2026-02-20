@@ -68,26 +68,33 @@ export function ReviewStep({ form, onEditStep }: ReviewStepProps) {
               Editar
             </Button>
           </div>
-          <ReviewRow label="Nombre" value={values.name} />
-          <ReviewRow label="Institucion" value={values.institution} />
+          {values.type !== 'cash' && (
+            <>
+              <ReviewRow label="Nombre" value={values.name} />
+              <ReviewRow label="Institucion" value={values.institution} />
+            </>
+          )}
           <ReviewRow
             label={
-              values.type === 'credit_card'
-                ? 'Saldo consumido (COP)'
-                : values.type === 'loan_free_investment' || values.type === 'loan_mortgage'
-                  ? 'Deuda actual'
-                  : 'Saldo'
+              values.type === 'cash'
+                ? 'Saldo en pesos (COP)'
+                : values.type === 'credit_card'
+                  ? 'Saldo consumido (COP)'
+                  : values.type === 'loan_free_investment' || values.type === 'loan_mortgage'
+                    ? 'Deuda actual'
+                    : 'Saldo'
             }
             value={formatBalance(values.balance, values.currency as Currency)}
           />
-          {values.type === 'credit_card' && metadata.balanceUsd ? (
+          {(values.type === 'cash' || (values.type === 'credit_card' && metadata.balanceUsd)) &&
+          metadata.balanceUsd ? (
             <ReviewRow
-              label="Saldo consumido (USD)"
+              label={values.type === 'cash' ? 'Saldo en dolares (USD)' : 'Saldo consumido (USD)'}
               value={formatBalance(String(metadata.balanceUsd), 'USD' as Currency)}
             />
-          ) : (
+          ) : values.type !== 'cash' ? (
             <ReviewRow label="Moneda" value={values.currency} />
-          )}
+          ) : null}
         </div>
 
         {metadataEntries.length > 0 && (

@@ -53,7 +53,12 @@ const investmentMetadataSchema = z.object({
   broker: z.string().max(100).optional(),
 });
 
-const emptyMetadataSchema = z.object({});
+const cashMetadataSchema = z.object({
+  balanceUsd: z
+    .string()
+    .regex(/^-?\d+(\.\d{1,2})?$/)
+    .optional(),
+});
 
 // -- Map product types to their metadata schema --
 
@@ -66,7 +71,7 @@ export const PRODUCT_TYPE_METADATA_MAP = {
   investment_cdt: cdtMetadataSchema,
   investment_fund: investmentMetadataSchema,
   investment_stock: investmentMetadataSchema,
-  cash: emptyMetadataSchema,
+  cash: cashMetadataSchema,
 } as const satisfies Record<ProductType, z.ZodTypeAny>;
 
 // -- Union of all valid metadata shapes --
@@ -81,7 +86,7 @@ export const productMetadataSchema = z.union([
   loanMetadataSchema.passthrough(),
   cdtMetadataSchema.passthrough(),
   investmentMetadataSchema.passthrough(),
-  emptyMetadataSchema.passthrough(),
+  cashMetadataSchema.passthrough(),
 ]);
 
 // -- Request schemas --
