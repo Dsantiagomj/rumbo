@@ -13,7 +13,7 @@ export function ProductCard({ product, icon: Icon }: ProductCardProps) {
   const { isNegative, snippet, formattedBalance, usagePercent } = useProductCard(product);
 
   return (
-    <Card className="ring-0 border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+    <Card className="ring-transparent border border-border hover:border-foreground/20 hover:bg-muted/50 transition-colors cursor-pointer">
       <CardContent className="flex items-center gap-4 py-4">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
           <Icon className="h-5 w-5 text-muted-foreground" />

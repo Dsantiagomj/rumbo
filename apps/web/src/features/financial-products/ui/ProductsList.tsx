@@ -80,7 +80,7 @@ export function ProductsList() {
             <QuickStats products={products} currency={activeCurrency} />
 
             <div className="hidden md:block">
-              <Button size="sm" className="w-full" asChild>
+              <Button className="w-full h-10" asChild>
                 <Link to="/products/new">
                   <RiAddLine className="h-4 w-4" />
                   Agregar producto
