@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
 import { z } from 'zod';
-import { authClient } from '@/shared/api';
+import { useEmailVerification } from '@/features/auth';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/shared/ui';
 
 const searchSchema = z.object({
@@ -13,35 +12,9 @@ export const Route = createFileRoute('/verify-email')({
   component: VerifyEmailPage,
 });
 
-type VerificationStatus = 'loading' | 'success' | 'error';
-
 function VerifyEmailPage() {
   const { token } = Route.useSearch();
-  const [status, setStatus] = useState<VerificationStatus>(() => (token ? 'loading' : 'error'));
-  const [errorMessage, setErrorMessage] = useState<string>('');
-
-  useEffect(() => {
-    if (!token) {
-      setStatus('error');
-      setErrorMessage('No verification token provided.');
-      return;
-    }
-
-    async function verify() {
-      const { error } = await authClient.verifyEmail({
-        query: { token: token as string },
-      });
-
-      if (error) {
-        setStatus('error');
-        setErrorMessage(error.message ?? 'Verification failed. The link may have expired.');
-      } else {
-        setStatus('success');
-      }
-    }
-
-    verify();
-  }, [token]);
+  const { status, errorMessage } = useEmailVerification(token);
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
