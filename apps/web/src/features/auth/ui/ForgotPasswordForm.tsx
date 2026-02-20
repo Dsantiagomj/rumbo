@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { sileo } from 'sileo';
 import { authClient } from '@/shared/api';
 import { Button, Input, Label } from '@/shared/ui';
+import { handleAuthAction } from '../model/auth-actions';
 import type { ForgotPasswordFormValues } from '../model/auth-schemas';
 import { forgotPasswordSchema } from '../model/auth-schemas';
 
@@ -21,30 +22,16 @@ export function ForgotPasswordForm() {
   });
 
   async function onSubmit(values: ForgotPasswordFormValues) {
-    try {
-      const { error } = await authClient.forgetPassword({
-        email: values.email,
-        redirectTo: '/reset-password',
-      });
+    const ok = await handleAuthAction(
+      () => authClient.forgetPassword({ email: values.email, redirectTo: '/reset-password' }),
+      { errorTitle: 'Something went wrong', errorFallback: 'Please try again later.' },
+    );
+    if (!ok) return;
 
-      if (error) {
-        sileo.error({
-          title: 'Something went wrong',
-          description: 'Please try again later.',
-        });
-        return;
-      }
-
-      sileo.success({
-        title: 'Check your email',
-        description: "If an account with that email exists, we've sent a reset link.",
-      });
-    } catch {
-      sileo.error({
-        title: 'Connection error',
-        description: 'Unable to reach the server. Please try again.',
-      });
-    }
+    sileo.success({
+      title: 'Check your email',
+      description: "If an account with that email exists, we've sent a reset link.",
+    });
   }
 
   return (

@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { sileo } from 'sileo';
 import { authClient } from '@/shared/api';
 import { Button, Input, Label } from '@/shared/ui';
+import { handleAuthAction } from '../model/auth-actions';
 import type { RegisterFormValues } from '../model/auth-schemas';
 import { registerSchema } from '../model/auth-schemas';
 
@@ -26,33 +27,25 @@ export function RegisterForm() {
   });
 
   async function onSubmit(values: RegisterFormValues) {
-    try {
-      const { error } = await authClient.signUp.email({
-        name: values.name,
-        email: values.email,
-        password: values.password,
-      });
+    const ok = await handleAuthAction(
+      () =>
+        authClient.signUp.email({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+        }),
+      {
+        errorTitle: 'Registration failed',
+        errorFallback: 'Please try again with different credentials.',
+      },
+    );
+    if (!ok) return;
 
-      if (error) {
-        sileo.error({
-          title: 'Registration failed',
-          description: error.message ?? 'Please try again with different credentials.',
-        });
-        return;
-      }
-
-      sileo.success({
-        title: 'Account created!',
-        description: 'Check your email to verify your account.',
-      });
-
-      await navigate({ to: '/login' });
-    } catch {
-      sileo.error({
-        title: 'Connection error',
-        description: 'Unable to reach the server. Please try again.',
-      });
-    }
+    sileo.success({
+      title: 'Account created!',
+      description: 'Check your email to verify your account.',
+    });
+    await navigate({ to: '/login' });
   }
 
   return (

@@ -1,3 +1,4 @@
+export { handleAuthAction } from './model/auth-actions';
 export type {
   ForgotPasswordFormValues,
   LoginFormValues,

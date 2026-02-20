@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
-import { sileo } from 'sileo';
 import { authClient } from '@/shared/api';
 import { Button, Input, Label } from '@/shared/ui';
+import { handleAuthAction } from '../model/auth-actions';
 import type { LoginFormValues } from '../model/auth-schemas';
 import { loginSchema } from '../model/auth-schemas';
 
@@ -25,27 +25,14 @@ export function LoginForm() {
   });
 
   async function onSubmit(values: LoginFormValues) {
-    try {
-      const { error } = await authClient.signIn.email({
-        email: values.email,
-        password: values.password,
-      });
-
-      if (error) {
-        sileo.error({
-          title: 'Sign in failed',
-          description: error.message ?? 'Please check your credentials and try again.',
-        });
-        return;
-      }
-
-      await navigate({ to: redirectTo ?? '/' });
-    } catch {
-      sileo.error({
-        title: 'Connection error',
-        description: 'Unable to reach the server. Please try again.',
-      });
-    }
+    const ok = await handleAuthAction(
+      () => authClient.signIn.email({ email: values.email, password: values.password }),
+      {
+        errorTitle: 'Sign in failed',
+        errorFallback: 'Please check your credentials and try again.',
+      },
+    );
+    if (ok) await navigate({ to: redirectTo ?? '/' });
   }
 
   return (

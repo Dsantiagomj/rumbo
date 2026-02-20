@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { sileo } from 'sileo';
 import { authClient } from '@/shared/api';
 import { Button, Input, Label } from '@/shared/ui';
+import { handleAuthAction } from '../model/auth-actions';
 import type { ResetPasswordFormValues } from '../model/auth-schemas';
 import { resetPasswordSchema } from '../model/auth-schemas';
 
@@ -28,33 +29,20 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   });
 
   async function onSubmit(values: ResetPasswordFormValues) {
-    try {
-      const { error } = await authClient.resetPassword({
-        newPassword: values.password,
-        token,
-      });
+    const ok = await handleAuthAction(
+      () => authClient.resetPassword({ newPassword: values.password, token }),
+      {
+        errorTitle: 'Reset failed',
+        errorFallback: 'Token expired or invalid. Please request a new reset link.',
+      },
+    );
+    if (!ok) return;
 
-      if (error) {
-        sileo.error({
-          title: 'Reset failed',
-          description:
-            error.message ?? 'Token expired or invalid. Please request a new reset link.',
-        });
-        return;
-      }
-
-      sileo.success({
-        title: 'Password reset!',
-        description: 'Your password has been updated. You can now sign in.',
-      });
-
-      await navigate({ to: '/login' });
-    } catch {
-      sileo.error({
-        title: 'Connection error',
-        description: 'Unable to reach the server. Please try again.',
-      });
-    }
+    sileo.success({
+      title: 'Password reset!',
+      description: 'Your password has been updated. You can now sign in.',
+    });
+    await navigate({ to: '/login' });
   }
 
   return (
