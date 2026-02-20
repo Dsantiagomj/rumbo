@@ -379,19 +379,15 @@ graph TB
         PC[Desktop]
     end
 
-    subgraph Railway
-        subgraph Services
-            API_SVC[Hono API<br/>Docker container]
-            WORKER[BullMQ Worker<br/>Docker container]
-        end
-        subgraph Managed
-            PG_DB[(PostgreSQL)]
-            REDIS_DB[(Redis)]
-        end
+    subgraph Cloudflare
+        PAGES[Cloudflare Pages<br/>Web frontend]
+        WORKERS[Cloudflare Workers<br/>Hono API]
+        R2_STORAGE[Cloudflare R2<br/>File storage]
     end
 
-    subgraph Cloudflare
-        R2_STORAGE[Cloudflare R2<br/>File storage]
+    subgraph Managed Services
+        NEON[(Neon PostgreSQL<br/>Serverless)]
+        UPSTASH[(Upstash Redis<br/>Serverless)]
     end
 
     subgraph External
@@ -399,18 +395,15 @@ graph TB
         AI_PROVIDERS[AI Providers<br/>OpenAI / Anthropic]
     end
 
-    BROWSER --> API_SVC
-    PHONE --> API_SVC
-    PC --> API_SVC
-    API_SVC --> PG_DB
-    API_SVC --> REDIS_DB
-    API_SVC --> R2_STORAGE
-    API_SVC --> AI_PROVIDERS
-
-    WORKER --> PG_DB
-    WORKER --> REDIS_DB
-    WORKER --> RESEND_SVC
-    WORKER --> AI_PROVIDERS
+    BROWSER --> PAGES
+    BROWSER --> WORKERS
+    PHONE --> WORKERS
+    PC --> WORKERS
+    WORKERS --> NEON
+    WORKERS --> UPSTASH
+    WORKERS --> R2_STORAGE
+    WORKERS --> AI_PROVIDERS
+    WORKERS --> RESEND_SVC
 ```
 
 ## Statement Scanning Flow (Extra Feature)

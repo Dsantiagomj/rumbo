@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --env-file ../../.env src/index.ts",
     "dev:worker": "wrangler dev",
     "build": "tsc",
     "start": "node dist/index.js",
@@ -15,12 +15,19 @@
   },
   "dependencies": {
     "@hono/node-server": "latest",
+    "@hono/zod-openapi": "^1.2.2",
     "@rumbo/db": "workspace:*",
     "@rumbo/shared": "workspace:*",
-    "hono": "latest"
+    "@scalar/hono-api-reference": "^0.9.41",
+    "better-auth": "^1.4.18",
+    "hono": "^4.11.10",
+    "postgres": "^3.4.8",
+    "resend": "^6.9.2"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "latest",
+    "better-sqlite3": "^12.6.2",
     "tsx": "latest",
     "typescript": "latest",
     "wrangler": "^4.66.0"

@@ -46,7 +46,7 @@ Desktop (Tauri) reuses the web application code directly. Mobile (React Native) 
 | Vite | Build tool and dev server |
 | Tailwind CSS | Utility-first styling |
 | Shadcn/ui | Component library (Radix-based) |
-| React Router | Client-side routing |
+| TanStack Router | Type-safe client-side routing (file-based) |
 | TanStack Query | Server state management |
 | Zustand | Client state management |
 | Zod | Schema validation (shared with backend via packages/shared) |
@@ -189,9 +189,11 @@ REST API with OpenAPI specification:
 
 ### Deployment
 
-- **Railway** for all services (API, PostgreSQL, Redis)
-- **Cloudflare Pages** or Railway for frontend static hosting
-- Start with Railway free tier, upgrade to $5/month starter plan if needed
+- **Cloudflare Workers** for API (production + staging environments)
+- **Cloudflare Pages** for web frontend (auto-deploy from main branch)
+- **Neon PostgreSQL** for managed database (serverless, free tier)
+- **Upstash Redis** for managed Redis in production (when needed for BullMQ)
+- All services on free tier ($0/month)
 
 ## Future Platform Support
 
@@ -273,7 +275,7 @@ apps/mobile/
 
 **Shared with web** (via packages/shared): TypeScript types, Zod schemas, API client, business logic, currency/date utilities, constants.
 
-**Not shared with web**: UI components (native primitives vs DOM), navigation (React Navigation vs React Router), styling (StyleSheet/NativeWind vs Tailwind CSS).
+**Not shared with web**: UI components (native primitives vs DOM), navigation (React Navigation vs TanStack Router), styling (StyleSheet/NativeWind vs Tailwind CSS).
 
 ## Key Architectural Decisions
 
@@ -325,10 +327,11 @@ Both frameworks can build everything Rumbo needs. React was chosen because:
 - Zero configuration needed for sensible defaults
 - Consistent formatting and linting in one pass
 
-### Why Railway for deployment
+### Why Cloudflare for deployment
 
-- Simple monorepo deployment (API, PostgreSQL, Redis in one place)
-- Free tier available for development and personal use
-- Single dashboard for all services
-- No vendor lock-in (standard Docker containers, standard PostgreSQL)
-- Scales easily: upgrade to $5/month starter plan when needed
+- Zero-cost deployment: Workers, Pages, and R2 all have generous free tiers
+- Edge computing: API runs close to the user via Cloudflare's global network
+- Cloudflare Pages auto-deploys from git with zero configuration
+- Workers support Hono natively (multi-runtime framework)
+- R2 for file storage with no egress fees (S3-compatible)
+- Neon PostgreSQL provides serverless Postgres compatible with Workers (HTTP driver)

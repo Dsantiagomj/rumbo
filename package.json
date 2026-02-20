@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.6.2",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",
     "infra:reset": "docker compose down -v && docker compose up -d",
@@ -25,6 +26,11 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,css}": "biome check --write --no-errors-on-unmatched"
+  },
+  "pnpm": {
+    "overrides": {
+      "@esbuild-kit/core-utils>esbuild": ">=0.25.0"
+    }
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
