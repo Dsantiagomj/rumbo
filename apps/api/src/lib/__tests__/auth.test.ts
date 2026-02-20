@@ -68,6 +68,8 @@ describe('getAuth', () => {
       BETTER_AUTH_URL: 'http://localhost:3000',
       ENVIRONMENT: 'test',
       CORS_ORIGINS: 'http://localhost:5173',
+      RESEND_API_KEY: 're_test_api_key',
+      EMAIL_FROM: 'Rumbo <noreply@rumbo.app>',
     });
 
     expect(auth).toBeDefined();

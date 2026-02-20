@@ -12,6 +12,8 @@ export type Bindings = {
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
   CORS_ORIGINS: string;
+  RESEND_API_KEY: string;
+  EMAIL_FROM: string;
 };
 
 export type AuthUser = {

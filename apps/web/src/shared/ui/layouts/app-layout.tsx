@@ -1,6 +1,7 @@
-import { RiCloseLine, RiSettingsLine } from '@remixicon/react';
-import { Link, useLocation } from '@tanstack/react-router';
+import { RiCloseLine, RiLogoutBoxRLine, RiSettingsLine } from '@remixicon/react';
+import { Link, useLocation, useNavigate, useRouteContext } from '@tanstack/react-router';
 import { useState } from 'react';
+import { authClient } from '@/shared/api';
 import { navItems } from './nav-items';
 
 interface AppLayoutProps {
@@ -9,7 +10,24 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useRouteContext({ from: '/_app' });
   const [userDrawerOpen, setUserDrawerOpen] = useState(false);
+
+  const initials = user.name
+    ? user.name
+        .split(' ')
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : (user.email[0] ?? '?').toUpperCase();
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    await navigate({ to: '/login' });
+  };
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
@@ -28,7 +46,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Navigation */}
         <nav className="flex flex-1 flex-col gap-0.5 p-2">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive =
+              item.path === '/'
+                ? location.pathname === '/'
+                : location.pathname.startsWith(item.path);
             const Icon = item.icon;
 
             return (
@@ -55,7 +76,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <Link
             to="/settings"
             className={`relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
-              location.pathname === '/settings'
+              location.pathname === '/settings' || location.pathname.startsWith('/settings/')
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:-translate-y-1/2 before:w-0.5 before:rounded-full before:bg-sidebar-primary'
                 : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
             }`}
@@ -65,13 +86,23 @@ export function AppLayout({ children }: AppLayoutProps) {
               Settings
             </span>
           </Link>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium transition-colors text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground w-full"
+          >
+            <RiLogoutBoxRLine className="h-5 w-5 shrink-0" />
+            <span className="whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
+              Log out
+            </span>
+          </button>
           <div className="mt-1 flex items-center gap-3 rounded-md px-2.5 py-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-sm font-semibold text-sidebar-accent-foreground">
-              U
+              {initials}
             </div>
             <div className="flex flex-col whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
-              <span className="text-sm font-medium text-sidebar-foreground">User</span>
-              <span className="text-xs text-muted-foreground">user@rumbo.app</span>
+              <span className="text-sm font-medium text-sidebar-foreground">{user.name}</span>
+              <span className="text-xs text-muted-foreground">{user.email}</span>
             </div>
           </div>
         </div>
@@ -87,7 +118,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             onClick={() => setUserDrawerOpen(true)}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground"
           >
-            U
+            {initials}
           </button>
 
           {/* Centered logo */}
@@ -128,11 +159,11 @@ export function AppLayout({ children }: AppLayoutProps) {
               <div className="border-b border-border p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">
-                    U
+                    {initials}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium">User</span>
-                    <span className="text-xs text-muted-foreground">user@rumbo.app</span>
+                    <span className="text-sm font-medium">{user.name}</span>
+                    <span className="text-xs text-muted-foreground">{user.email}</span>
                   </div>
                 </div>
               </div>
@@ -147,6 +178,14 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <RiSettingsLine className="h-5 w-5 shrink-0" />
                   <span>Settings</span>
                 </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground/60 hover:bg-accent/50 hover:text-foreground transition-colors w-full"
+                >
+                  <RiLogoutBoxRLine className="h-5 w-5 shrink-0" />
+                  <span>Log out</span>
+                </button>
               </nav>
             </div>
           </>
@@ -158,7 +197,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Mobile bottom tabs */}
         <nav className="flex md:hidden items-center justify-around border-t border-border bg-background pb-[env(safe-area-inset-bottom)]">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive =
+              item.path === '/'
+                ? location.pathname === '/'
+                : location.pathname.startsWith(item.path);
             const Icon = item.icon;
 
             return (
