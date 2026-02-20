@@ -39,7 +39,15 @@ export function CreateProductForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (isLastStep) {
+                  form.handleSubmit(handleSubmit)(e);
+                }
+              }}
+              className="space-y-6"
+            >
               {currentStep === 'type' && <TypeSelector form={form} />}
               {currentStep === 'details' && selectedType && (
                 <ProductDetailsStep form={form} selectedType={selectedType} />
