@@ -39,15 +39,7 @@ export function CreateProductForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (isLastStep) {
-                  form.handleSubmit(handleSubmit)(e);
-                }
-              }}
-              className="space-y-6"
-            >
+            <div className="space-y-6">
               {currentStep === 'type' && <TypeSelector form={form} />}
               {currentStep === 'details' && selectedType && (
                 <ProductDetailsStep form={form} selectedType={selectedType} />
@@ -64,7 +56,11 @@ export function CreateProductForm() {
                   <div />
                 )}
                 {isLastStep ? (
-                  <Button type="submit" disabled={isPending}>
+                  <Button
+                    type="button"
+                    disabled={isPending}
+                    onClick={form.handleSubmit(handleSubmit)}
+                  >
                     {isPending ? 'Creando...' : 'Crear producto'}
                   </Button>
                 ) : (
@@ -77,7 +73,7 @@ export function CreateProductForm() {
                   </Button>
                 )}
               </div>
-            </form>
+            </div>
           </Form>
         </CardContent>
       </Card>

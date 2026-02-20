@@ -12,12 +12,24 @@ const accountMetadataSchema = z.object({
     .optional(),
 });
 
+const creditCardNetworkSchema = z.enum(['visa', 'mastercard', 'amex', 'diners', 'none']);
+
+const DUAL_CURRENCY_NETWORKS = ['mastercard', 'amex', 'diners'] as const;
+
 const creditCardMetadataSchema = z.object({
+  network: creditCardNetworkSchema,
   last4Digits: z.string().length(4),
   creditLimit: z.string().regex(/^\d+(\.\d{1,2})?$/),
   cutoffDay: z.number().int().min(1).max(31),
   paymentDueDay: z.number().int().min(1).max(31),
-  network: z.enum(['visa', 'mastercard', 'amex', 'other']),
+  interestRate: z
+    .string()
+    .regex(/^\d+(\.\d{1,4})?$/)
+    .optional(),
+  balanceUsd: z
+    .string()
+    .regex(/^-?\d+(\.\d{1,2})?$/)
+    .optional(),
 });
 
 const loanMetadataSchema = z.object({
@@ -116,7 +128,9 @@ export const productListResponseSchema = z.object({
 // -- Type exports --
 
 export type AccountMetadata = z.infer<typeof accountMetadataSchema>;
+export type CreditCardNetwork = z.infer<typeof creditCardNetworkSchema>;
 export type CreditCardMetadata = z.infer<typeof creditCardMetadataSchema>;
+export { DUAL_CURRENCY_NETWORKS };
 export type LoanMetadata = z.infer<typeof loanMetadataSchema>;
 export type CdtMetadata = z.infer<typeof cdtMetadataSchema>;
 export type InvestmentMetadata = z.infer<typeof investmentMetadataSchema>;

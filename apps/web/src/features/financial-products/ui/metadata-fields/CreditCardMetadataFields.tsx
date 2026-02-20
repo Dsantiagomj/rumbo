@@ -1,12 +1,5 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import type { MetadataRendererProps } from './index';
 
 export function CreditCardMetadataFields({ form }: MetadataRendererProps) {
@@ -93,23 +86,18 @@ export function CreditCardMetadataFields({ form }: MetadataRendererProps) {
       </div>
       <FormField
         control={form.control}
-        name="metadata.network"
+        name="metadata.interestRate"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Red</FormLabel>
-            <Select onValueChange={field.onChange} value={(field.value as string) ?? ''}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona red..." />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="visa">Visa</SelectItem>
-                <SelectItem value="mastercard">Mastercard</SelectItem>
-                <SelectItem value="amex">American Express</SelectItem>
-                <SelectItem value="other">Otra</SelectItem>
-              </SelectContent>
-            </Select>
+            <FormLabel>Tasa de interes (%)</FormLabel>
+            <FormControl>
+              <Input
+                placeholder="28.5"
+                inputMode="decimal"
+                {...field}
+                value={(field.value as string) ?? ''}
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
