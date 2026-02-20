@@ -37,6 +37,13 @@ export async function getAuth(env: Bindings) {
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     trustedOrigins,
+    advanced: {
+      defaultCookieAttributes: {
+        sameSite: 'none',
+        secure: true,
+        partitioned: true,
+      },
+    },
     rateLimit: {
       enabled: true,
       window: 60,
@@ -51,9 +58,14 @@ export async function getAuth(env: Bindings) {
         verify: verifyPassword,
       },
       sendResetPassword: async ({ user, url }) => {
-        const token = new URL(url).searchParams.get('token') ?? '';
-        const frontendUrl = `${trustedOrigins[0]}/reset-password?token=${token}`;
-        await sendResetPasswordEmail(resend, emailFrom, user.email, frontendUrl);
+        try {
+          const token = new URL(url).searchParams.get('token') ?? '';
+          const frontendUrl = `${trustedOrigins[0]}/reset-password?token=${token}`;
+          console.log('[auth] reset password url:', frontendUrl);
+          await sendResetPasswordEmail(resend, emailFrom, user.email, frontendUrl);
+        } catch (error) {
+          console.error('[auth] failed to send reset password email:', error);
+        }
       },
     },
     emailVerification: {
