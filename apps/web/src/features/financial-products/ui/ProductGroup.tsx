@@ -1,40 +1,27 @@
 import { RiArrowDownSLine } from '@remixicon/react';
-import type { Currency, ProductResponse } from '@rumbo/shared';
-import { useState } from 'react';
+import type { ProductResponse } from '@rumbo/shared';
 import type { ProductGroup as ProductGroupType } from '../model/constants';
 import { formatBalance } from '../model/constants';
 import { ProductCard } from './ProductCard';
+import { useProductGroup } from './useProductGroup';
 
 type ProductGroupProps = {
   group: ProductGroupType;
   products: ProductResponse[];
 };
 
-function computeSubtotals(products: ProductResponse[]): { currency: Currency; total: number }[] {
-  const map = products.reduce<Partial<Record<Currency, number>>>((acc, p) => {
-    acc[p.currency] = (acc[p.currency] ?? 0) + Number.parseFloat(p.balance);
-    return acc;
-  }, {});
-
-  return (Object.entries(map) as [Currency, number][]).map(([currency, total]) => ({
-    currency,
-    total,
-  }));
-}
-
 export function ProductGroup({ group, products }: ProductGroupProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const { isOpen, subtotals, toggleOpen } = useProductGroup(products);
 
   if (products.length === 0) return null;
 
   const Icon = group.icon;
-  const subtotals = computeSubtotals(products);
 
   return (
     <section>
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={toggleOpen}
         className="mb-3 flex w-full items-center gap-2 text-left"
       >
         <Icon className="h-5 w-5 text-muted-foreground" />
@@ -57,7 +44,6 @@ export function ProductGroup({ group, products }: ProductGroupProps) {
         />
       </button>
 
-      {/* Collapsible content with CSS grid animation */}
       <div
         className={`grid transition-[grid-template-rows] duration-200 ease-out ${
           isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'

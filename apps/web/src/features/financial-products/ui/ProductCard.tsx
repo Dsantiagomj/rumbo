@@ -2,7 +2,7 @@ import type { RemixiconComponentType } from '@remixicon/react';
 import { RiArrowRightSLine } from '@remixicon/react';
 import type { ProductResponse } from '@rumbo/shared';
 import { Card, CardContent } from '@/shared/ui';
-import { formatBalance, getMetadataSnippet } from '../model/constants';
+import { useProductCard } from './useProductCard';
 
 type ProductCardProps = {
   product: ProductResponse;
@@ -10,19 +10,7 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product, icon: Icon }: ProductCardProps) {
-  const balance = Number.parseFloat(product.balance);
-  const isNegative = balance < 0;
-  const snippet = getMetadataSnippet(product);
-
-  const meta = product.metadata as Record<string, unknown> | null;
-  const creditLimit =
-    product.type === 'credit_card' && meta?.creditLimit
-      ? Number.parseFloat(meta.creditLimit as string)
-      : null;
-  const usagePercent =
-    creditLimit && creditLimit > 0
-      ? Math.min(Math.round((Math.abs(balance) / creditLimit) * 100), 100)
-      : null;
+  const { isNegative, snippet, formattedBalance, usagePercent } = useProductCard(product);
 
   return (
     <Card className="ring-0 border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
@@ -46,7 +34,7 @@ export function ProductCard({ product, icon: Icon }: ProductCardProps) {
         <p
           className={`font-semibold tabular-nums whitespace-nowrap ${isNegative ? 'text-destructive' : ''}`}
         >
-          {formatBalance(product.balance, product.currency)}
+          {formattedBalance}
         </p>
         <RiArrowRightSLine className="h-5 w-5 shrink-0 text-muted-foreground" />
       </CardContent>
