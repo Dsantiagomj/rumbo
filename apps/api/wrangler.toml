@@ -6,9 +6,13 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 ENVIRONMENT = "production"
 CORS_ORIGINS = "https://rumbo.pages.dev"
+BETTER_AUTH_URL = "https://rumbo-api.dsmj.workers.dev"
+APP_URL = "https://rumbo.pages.dev"
+EMAIL_FROM = "Rumbo <noreply@rumbo.dsmj.dev>"
 
 [env.staging]
 name = "rumbo-api-staging"
 [env.staging.vars]
 ENVIRONMENT = "staging"
 CORS_ORIGINS = "*.rumbo.pages.dev"
+APP_URL = "https://staging.rumbo.pages.dev"

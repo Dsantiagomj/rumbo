@@ -1,0 +1,1 @@
+ALTER TABLE "financial_products" ADD COLUMN "institution" text NOT NULL;
