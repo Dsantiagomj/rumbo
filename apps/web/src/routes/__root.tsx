@@ -29,7 +29,10 @@ function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
-      <Toaster position="top-right" options={{ fill: 'black' }} />
+      <Toaster
+        position="top-right"
+        options={{ fill: 'black', autopilot: true, styles: { description: 'text-white/75!' } }}
+      />
       {RouterDevtools && (
         <Suspense fallback={null}>
           <RouterDevtools position="bottom-right" />
