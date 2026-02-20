@@ -126,7 +126,26 @@ const deleteProductRoute = createRoute({
 
 // -- Router and handlers --
 
-const financialProductsRouter = new OpenAPIHono<AuthedEnv>();
+const financialProductsRouter = new OpenAPIHono<AuthedEnv>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      return c.json(
+        {
+          error: {
+            message: 'Validation failed',
+            code: 'VALIDATION_ERROR',
+            status: 422,
+            details: result.error.issues.map((issue) => ({
+              path: issue.path,
+              message: issue.message,
+            })),
+          },
+        },
+        422,
+      );
+    }
+  },
+});
 
 financialProductsRouter.openapi(listProductsRoute, async (c) => {
   const user = c.get('user');

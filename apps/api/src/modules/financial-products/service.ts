@@ -78,8 +78,17 @@ function serializeProduct(product: typeof financialProducts.$inferSelect) {
     institution: product.institution,
     balance: product.balance,
     currency: product.currency as Currency,
-    metadata: product.metadata,
-    createdAt: product.createdAt.toISOString(),
-    updatedAt: product.updatedAt.toISOString(),
+    metadata:
+      typeof product.metadata === 'string'
+        ? (JSON.parse(product.metadata) as Record<string, unknown>)
+        : product.metadata,
+    createdAt:
+      product.createdAt instanceof Date
+        ? product.createdAt.toISOString()
+        : String(product.createdAt),
+    updatedAt:
+      product.updatedAt instanceof Date
+        ? product.updatedAt.toISOString()
+        : String(product.updatedAt),
   };
 }

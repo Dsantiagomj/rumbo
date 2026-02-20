@@ -58,14 +58,18 @@ export const PRODUCT_TYPE_METADATA_MAP = {
 } as const satisfies Record<ProductType, z.ZodTypeAny>;
 
 // -- Union of all valid metadata shapes --
+// Use .passthrough() so the union does not strip extra keys when a
+// permissive schema (e.g. accountMetadataSchema with all optional fields)
+// matches first.  The route handler then validates metadata against the
+// specific product-type schema from PRODUCT_TYPE_METADATA_MAP.
 
 export const productMetadataSchema = z.union([
-  accountMetadataSchema,
-  creditCardMetadataSchema,
-  loanMetadataSchema,
-  cdtMetadataSchema,
-  investmentMetadataSchema,
-  emptyMetadataSchema,
+  accountMetadataSchema.passthrough(),
+  creditCardMetadataSchema.passthrough(),
+  loanMetadataSchema.passthrough(),
+  cdtMetadataSchema.passthrough(),
+  investmentMetadataSchema.passthrough(),
+  emptyMetadataSchema.passthrough(),
 ]);
 
 // -- Request schemas --
