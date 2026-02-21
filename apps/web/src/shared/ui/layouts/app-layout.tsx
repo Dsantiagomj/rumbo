@@ -1,6 +1,14 @@
 import { RiCloseLine, RiLogoutBoxRLine, RiSettingsLine, RiSideBarLine } from '@remixicon/react';
 import { Link, useLocation, useNavigate, useRouteContext } from '@tanstack/react-router';
 import { useCallback, useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { authClient } from '@/shared/api';
 import { useLocalStorage } from '@/shared/lib/useLocalStorage';
 import { navItems } from './nav-items';
@@ -82,8 +90,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           })}
         </nav>
 
-        {/* Settings + User area */}
-        <div className="p-2 space-y-0.5">
+        {/* Settings */}
+        <div className="p-2">
           <Link
             to="/settings"
             className={linkClass(
@@ -95,38 +103,13 @@ export function AppLayout({ children }: AppLayoutProps) {
               <span className="whitespace-nowrap animate-in fade-in duration-200">Settings</span>
             )}
           </Link>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="cursor-pointer relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors text-muted-foreground/60 hover:bg-accent/50 hover:text-foreground w-full"
-          >
-            <RiLogoutBoxRLine className="h-5 w-5 shrink-0" />
-            {!collapsed && (
-              <span className="whitespace-nowrap animate-in fade-in duration-200">Log out</span>
-            )}
-          </button>
-
-          <hr className="border-border" />
-
-          {/* User info */}
-          <div className="flex items-center gap-3 rounded-lg px-2.5 py-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">
-              {initials}
-            </div>
-            {!collapsed && (
-              <div className="flex flex-1 flex-col min-w-0 animate-in fade-in duration-200">
-                <span className="text-sm font-medium text-foreground truncate">{user.name}</span>
-                <span className="text-xs text-muted-foreground truncate">{user.email}</span>
-              </div>
-            )}
-          </div>
         </div>
       </aside>
 
       {/* Main content area — white inset panel */}
       <div className="flex flex-1 flex-col overflow-hidden md:rounded-l-2xl bg-background md:shadow-sm">
         {/* Desktop content header */}
-        <header className="hidden md:flex h-12 items-center gap-3 border-b border-border/40 px-4">
+        <header className="hidden md:flex h-12 items-center justify-between border-b border-border/40 px-4">
           <button
             type="button"
             onClick={toggleSidebar}
@@ -135,6 +118,37 @@ export function AppLayout({ children }: AppLayoutProps) {
           >
             <RiSideBarLine className="h-[18px] w-[18px]" />
           </button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground hover:ring-2 hover:ring-accent-foreground/20 transition-all"
+              >
+                {initials}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/settings">
+                  <RiSettingsLine className="mr-2 h-4 w-4" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <RiLogoutBoxRLine className="mr-2 h-4 w-4" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
         {/* Mobile header */}
