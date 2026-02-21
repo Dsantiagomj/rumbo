@@ -141,8 +141,8 @@ export function useNetWorthTimeline(
     if (periodStartDate) {
       // Find the balance at the start of the period (last event before startDate)
       const beforeStart = events.filter((e) => e.date < periodStartDate);
-      const balanceAtStart =
-        beforeStart.length > 0 ? beforeStart[beforeStart.length - 1].cumulativeBalance : 0;
+      const lastBeforeStart = beforeStart[beforeStart.length - 1];
+      const balanceAtStart = lastBeforeStart ? lastBeforeStart.cumulativeBalance : 0;
 
       // Include a synthetic point at the start boundary
       filtered = [
@@ -157,7 +157,7 @@ export function useNetWorthTimeline(
     }));
 
     // Calculate change
-    const startBalance = points.length > 0 ? points[0].balance : 0;
+    const startBalance = points[0]?.balance ?? 0;
     const changeAmount = currentBalance - startBalance;
     const changePercent = startBalance !== 0 ? (changeAmount / Math.abs(startBalance)) * 100 : 0;
     const isPositive = changeAmount >= 0;

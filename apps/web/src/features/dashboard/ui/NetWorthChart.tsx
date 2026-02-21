@@ -105,7 +105,7 @@ export function NetWorthChart({
 
   const isFlat = useMemo(() => {
     if (points.length < 2) return true;
-    const first = points[0].balance;
+    const first = points[0]?.balance;
     return points.every((p) => p.balance === first);
   }, [points]);
 
@@ -116,7 +116,7 @@ export function NetWorthChart({
           isFlat ? (
             <div className="flex h-full flex-col items-center justify-center gap-2">
               <p className="text-lg font-semibold tabular-nums">
-                {formatBalance(String(points[0].balance), currency)}
+                {formatBalance(String(points[0]?.balance ?? 0), currency)}
               </p>
               <p className="text-sm text-muted-foreground">
                 Tu balance se ha mantenido estable este periodo
