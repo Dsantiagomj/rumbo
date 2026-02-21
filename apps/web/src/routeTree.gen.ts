@@ -21,6 +21,8 @@ import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppProductsIndexRouteImport } from './routes/_app/products.index'
 import { Route as AppProductsNewRouteImport } from './routes/_app/products.new'
+import { Route as AppProductsProductIdIndexRouteImport } from './routes/_app/products.$productId.index'
+import { Route as AppProductsProductIdEditRouteImport } from './routes/_app/products.$productId.edit'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -80,6 +82,18 @@ const AppProductsNewRoute = AppProductsNewRouteImport.update({
   path: '/products/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProductsProductIdIndexRoute =
+  AppProductsProductIdIndexRouteImport.update({
+    id: '/products/$productId/',
+    path: '/products/$productId/',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppProductsProductIdEditRoute =
+  AppProductsProductIdEditRouteImport.update({
+    id: '/products/$productId/edit',
+    path: '/products/$productId/edit',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -92,6 +106,8 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/products/new': typeof AppProductsNewRoute
   '/products/': typeof AppProductsIndexRoute
+  '/products/$productId/edit': typeof AppProductsProductIdEditRoute
+  '/products/$productId/': typeof AppProductsProductIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
@@ -104,6 +120,8 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/products/new': typeof AppProductsNewRoute
   '/products': typeof AppProductsIndexRoute
+  '/products/$productId/edit': typeof AppProductsProductIdEditRoute
+  '/products/$productId': typeof AppProductsProductIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -119,6 +137,8 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/products/new': typeof AppProductsNewRoute
   '/_app/products/': typeof AppProductsIndexRoute
+  '/_app/products/$productId/edit': typeof AppProductsProductIdEditRoute
+  '/_app/products/$productId/': typeof AppProductsProductIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -133,6 +153,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/products/new'
     | '/products/'
+    | '/products/$productId/edit'
+    | '/products/$productId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -145,6 +167,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/products/new'
     | '/products'
+    | '/products/$productId/edit'
+    | '/products/$productId'
   id:
     | '__root__'
     | '/_app'
@@ -159,6 +183,8 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/products/new'
     | '/_app/products/'
+    | '/_app/products/$productId/edit'
+    | '/_app/products/$productId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -253,6 +279,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProductsNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/products/$productId/': {
+      id: '/_app/products/$productId/'
+      path: '/products/$productId'
+      fullPath: '/products/$productId/'
+      preLoaderRoute: typeof AppProductsProductIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/products/$productId/edit': {
+      id: '/_app/products/$productId/edit'
+      path: '/products/$productId/edit'
+      fullPath: '/products/$productId/edit'
+      preLoaderRoute: typeof AppProductsProductIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -262,6 +302,8 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppProductsNewRoute: typeof AppProductsNewRoute
   AppProductsIndexRoute: typeof AppProductsIndexRoute
+  AppProductsProductIdEditRoute: typeof AppProductsProductIdEditRoute
+  AppProductsProductIdIndexRoute: typeof AppProductsProductIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -270,6 +312,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppProductsNewRoute: AppProductsNewRoute,
   AppProductsIndexRoute: AppProductsIndexRoute,
+  AppProductsProductIdEditRoute: AppProductsProductIdEditRoute,
+  AppProductsProductIdIndexRoute: AppProductsProductIdIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
