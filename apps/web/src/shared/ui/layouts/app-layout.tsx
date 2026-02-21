@@ -1,7 +1,8 @@
-import { RiCloseLine, RiLogoutBoxRLine, RiSettingsLine } from '@remixicon/react';
+import { RiCloseLine, RiLogoutBoxRLine, RiSettingsLine, RiSideBarLine } from '@remixicon/react';
 import { Link, useLocation, useNavigate, useRouteContext } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { authClient } from '@/shared/api';
+import { useLocalStorage } from '@/shared/lib/useLocalStorage';
 import { navItems } from './nav-items';
 
 interface AppLayoutProps {
@@ -13,6 +14,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
   const { user } = useRouteContext({ from: '/_app' });
   const [userDrawerOpen, setUserDrawerOpen] = useState(false);
+  const [collapsed, setCollapsed] = useLocalStorage('sidebar-collapsed', false);
+
+  const toggleSidebar = useCallback(() => setCollapsed((prev) => !prev), [setCollapsed]);
 
   const initials = user.name
     ? user.name
@@ -29,18 +33,31 @@ export function AppLayout({ children }: AppLayoutProps) {
     await navigate({ to: '/login' });
   };
 
+  const linkClass = (active: boolean) =>
+    `relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
+      active
+        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+        : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+    }`;
+
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Desktop sidebar — collapsed by default, expands on hover */}
-      <aside className="hidden md:flex w-14 hover:w-56 flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-200 group/sidebar overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden bg-muted">
+      {/* Desktop sidebar — gray bg, no border */}
+      <aside
+        className={`hidden md:flex flex-col bg-muted transition-[width] duration-200 overflow-hidden ${
+          collapsed ? 'w-14' : 'w-56'
+        }`}
+      >
         {/* Logo */}
-        <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-3.5">
+        <div className="flex h-14 items-center justify-center gap-2 px-3.5">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
             R
           </div>
-          <span className="text-base font-bold text-sidebar-foreground whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
-            Rumbo
-          </span>
+          {!collapsed && (
+            <span className="flex-1 text-base font-bold text-foreground whitespace-nowrap animate-in fade-in duration-200">
+              Rumbo
+            </span>
+          )}
         </div>
 
         {/* Navigation */}
@@ -53,66 +70,75 @@ export function AppLayout({ children }: AppLayoutProps) {
             const Icon = item.icon;
 
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:-translate-y-1/2 before:w-0.5 before:rounded-full before:bg-sidebar-primary'
-                    : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
-                }`}
-              >
+              <Link key={item.path} to={item.path} className={linkClass(isActive)}>
                 <Icon className="h-5 w-5 shrink-0" />
-                <span className="whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
-                  {item.label}
-                </span>
+                {!collapsed && (
+                  <span className="whitespace-nowrap animate-in fade-in duration-200">
+                    {item.label}
+                  </span>
+                )}
               </Link>
             );
           })}
         </nav>
 
         {/* Settings + User area */}
-        <div className="border-t border-sidebar-border p-2">
+        <div className="p-2 space-y-0.5">
           <Link
             to="/settings"
-            className={`relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
-              location.pathname === '/settings' || location.pathname.startsWith('/settings/')
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:-translate-y-1/2 before:w-0.5 before:rounded-full before:bg-sidebar-primary'
-                : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
-            }`}
+            className={linkClass(
+              location.pathname === '/settings' || location.pathname.startsWith('/settings/'),
+            )}
           >
             <RiSettingsLine className="h-5 w-5 shrink-0" />
-            <span className="whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
-              Settings
-            </span>
+            {!collapsed && (
+              <span className="whitespace-nowrap animate-in fade-in duration-200">Settings</span>
+            )}
           </Link>
           <button
             type="button"
             onClick={handleLogout}
-            className="cursor-pointer relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium transition-colors text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground w-full"
+            className="cursor-pointer relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors text-muted-foreground/60 hover:bg-accent/50 hover:text-foreground w-full"
           >
             <RiLogoutBoxRLine className="h-5 w-5 shrink-0" />
-            <span className="whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
-              Log out
-            </span>
+            {!collapsed && (
+              <span className="whitespace-nowrap animate-in fade-in duration-200">Log out</span>
+            )}
           </button>
-          <div className="mt-1 flex items-center gap-3 rounded-md px-2.5 py-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-sm font-semibold text-sidebar-accent-foreground">
+
+          <hr className="border-border" />
+
+          {/* User info */}
+          <div className="flex items-center gap-3 rounded-lg px-2.5 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">
               {initials}
             </div>
-            <div className="flex flex-col whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
-              <span className="text-sm font-medium text-sidebar-foreground">{user.name}</span>
-              <span className="text-xs text-muted-foreground">{user.email}</span>
-            </div>
+            {!collapsed && (
+              <div className="flex flex-1 flex-col min-w-0 animate-in fade-in duration-200">
+                <span className="text-sm font-medium text-foreground truncate">{user.name}</span>
+                <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+              </div>
+            )}
           </div>
         </div>
       </aside>
 
-      {/* Main content area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Mobile header — logo centered, avatar on right */}
+      {/* Main content area — white inset panel */}
+      <div className="flex flex-1 flex-col overflow-hidden md:rounded-l-2xl bg-background md:shadow-sm">
+        {/* Desktop content header */}
+        <header className="hidden md:flex h-12 items-center gap-3 border-b border-border/40 px-4">
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <RiSideBarLine className="h-[18px] w-[18px]" />
+          </button>
+        </header>
+
+        {/* Mobile header */}
         <header className="flex md:hidden h-14 items-center border-b border-border bg-background px-4">
-          {/* Avatar button */}
           <button
             type="button"
             onClick={() => setUserDrawerOpen(true)}
@@ -120,20 +146,16 @@ export function AppLayout({ children }: AppLayoutProps) {
           >
             {initials}
           </button>
-
-          {/* Centered logo */}
           <div className="flex flex-1 items-center justify-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
               R
             </div>
             <span className="text-base font-bold">Rumbo</span>
           </div>
-
-          {/* Spacer for centering */}
           <div className="w-9" />
         </header>
 
-        {/* Mobile user drawer overlay */}
+        {/* Mobile user drawer */}
         {userDrawerOpen && (
           <>
             <button
@@ -143,7 +165,6 @@ export function AppLayout({ children }: AppLayoutProps) {
               aria-label="Close drawer"
             />
             <div className="fixed top-0 left-0 z-50 h-full w-72 border-r border-border bg-background shadow-lg md:hidden">
-              {/* Drawer header */}
               <div className="flex h-14 items-center justify-between border-b border-border px-4">
                 <span className="text-sm font-semibold">Account</span>
                 <button
@@ -154,8 +175,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <RiCloseLine className="h-5 w-5" />
                 </button>
               </div>
-
-              {/* User info */}
               <div className="border-b border-border p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">
@@ -167,8 +186,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                   </div>
                 </div>
               </div>
-
-              {/* Settings items */}
               <nav className="flex flex-col gap-0.5 p-2">
                 <Link
                   to="/settings"
