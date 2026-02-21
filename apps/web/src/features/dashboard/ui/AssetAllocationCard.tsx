@@ -23,10 +23,10 @@ const TABS: { value: AllocationTab; label: string }[] = [
 
 const GROUP_COLORS: Record<string, string> = {
   accounts: 'bg-blue-500',
-  cards: 'bg-red-500',
-  loans: 'bg-amber-500',
+  cards: 'bg-rose-500',
+  loans: 'bg-purple-500',
   investments: 'bg-emerald-500',
-  cash: 'bg-violet-500',
+  cash: 'bg-amber-400',
 };
 
 type AllocationSlice = {
@@ -41,22 +41,36 @@ function isLiability(type: ProductType): boolean {
   return LIABILITY_TYPES.includes(type);
 }
 
+function getProductBalance(product: ProductResponse, currency: Currency): number | null {
+  if (product.currency === currency) {
+    return Number.parseFloat(product.balance);
+  }
+
+  if (currency === 'USD') {
+    const meta = product.metadata as Record<string, unknown> | null;
+    if (meta?.balanceUsd && typeof meta.balanceUsd === 'string') {
+      return Number.parseFloat(meta.balanceUsd);
+    }
+  }
+
+  return null;
+}
+
 export function AssetAllocationCard({ products, activeCurrency }: AssetAllocationCardProps) {
   const [activeTab, setActiveTab] = useState<AllocationTab>('all');
 
   const slices = useMemo(() => {
-    let filtered = products.filter((p) => p.currency === activeCurrency);
+    let entries = products
+      .map((p) => ({ product: p, balance: getProductBalance(p, activeCurrency) }))
+      .filter((e): e is { product: ProductResponse; balance: number } => e.balance !== null);
 
     if (activeTab === 'assets') {
-      filtered = filtered.filter((p) => !isLiability(p.type));
+      entries = entries.filter((e) => !isLiability(e.product.type));
     } else if (activeTab === 'liabilities') {
-      filtered = filtered.filter((p) => isLiability(p.type));
+      entries = entries.filter((e) => isLiability(e.product.type));
     }
 
-    const totalAbsolute = filtered.reduce(
-      (sum, p) => sum + Math.abs(Number.parseFloat(p.balance)),
-      0,
-    );
+    const totalAbsolute = entries.reduce((sum, e) => sum + Math.abs(e.balance), 0);
 
     if (totalAbsolute === 0) return [];
 
@@ -69,8 +83,8 @@ export function AssetAllocationCard({ products, activeCurrency }: AssetAllocatio
 
     return groups
       .map((group) => {
-        const groupProducts = filtered.filter((p) => group.types.includes(p.type));
-        const balance = groupProducts.reduce((sum, p) => sum + Number.parseFloat(p.balance), 0);
+        const groupEntries = entries.filter((e) => group.types.includes(e.product.type));
+        const balance = groupEntries.reduce((sum, e) => sum + e.balance, 0);
         const percentage = (Math.abs(balance) / totalAbsolute) * 100;
 
         return {

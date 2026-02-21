@@ -14,9 +14,6 @@ type NetWorthChartProps = {
 };
 
 const PERIODS: { value: TimePeriod; label: string }[] = [
-  { value: 'WTD', label: 'Sem' },
-  { value: 'MTD', label: 'Mes' },
-  { value: 'YTD', label: 'Año' },
   { value: '1M', label: '1M' },
   { value: '3M', label: '3M' },
   { value: '6M', label: '6M' },
@@ -35,22 +32,39 @@ function formatDateLabel(timestamp: number, period: TimePeriod): string {
   return date.toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
 }
 
+function formatCompactValue(value: number): string {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${(value / 1_000).toFixed(0)}K`;
+  return value.toFixed(0);
+}
+
 function CustomTooltip({
   active,
   payload,
+  label,
   currency,
 }: {
   active?: boolean;
   payload?: { value: number }[];
+  label?: number;
   currency: Currency;
 }) {
   if (!active || !payload?.[0]) return null;
+
+  const date = label ? new Date(label) : null;
+  const dateStr = date?.toLocaleDateString('es-CO', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 
   return (
     <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
       <p className="text-sm font-semibold tabular-nums">
         {formatBalance(String(payload[0].value), currency)}
       </p>
+      {dateStr && <p className="text-xs text-muted-foreground">{dateStr}</p>}
     </div>
   );
 }
@@ -85,48 +99,73 @@ export function NetWorthChart({
     const balances = points.map((p) => p.balance);
     const min = Math.min(...balances);
     const max = Math.max(...balances);
-    const padding = (max - min) * 0.1 || 1;
+    const padding = (max - min) * 0.15 || 1;
     return [min - padding, max + padding];
+  }, [points]);
+
+  const isFlat = useMemo(() => {
+    if (points.length < 2) return true;
+    const first = points[0].balance;
+    return points.every((p) => p.balance === first);
   }, [points]);
 
   return (
     <div className="flex h-full flex-col gap-3">
-      <div className="min-h-[180px] w-full flex-1">
+      <div className="min-h-[240px] w-full flex-1">
         {points.length > 1 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={points} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
-              <defs>
-                <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={strokeColor} stopOpacity={0.2} />
-                  <stop offset="100%" stopColor={strokeColor} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="date"
-                type="number"
-                domain={['dataMin', 'dataMax']}
-                tickFormatter={(v) => formatDateLabel(v, period)}
-                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
-                axisLine={false}
-                tickLine={false}
-                tickCount={4}
-              />
-              <YAxis domain={domain} hide />
-              <Tooltip
-                content={<CustomTooltip currency={currency} />}
-                cursor={{ stroke: 'var(--border)', strokeDasharray: '4 4' }}
-              />
-              <Area
-                type="monotone"
-                dataKey="balance"
-                stroke={strokeColor}
-                strokeWidth={2}
-                fill={`url(#${fillId})`}
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 2, fill: 'var(--background)' }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          isFlat ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2">
+              <p className="text-lg font-semibold tabular-nums">
+                {formatBalance(String(points[0].balance), currency)}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Tu balance se ha mantenido estable este periodo
+              </p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={points} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+                <defs>
+                  <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={strokeColor} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={strokeColor} stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="date"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  tickFormatter={(v) => formatDateLabel(v, period)}
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickCount={4}
+                />
+                <YAxis
+                  domain={domain}
+                  tickFormatter={formatCompactValue}
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={50}
+                  tickCount={4}
+                />
+                <Tooltip
+                  content={<CustomTooltip currency={currency} />}
+                  cursor={{ stroke: 'var(--border)', strokeDasharray: '4 4' }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="balance"
+                  stroke={strokeColor}
+                  strokeWidth={2}
+                  fill={`url(#${fillId})`}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 2, fill: 'var(--background)' }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )
         ) : (
           <div className="flex h-full items-center justify-center">
             <p className="text-sm text-muted-foreground">No hay suficientes datos para graficar</p>

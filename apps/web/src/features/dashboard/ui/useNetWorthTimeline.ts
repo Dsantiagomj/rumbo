@@ -69,17 +69,36 @@ function getStartDate(period: TimePeriod): Date | null {
   }
 }
 
+function getProductBalance(product: ProductResponse, currency: Currency): number | null {
+  if (product.currency === currency) {
+    return Number.parseFloat(product.balance);
+  }
+
+  if (currency === 'USD') {
+    const meta = product.metadata as Record<string, unknown> | null;
+    if (meta?.balanceUsd && typeof meta.balanceUsd === 'string') {
+      return Number.parseFloat(meta.balanceUsd);
+    }
+  }
+
+  return null;
+}
+
 export function useNetWorthTimeline(
   products: ProductResponse[],
   currency: Currency,
   period: TimePeriod,
 ): NetWorthTimelineResult {
   return useMemo(() => {
-    const relevantProducts = products.filter((p) => p.currency === currency);
+    const productBalances = products
+      .map((p) => ({ product: p, balance: getProductBalance(p, currency) }))
+      .filter(
+        (entry): entry is { product: ProductResponse; balance: number } => entry.balance !== null,
+      );
 
     const periodStartDate = getStartDate(period);
 
-    if (relevantProducts.length === 0) {
+    if (productBalances.length === 0) {
       return {
         points: [],
         currentBalance: 0,
@@ -91,16 +110,16 @@ export function useNetWorthTimeline(
     }
 
     // Sort by creation date ascending
-    const sorted = [...relevantProducts].sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    const sorted = [...productBalances].sort(
+      (a, b) => new Date(a.product.createdAt).getTime() - new Date(b.product.createdAt).getTime(),
     );
 
     // Build cumulative timeline: each product creation adds its balance
     const events: { date: Date; cumulativeBalance: number }[] = [];
     let cumulative = 0;
 
-    for (const product of sorted) {
-      cumulative += Number.parseFloat(product.balance);
+    for (const { product, balance } of sorted) {
+      cumulative += balance;
       events.push({
         date: new Date(product.createdAt),
         cumulativeBalance: cumulative,

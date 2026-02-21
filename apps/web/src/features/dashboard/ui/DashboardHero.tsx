@@ -50,21 +50,18 @@ export function DashboardHero({
   const isNegativeBalance = currentBalance < 0;
 
   return (
-    <div className="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
+    <div className="flex flex-col gap-6 py-4 md:flex-row md:items-stretch md:gap-8 md:py-6">
       {/* Left column — greeting, balance & stats */}
-      <div className="flex flex-col gap-5 md:w-1/3">
+      <div className="flex flex-col gap-6 md:w-1/3">
         {/* Greeting */}
-        <div className="space-y-1">
-          <h1 className="text-xl font-semibold text-foreground md:text-2xl">
-            {getGreeting()}, {firstName}
-          </h1>
-          <p className="text-sm text-muted-foreground">Esto es lo que ha pasado con tus finanzas</p>
-        </div>
+        <h1 className="text-2xl font-semibold text-foreground md:text-3xl">
+          {getGreeting()}, {firstName}
+        </h1>
 
         <div>
           <p className="text-sm text-muted-foreground">Balance total</p>
           <p
-            className={`mt-1 text-4xl font-bold tabular-nums tracking-tight md:text-5xl ${
+            className={`mt-1 text-5xl font-bold tabular-nums tracking-tight md:text-6xl ${
               isNegativeBalance ? 'text-destructive' : ''
             }`}
           >

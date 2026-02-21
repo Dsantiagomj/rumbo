@@ -8,20 +8,37 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/shared/u
 
 type ProductGroupsCardProps = {
   products: ProductResponse[];
-  activeCurrency: Currency;
 };
 
-export function ProductGroupsCard({ products, activeCurrency }: ProductGroupsCardProps) {
+type GroupSubtotal = { currency: Currency; total: number };
+
+function computeGroupSubtotals(items: ProductResponse[]): GroupSubtotal[] {
+  const map = items.reduce<Partial<Record<Currency, number>>>((acc, p) => {
+    acc[p.currency] = (acc[p.currency] ?? 0) + Number.parseFloat(p.balance);
+
+    const meta = p.metadata as Record<string, unknown> | null;
+    if (meta?.balanceUsd && typeof meta.balanceUsd === 'string') {
+      acc.USD = (acc.USD ?? 0) + Number.parseFloat(meta.balanceUsd);
+    }
+
+    return acc;
+  }, {});
+
+  return (Object.entries(map) as [Currency, number][]).map(([currency, total]) => ({
+    currency,
+    total,
+  }));
+}
+
+export function ProductGroupsCard({ products }: ProductGroupsCardProps) {
   const groups = useMemo(() => {
     return PRODUCT_GROUPS.map((group) => {
       const items = products.filter((p) => group.types.includes(p.type));
-      const subtotal = items
-        .filter((p) => p.currency === activeCurrency)
-        .reduce((sum, p) => sum + Number.parseFloat(p.balance), 0);
+      const subtotals = computeGroupSubtotals(items);
 
-      return { ...group, count: items.length, subtotal };
+      return { ...group, count: items.length, subtotals };
     }).filter((g) => g.count > 0);
-  }, [products, activeCurrency]);
+  }, [products]);
 
   return (
     <Card className="flex flex-col">
@@ -48,10 +65,20 @@ export function ProductGroupsCard({ products, activeCurrency }: ProductGroupsCar
                   {group.label} ({group.count})
                 </span>
               </div>
-              <span
-                className={`font-medium tabular-nums ${group.subtotal < 0 ? 'text-destructive' : ''}`}
-              >
-                {formatBalance(String(group.subtotal), activeCurrency)}
+              <span className="font-medium tabular-nums">
+                {group.subtotals.map((s, i) => (
+                  <span key={s.currency}>
+                    {i > 0 && ' · '}
+                    <span className={s.total < 0 ? 'text-destructive' : ''}>
+                      {formatBalance(String(s.total), s.currency)}
+                    </span>
+                    {group.subtotals.length > 1 && (
+                      <span className="ml-0.5 text-xs font-normal text-muted-foreground">
+                        {s.currency}
+                      </span>
+                    )}
+                  </span>
+                ))}
               </span>
             </div>
           );
