@@ -55,7 +55,23 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // Keyboard shortcuts: ⌘B (sidebar), ⌘I (assistant), ESC (close assistant)
   useEffect(() => {
+    if (assistantWidth < 280) {
+      setAssistantWidth(280);
+    } else if (assistantWidth > 600) {
+      setAssistantWidth(600);
+    }
+  }, [assistantWidth, setAssistantWidth]);
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isEditable =
+        !!target &&
+        (target.isContentEditable ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT');
+      if (isEditable) return;
       const mod = e.metaKey || e.ctrlKey;
       if (mod && e.key === 'b') {
         e.preventDefault();
