@@ -3,10 +3,14 @@ import { PRODUCT_TYPE_METADATA_MAP, type ProductResponse } from '@rumbo/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { type FieldPath, useForm } from 'react-hook-form';
 import { sileo } from 'sileo';
 import { ApiError } from '@/shared/api';
-import { type CreateProductFormValues, createProductFormSchema } from '../model/form-schemas';
+import {
+  type CreateProductFormInput,
+  type CreateProductFormValues,
+  createProductFormSchema,
+} from '../model/form-schemas';
 import { useCreateProductMutation } from '../model/queries';
 
 function negateDecimal(value: string): string {
@@ -23,11 +27,11 @@ export function useCreateProductForm() {
   const mutation = useCreateProductMutation();
   const [currentStep, setCurrentStep] = useState<Step>('type');
 
-  const form = useForm<CreateProductFormValues>({
+  const form = useForm<CreateProductFormInput, unknown, CreateProductFormValues>({
     resolver: zodResolver(createProductFormSchema),
     mode: 'onBlur',
     defaultValues: {
-      type: undefined as unknown as CreateProductFormValues['type'],
+      type: undefined as unknown as CreateProductFormInput['type'],
       name: '',
       institution: '',
       balance: '0',
@@ -58,7 +62,7 @@ export function useCreateProductForm() {
       const result = metadataSchema.safeParse(metadata);
       if (!result.success) {
         for (const issue of result.error.issues) {
-          form.setError(`metadata.${issue.path.join('.')}` as keyof CreateProductFormValues, {
+          form.setError(`metadata.${issue.path.join('.')}` as FieldPath<CreateProductFormInput>, {
             message: issue.message,
           });
         }
@@ -87,7 +91,7 @@ export function useCreateProductForm() {
       values.type === 'loan_mortgage';
 
     const balance = isDebt ? negateDecimal(values.balance) : values.balance;
-    const metadata = { ...values.metadata };
+    const metadata = { ...(values.metadata ?? {}) };
     if (isDebt && typeof metadata.balanceUsd === 'string' && metadata.balanceUsd) {
       metadata.balanceUsd = negateDecimal(metadata.balanceUsd);
     }
@@ -109,7 +113,7 @@ export function useCreateProductForm() {
       if (error instanceof ApiError && error.details) {
         for (const detail of error.details) {
           const path = detail.path.join('.');
-          form.setError(path as keyof CreateProductFormValues, { message: detail.message });
+          form.setError(path as FieldPath<CreateProductFormInput>, { message: detail.message });
         }
         setCurrentStep('details');
         return;

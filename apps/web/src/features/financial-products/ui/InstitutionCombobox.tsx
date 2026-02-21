@@ -20,14 +20,17 @@ const INSTITUTION_TYPE_LABELS: Record<string, string> = {
   other: 'Otros',
 };
 
-const groupedInstitutions = INSTITUTIONS.reduce(
+const groupedInstitutions = INSTITUTIONS.reduce<Record<string, (typeof INSTITUTIONS)[number][]>>(
   (acc, inst) => {
-    const group = acc[inst.type] ?? [];
-    group.push(inst);
-    acc[inst.type] = group;
+    const group = acc[inst.type];
+    if (group) {
+      group.push(inst);
+    } else {
+      acc[inst.type] = [inst];
+    }
     return acc;
   },
-  {} as Record<string, (typeof INSTITUTIONS)[number][]>,
+  {},
 );
 
 export type InstitutionComboboxProps = {

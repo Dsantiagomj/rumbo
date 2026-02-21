@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 export const createProductFormSchema = createProductSchema
   .extend({
-    metadata: z.record(z.string(), z.unknown()),
+    metadata: z.record(z.string(), z.unknown()).default({}),
   })
   .superRefine((data, ctx) => {
     const metadataSchema = PRODUCT_TYPE_METADATA_MAP[data.type];
@@ -17,10 +17,14 @@ export const createProductFormSchema = createProductSchema
     }
   });
 
-export type CreateProductFormValues = z.infer<typeof createProductFormSchema>;
+export type CreateProductFormInput = z.input<typeof createProductFormSchema>;
+export type CreateProductFormValues = z.output<typeof createProductFormSchema>;
 
-// biome-ignore lint/suspicious/noExplicitAny: react-hook-form resolver infers TContext and TTransformedValues generics
-export type ProductFormReturn = UseFormReturn<CreateProductFormValues, any, any>;
+export type ProductFormReturn = UseFormReturn<
+  CreateProductFormInput,
+  unknown,
+  CreateProductFormValues
+>;
 
 export const PRODUCT_TYPE_LABELS: Record<ProductType, { label: string; description: string }> = {
   savings: { label: 'Cuenta de Ahorros', description: 'Cuenta bancaria para ahorros' },
