@@ -6,11 +6,12 @@ import {
   RiNotification3Line,
   RiSettingsLine,
   RiSideBarLine,
+  RiSparklingLine,
   RiSunLine,
   RiUserLine,
 } from '@remixicon/react';
 import { Link, useLocation, useNavigate, useRouteContext } from '@tanstack/react-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,9 +35,22 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user } = useRouteContext({ from: '/_app' });
   const [userDrawerOpen, setUserDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useLocalStorage('sidebar-collapsed', false);
+  const [assistantOpen, setAssistantOpen] = useLocalStorage('assistant-open', false);
+  const [mobileAssistantOpen, setMobileAssistantOpen] = useState(false);
   const { resolved, toggle: toggleTheme } = useTheme();
 
   const toggleSidebar = useCallback(() => setCollapsed((prev) => !prev), [setCollapsed]);
+  const toggleAssistant = useCallback(() => setAssistantOpen((prev) => !prev), [setAssistantOpen]);
+
+  // ESC to close assistant panel (desktop)
+  useEffect(() => {
+    if (!assistantOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setAssistantOpen(false);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [assistantOpen, setAssistantOpen]);
 
   const initials = user.name
     ? user.name
@@ -191,6 +205,20 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={toggleAssistant}
+              className={`cursor-pointer flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
+                assistantOpen
+                  ? 'bg-accent text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+              }`}
+              aria-label={assistantOpen ? 'Close assistant' : 'Open assistant'}
+              title="AI Assistant"
+            >
+              <RiSparklingLine className="h-[18px] w-[18px]" />
+            </button>
+
+            <button
+              type="button"
               disabled
               className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground/40 cursor-not-allowed"
               aria-label="Notifications"
@@ -260,7 +288,14 @@ export function AppLayout({ children }: AppLayoutProps) {
             </div>
             <span className="text-base font-bold">Rumbo</span>
           </div>
-          <div className="w-9" />
+          <button
+            type="button"
+            onClick={() => setMobileAssistantOpen(true)}
+            className="cursor-pointer flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+            aria-label="Open assistant"
+          >
+            <RiSparklingLine className="h-5 w-5" />
+          </button>
         </header>
 
         {/* Mobile user drawer */}
@@ -316,8 +351,66 @@ export function AppLayout({ children }: AppLayoutProps) {
           </>
         )}
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">{children}</main>
+        {/* Mobile assistant sheet */}
+        {mobileAssistantOpen && (
+          <>
+            <button
+              type="button"
+              className="cursor-pointer fixed inset-0 z-40 bg-black/40 md:hidden"
+              onClick={() => setMobileAssistantOpen(false)}
+              aria-label="Close assistant"
+            />
+            <div className="fixed inset-0 z-50 flex flex-col bg-background md:hidden">
+              <div className="flex h-14 items-center justify-between border-b border-border px-4">
+                <div className="flex items-center gap-2">
+                  <RiSparklingLine className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm font-semibold">AI Assistant</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileAssistantOpen(false)}
+                  className="cursor-pointer flex h-9 w-9 items-center justify-center rounded-md text-foreground hover:bg-accent"
+                >
+                  <RiCloseLine className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent">
+                  <RiSparklingLine className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-sm font-semibold text-foreground">Coming soon</h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Your AI financial assistant will help you analyze spending, categorize
+                  transactions, and manage budgets.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Content row: main content + assistant panel */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Page content */}
+          <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">{children}</main>
+
+          {/* Desktop assistant panel */}
+          <aside
+            className={`hidden md:flex flex-col border-l border-border/40 transition-[width] duration-200 overflow-hidden ${
+              assistantOpen ? 'w-96' : 'w-0 border-l-0'
+            }`}
+          >
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center min-w-96">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent">
+                <RiSparklingLine className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground">Coming soon</h3>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                Your AI financial assistant will help you analyze spending, categorize transactions,
+                and manage budgets.
+              </p>
+            </div>
+          </aside>
+        </div>
 
         {/* Mobile bottom tabs */}
         <nav className="flex md:hidden items-center justify-around border-t border-border bg-background pb-[env(safe-area-inset-bottom)]">
