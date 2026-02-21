@@ -90,8 +90,8 @@ export function NetWorthChart({
   }, [points]);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="h-[180px] w-full">
+    <div className="flex h-full flex-col gap-3">
+      <div className="min-h-[180px] w-full flex-1">
         {points.length > 1 ? (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={points} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>

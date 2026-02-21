@@ -67,129 +67,131 @@ export function DashboardHero({
   }, [products]);
 
   return (
-    <div className="space-y-2">
-      {/* Greeting */}
-      <div>
-        <h1 className="text-lg font-semibold text-foreground">
-          {getGreeting()}, {firstName}
-        </h1>
-        <p className="text-sm text-muted-foreground">Esto es lo que ha pasado con tus finanzas</p>
-      </div>
+    <div className="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
+      {/* Left column — greeting, balance & stats */}
+      <div className="flex flex-col gap-5 md:w-1/3">
+        {/* Greeting */}
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold text-foreground md:text-2xl">
+            {getGreeting()}, {firstName}
+          </h1>
+          <p className="text-sm text-muted-foreground">Esto es lo que ha pasado con tus finanzas</p>
+        </div>
 
-      {/* Balance + chart — two columns on desktop */}
-      <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
-        {/* Left column — balance & stats */}
-        <div className="flex flex-col gap-4 md:w-2/5">
-          <div>
-            <p className="text-sm text-muted-foreground">Balance total</p>
-            <p
-              className={`mt-1 text-3xl font-bold tabular-nums tracking-tight ${
-                isNegativeBalance ? 'text-destructive' : ''
-              }`}
-            >
-              {formattedBalance}
-            </p>
+        <div>
+          <p className="text-sm text-muted-foreground">Balance total</p>
+          <p
+            className={`mt-1 text-4xl font-bold tabular-nums tracking-tight md:text-5xl ${
+              isNegativeBalance ? 'text-destructive' : ''
+            }`}
+          >
+            {formattedBalance}
+          </p>
 
-            {/* Change indicator */}
-            {changeAmount !== 0 && (
-              <div className="mt-2 flex items-center gap-1.5">
-                <span
-                  className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-medium ${
-                    isPositive
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-red-500/10 text-red-600 dark:text-red-400'
-                  }`}
-                >
-                  {isPositive ? (
-                    <RiArrowUpSFill className="h-3.5 w-3.5" />
-                  ) : (
-                    <RiArrowDownSFill className="h-3.5 w-3.5" />
-                  )}
-                  {Math.abs(changePercent).toFixed(1)}%
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {isPositive ? '+' : '-'}
-                  {formattedChange} {PERIOD_LABELS[period]}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Currency toggle */}
-          {currencies.length > 1 && (
-            <div className="flex items-center gap-1">
-              {currencies.map((currency) => (
-                <button
-                  key={currency}
-                  type="button"
-                  onClick={() => onCurrencyChange(currency)}
-                  className={`cursor-pointer rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
-                    currency === activeCurrency
-                      ? 'bg-foreground text-background'
-                      : 'text-muted-foreground hover:bg-muted'
-                  }`}
-                >
-                  {currency}
-                </button>
-              ))}
+          {/* Change indicator */}
+          {changeAmount !== 0 && (
+            <div className="mt-2 flex items-center gap-1.5">
+              <span
+                className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+                  isPositive
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-red-500/10 text-red-600 dark:text-red-400'
+                }`}
+              >
+                {isPositive ? (
+                  <RiArrowUpSFill className="h-3.5 w-3.5" />
+                ) : (
+                  <RiArrowDownSFill className="h-3.5 w-3.5" />
+                )}
+                {Math.abs(changePercent).toFixed(1)}%
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {isPositive ? '+' : '-'}
+                {formattedChange} {PERIOD_LABELS[period]}
+              </span>
             </div>
           )}
+        </div>
 
-          {/* Product summary */}
-          <div className="space-y-2">
-            <div className="grid grid-cols-3 gap-3 rounded-lg border border-border/50 bg-muted/30 p-2">
-              <div className="flex flex-col items-center gap-0.5 text-center">
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <RiBriefcaseLine className="size-3.5" />
-                  <span className="text-[10px] uppercase tracking-wide">Total</span>
-                </div>
-                <span className="text-base font-semibold text-foreground">
-                  {productSummary.total}
-                </span>
-              </div>
+        {/* Currency toggle */}
+        {currencies.length > 1 && (
+          <div className="flex items-center gap-1">
+            {currencies.map((currency) => (
+              <button
+                key={currency}
+                type="button"
+                onClick={() => onCurrencyChange(currency)}
+                className={`cursor-pointer rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
+                  currency === activeCurrency
+                    ? 'bg-foreground text-background'
+                    : 'text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {currency}
+              </button>
+            ))}
+          </div>
+        )}
 
-              <div className="flex flex-col items-center gap-0.5 border-x border-border/50 text-center">
-                <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-500">
-                  <RiArrowUpLine className="size-3.5" />
-                  <span className="text-[10px] uppercase tracking-wide">Activos</span>
-                </div>
-                <span className="text-base font-semibold text-foreground">
-                  {productSummary.assets}
-                </span>
-              </div>
-
-              <div className="flex flex-col items-center gap-0.5 text-center">
-                <div className="flex items-center gap-1 text-red-600 dark:text-red-500">
-                  <RiArrowDownLine className="size-3.5" />
-                  <span className="text-[10px] uppercase tracking-wide">Pasivos</span>
-                </div>
-                <span className="text-base font-semibold text-foreground">
-                  {productSummary.liabilities}
-                </span>
-              </div>
-            </div>
-
+        {/* Product summary */}
+        <div className="mt-2 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Tus productos
+            </h3>
             <Link
               to="/products"
-              className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-0.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Gestionar productos
-              <RiArrowRightLine className="size-3.5" />
+              Ver todos
+              <RiArrowRightLine className="size-3" />
             </Link>
           </div>
-        </div>
 
-        {/* Right column — chart */}
-        <div className="flex-1 min-w-0">
-          <NetWorthChart
-            points={points}
-            currency={activeCurrency}
-            period={period}
-            onPeriodChange={setPeriod}
-            isPositive={isPositive}
-            periodStartDate={periodStartDate}
-          />
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <RiBriefcaseLine className="size-3.5" />
+                <span className="text-[10px] uppercase tracking-wide">Total</span>
+              </div>
+              <span className="text-lg font-semibold text-foreground">{productSummary.total}</span>
+            </div>
+
+            <div className="h-8 w-px bg-border/50" />
+
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-500">
+                <RiArrowUpLine className="size-3.5" />
+                <span className="text-[10px] uppercase tracking-wide">Activos</span>
+              </div>
+              <span className="text-lg font-semibold text-foreground">{productSummary.assets}</span>
+            </div>
+
+            <div className="h-8 w-px bg-border/50" />
+
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1 text-red-600 dark:text-red-500">
+                <RiArrowDownLine className="size-3.5" />
+                <span className="text-[10px] uppercase tracking-wide">Pasivos</span>
+              </div>
+              <span className="text-lg font-semibold text-foreground">
+                {productSummary.liabilities}
+              </span>
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Right column — chart (stretches to full height) */}
+      <div className="min-w-0 flex-1">
+        <NetWorthChart
+          points={points}
+          currency={activeCurrency}
+          period={period}
+          onPeriodChange={setPeriod}
+          isPositive={isPositive}
+          periodStartDate={periodStartDate}
+        />
       </div>
     </div>
   );
