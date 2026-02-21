@@ -28,6 +28,10 @@ export function CreateProductForm() {
 
   return (
     <div className="space-y-6">
+      <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
+        <RiArrowLeftLine className="mr-1 h-4 w-4" />
+        Volver
+      </Button>
       <StepIndicator currentStep={stepIndex} totalSteps={totalSteps} steps={STEP_CONFIG} />
       <Card>
         <CardHeader>

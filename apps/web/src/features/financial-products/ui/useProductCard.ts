@@ -8,6 +8,11 @@ export function useProductCard(product: ProductResponse) {
   const formattedBalance = formatBalance(product.balance, product.currency);
 
   const meta = product.metadata as Record<string, unknown> | null;
+  const balanceUsd =
+    product.type === 'cash' && meta?.balanceUsd && typeof meta.balanceUsd === 'string'
+      ? formatBalance(meta.balanceUsd, 'USD')
+      : null;
+
   const creditLimit =
     product.type === 'credit_card' && meta?.creditLimit
       ? Number.parseFloat(meta.creditLimit as string)
@@ -21,6 +26,7 @@ export function useProductCard(product: ProductResponse) {
     isNegative,
     snippet,
     formattedBalance,
+    balanceUsd,
     usagePercent,
   };
 }

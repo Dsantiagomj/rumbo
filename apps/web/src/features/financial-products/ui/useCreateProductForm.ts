@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PRODUCT_TYPE_METADATA_MAP } from '@rumbo/shared';
-import { useNavigate } from '@tanstack/react-router';
+import { PRODUCT_TYPE_METADATA_MAP, type ProductResponse } from '@rumbo/shared';
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ApiError } from '@/shared/api';
@@ -16,7 +17,8 @@ type Step = 'type' | 'details' | 'review';
 const STEPS: Step[] = ['type', 'details', 'review'];
 
 export function useCreateProductForm() {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const mutation = useCreateProductMutation();
   const [currentStep, setCurrentStep] = useState<Step>('type');
 
@@ -86,7 +88,7 @@ export function useCreateProductForm() {
     }
 
     try {
-      await mutation.mutateAsync({
+      const newProduct = await mutation.mutateAsync({
         type: values.type,
         name: values.name,
         institution: values.institution,
@@ -94,7 +96,10 @@ export function useCreateProductForm() {
         currency: values.currency,
         metadata,
       });
-      navigate({ to: '/products' });
+      queryClient.setQueryData<{ products: ProductResponse[] }>(['financial-products'], (old) => ({
+        products: [...(old?.products ?? []), newProduct],
+      }));
+      router.history.back();
     } catch (error) {
       if (error instanceof ApiError && error.details) {
         for (const detail of error.details) {

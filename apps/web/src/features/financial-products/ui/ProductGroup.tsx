@@ -16,6 +16,7 @@ export function ProductGroup({ group, products }: ProductGroupProps) {
   if (products.length === 0) return null;
 
   const Icon = group.icon;
+  const isCash = group.key === 'cash';
 
   return (
     <section>
@@ -26,17 +27,27 @@ export function ProductGroup({ group, products }: ProductGroupProps) {
       >
         <Icon className="h-5 w-5 text-muted-foreground" />
         <h2 className="text-lg font-semibold">{group.label}</h2>
-        <span className="text-sm text-muted-foreground">({products.length})</span>
-        <span className="ml-auto text-sm font-medium tabular-nums">
-          {subtotals.map((s, i) => (
-            <span key={s.currency}>
-              {i > 0 && ' / '}
-              <span className={s.total < 0 ? 'text-destructive' : ''}>
-                {formatBalance(String(s.total), s.currency)}
-              </span>
+        {!isCash && (
+          <>
+            <span className="text-sm text-muted-foreground">({products.length})</span>
+            <span className="ml-auto text-sm font-medium tabular-nums">
+              {subtotals.map((s, i) => (
+                <span key={s.currency}>
+                  {i > 0 && ' · '}
+                  <span className={s.total < 0 ? 'text-destructive' : ''}>
+                    {formatBalance(String(s.total), s.currency)}
+                  </span>
+                  {subtotals.length > 1 && (
+                    <span className="ml-0.5 text-xs font-normal text-muted-foreground">
+                      {s.currency}
+                    </span>
+                  )}
+                </span>
+              ))}
             </span>
-          ))}
-        </span>
+          </>
+        )}
+        {isCash && <span className="ml-auto" />}
         <RiArrowDownSLine
           className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200 ${
             isOpen ? '' : '-rotate-90'
