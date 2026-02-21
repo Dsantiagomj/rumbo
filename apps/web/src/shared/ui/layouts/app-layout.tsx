@@ -87,7 +87,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         }`}
       >
         {/* Logo */}
-        <div className="flex h-14 items-center justify-center gap-2 px-3.5">
+        <div className="flex h-14 items-center gap-2 px-3.5">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
             R
           </div>
