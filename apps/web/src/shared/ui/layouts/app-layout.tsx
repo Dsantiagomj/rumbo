@@ -1,6 +1,14 @@
-import { RiCloseLine, RiLogoutBoxRLine, RiSettingsLine, RiSideBarLine } from '@remixicon/react';
+import {
+  RiArrowRightSLine,
+  RiCloseLine,
+  RiLogoutBoxRLine,
+  RiNotification3Line,
+  RiSettingsLine,
+  RiSideBarLine,
+  RiUserLine,
+} from '@remixicon/react';
 import { Link, useLocation, useNavigate, useRouteContext } from '@tanstack/react-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +48,28 @@ export function AppLayout({ children }: AppLayoutProps) {
     await authClient.signOut();
     await navigate({ to: '/login' });
   };
+
+  const breadcrumbs = useMemo(() => {
+    const segmentLabels: Record<string, string> = {
+      settings: 'Settings',
+      transactions: 'Transactions',
+      products: 'Products',
+      new: 'New',
+      edit: 'Edit',
+    };
+
+    const segments = location.pathname.split('/').filter(Boolean);
+    const crumbs: { label: string; path: string }[] = [{ label: 'Home', path: '/' }];
+
+    let currentPath = '';
+    for (const segment of segments) {
+      currentPath += `/${segment}`;
+      const label = segmentLabels[segment] ?? segment;
+      crumbs.push({ label, path: currentPath });
+    }
+
+    return crumbs;
+  }, [location.pathname]);
 
   const linkClass = (active: boolean) =>
     `relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
@@ -109,7 +139,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Main content area — white inset panel */}
       <div className="flex flex-1 flex-col overflow-hidden md:rounded-l-2xl bg-background md:shadow-sm">
         {/* Desktop content header */}
-        <header className="hidden md:flex h-12 items-center justify-between border-b border-border/40 px-4">
+        <header className="hidden md:flex h-12 items-center gap-3 border-b border-border/40 px-4">
           <button
             type="button"
             onClick={toggleSidebar}
@@ -119,36 +149,75 @@ export function AppLayout({ children }: AppLayoutProps) {
             <RiSideBarLine className="h-[18px] w-[18px]" />
           </button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground hover:ring-2 hover:ring-accent-foreground/20 transition-all"
-              >
-                {initials}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium leading-none">{user.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/settings">
-                  <RiSettingsLine className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <RiLogoutBoxRLine className="mr-2 h-4 w-4" />
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Breadcrumbs */}
+          <nav className="flex flex-1 items-center gap-1 min-w-0" aria-label="Breadcrumb">
+            {breadcrumbs.map((crumb, i) => {
+              const isLast = i === breadcrumbs.length - 1;
+              return (
+                <span key={crumb.path} className="flex items-center gap-1 min-w-0">
+                  {i > 0 && (
+                    <RiArrowRightSLine className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                  )}
+                  {isLast ? (
+                    <span className="text-sm font-semibold text-foreground truncate">
+                      {crumb.label}
+                    </span>
+                  ) : (
+                    <Link
+                      to={crumb.path}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate"
+                    >
+                      {crumb.label}
+                    </Link>
+                  )}
+                </span>
+              );
+            })}
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled
+              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground/40 cursor-not-allowed"
+              aria-label="Notifications"
+              title="Notifications (coming soon)"
+            >
+              <RiNotification3Line className="h-[18px] w-[18px]" />
+            </button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground hover:ring-2 hover:ring-accent-foreground/20 transition-all"
+                >
+                  {initials}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/settings">
+                    <RiUserLine className="mr-2 h-4 w-4" />
+                    Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <RiLogoutBoxRLine className="mr-2 h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </header>
 
         {/* Mobile header */}
