@@ -48,7 +48,7 @@ export function ProductsList() {
     );
   }
 
-  if (isError) {
+  if (isError && products.length === 0) {
     return (
       <div className="space-y-6">
         <Alert variant="destructive">
@@ -66,6 +66,8 @@ export function ProductsList() {
     return <ProductsEmptyState />;
   }
 
+  const showErrorBanner = isError && products.length > 0;
+
   return (
     <>
       <div className="md:grid md:grid-cols-[320px_1fr] md:gap-8 md:min-h-full">
@@ -80,7 +82,7 @@ export function ProductsList() {
             <QuickStats products={products} currency={activeCurrency} />
 
             <div className="hidden md:block">
-              <Button size="sm" className="w-full" asChild>
+              <Button className="w-full h-10" asChild>
                 <Link to="/products/new">
                   <RiAddLine className="h-4 w-4" />
                   Agregar producto
@@ -91,6 +93,19 @@ export function ProductsList() {
         </div>
 
         <div className="max-w-3xl space-y-6 mt-6 md:mt-0">
+          {showErrorBanner && (
+            <Alert variant="destructive">
+              <AlertTitle>Error al actualizar productos</AlertTitle>
+              <AlertDescription>
+                Mostramos datos en cache. Reintenta para actualizar la lista.
+              </AlertDescription>
+              <div className="mt-3">
+                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  Reintentar
+                </Button>
+              </div>
+            </Alert>
+          )}
           <ProductsToolbar />
 
           {productGroups.map(({ group, items }) => (

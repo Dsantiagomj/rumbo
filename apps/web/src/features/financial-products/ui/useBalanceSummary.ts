@@ -5,6 +5,12 @@ import { CURRENCY_LABELS, formatBalance } from '../model/constants';
 export function useBalanceSummary(products: ProductResponse[], activeCurrency: Currency) {
   const totals = products.reduce<Partial<Record<Currency, number>>>((acc, p) => {
     acc[p.currency] = (acc[p.currency] ?? 0) + Number.parseFloat(p.balance);
+
+    const meta = p.metadata as Record<string, unknown> | null;
+    if (meta?.balanceUsd && typeof meta.balanceUsd === 'string') {
+      acc.USD = (acc.USD ?? 0) + Number.parseFloat(meta.balanceUsd);
+    }
+
     return acc;
   }, {});
 

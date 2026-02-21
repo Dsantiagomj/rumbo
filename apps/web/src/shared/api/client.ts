@@ -5,6 +5,7 @@ export class ApiError extends Error {
     public status: number,
     public code: string,
     message: string,
+    public details?: Array<{ path: (string | number)[]; message: string }>,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -16,6 +17,7 @@ type ApiErrorBody = {
     message: string;
     code: string;
     status: number;
+    details?: Array<{ path: (string | number)[]; message: string }>;
   };
 };
 
@@ -34,18 +36,20 @@ export async function apiClient<T>(path: string, options?: RequestInit): Promise
   if (!response.ok) {
     let code = 'UNKNOWN_ERROR';
     let message = `Request failed with status ${response.status}`;
+    let details: ApiErrorBody['error']['details'];
 
     try {
       const body = (await response.json()) as ApiErrorBody;
       if (body.error) {
         code = body.error.code;
         message = body.error.message;
+        details = body.error.details;
       }
     } catch {
       // Response body is not JSON, use defaults
     }
 
-    throw new ApiError(response.status, code, message);
+    throw new ApiError(response.status, code, message, details);
   }
 
   return response.json() as Promise<T>;
