@@ -2,9 +2,11 @@ import {
   RiArrowRightSLine,
   RiCloseLine,
   RiLogoutBoxRLine,
+  RiMoonClearLine,
   RiNotification3Line,
   RiSettingsLine,
   RiSideBarLine,
+  RiSunLine,
   RiUserLine,
 } from '@remixicon/react';
 import { Link, useLocation, useNavigate, useRouteContext } from '@tanstack/react-router';
@@ -19,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { authClient } from '@/shared/api';
 import { useLocalStorage } from '@/shared/lib/useLocalStorage';
+import { useTheme } from '@/shared/lib/useTheme';
 import { navItems } from './nav-items';
 
 interface AppLayoutProps {
@@ -31,6 +34,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user } = useRouteContext({ from: '/_app' });
   const [userDrawerOpen, setUserDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useLocalStorage('sidebar-collapsed', false);
+  const { resolved, toggle: toggleTheme } = useTheme();
 
   const toggleSidebar = useCallback(() => setCollapsed((prev) => !prev), [setCollapsed]);
 
@@ -91,11 +95,13 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
             R
           </div>
-          {!collapsed && (
-            <span className="flex-1 text-base font-bold text-foreground whitespace-nowrap animate-in fade-in duration-200">
-              Rumbo
-            </span>
-          )}
+          <span
+            className={`flex-1 text-base font-bold text-foreground whitespace-nowrap transition-opacity duration-200 ${
+              collapsed ? 'opacity-0' : 'opacity-100'
+            }`}
+          >
+            Rumbo
+          </span>
         </div>
 
         {/* Navigation */}
@@ -110,11 +116,13 @@ export function AppLayout({ children }: AppLayoutProps) {
             return (
               <Link key={item.path} to={item.path} className={linkClass(isActive)}>
                 <Icon className="h-5 w-5 shrink-0" />
-                {!collapsed && (
-                  <span className="whitespace-nowrap animate-in fade-in duration-200">
-                    {item.label}
-                  </span>
-                )}
+                <span
+                  className={`whitespace-nowrap transition-opacity duration-200 ${
+                    collapsed ? 'opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  {item.label}
+                </span>
               </Link>
             );
           })}
@@ -129,9 +137,13 @@ export function AppLayout({ children }: AppLayoutProps) {
             )}
           >
             <RiSettingsLine className="h-5 w-5 shrink-0" />
-            {!collapsed && (
-              <span className="whitespace-nowrap animate-in fade-in duration-200">Settings</span>
-            )}
+            <span
+              className={`whitespace-nowrap transition-opacity duration-200 ${
+                collapsed ? 'opacity-0' : 'opacity-100'
+              }`}
+            >
+              Settings
+            </span>
           </Link>
         </div>
       </aside>
@@ -185,6 +197,19 @@ export function AppLayout({ children }: AppLayoutProps) {
               title="Notifications (coming soon)"
             >
               <RiNotification3Line className="h-[18px] w-[18px]" />
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+              aria-label={resolved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {resolved === 'dark' ? (
+                <RiSunLine className="h-[18px] w-[18px]" />
+              ) : (
+                <RiMoonClearLine className="h-[18px] w-[18px]" />
+              )}
             </button>
 
             <DropdownMenu>
