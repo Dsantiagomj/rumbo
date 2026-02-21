@@ -20,6 +20,7 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
+import { Route as AppBudgetsRouteImport } from './routes/_app/budgets'
 import { Route as SettingsSettingsIndexRouteImport } from './routes/_settings/settings/index'
 import { Route as AppProductsIndexRouteImport } from './routes/_app/products.index'
 import { Route as SettingsSettingsSecurityRouteImport } from './routes/_settings/settings/security'
@@ -82,6 +83,11 @@ const AppTransactionsRoute = AppTransactionsRouteImport.update({
   path: '/transactions',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBudgetsRoute = AppBudgetsRouteImport.update({
+  id: '/budgets',
+  path: '/budgets',
+  getParentRoute: () => AppRoute,
+} as any)
 const SettingsSettingsIndexRoute = SettingsSettingsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -136,6 +142,7 @@ const AppProductsProductIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/budgets': typeof AppBudgetsRoute
   '/transactions': typeof AppTransactionsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/budgets': typeof AppBudgetsRoute
   '/transactions': typeof AppTransactionsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/_settings': typeof SettingsRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
+  '/_app/budgets': typeof AppBudgetsRoute
   '/_app/transactions': typeof AppTransactionsRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/verify-email'
+    | '/budgets'
     | '/transactions'
     | '/forgot-password'
     | '/login'
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/verify-email'
+    | '/budgets'
     | '/transactions'
     | '/forgot-password'
     | '/login'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_settings'
     | '/verify-email'
+    | '/_app/budgets'
     | '/_app/transactions'
     | '/_auth/forgot-password'
     | '/_auth/login'
@@ -341,6 +353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTransactionsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/budgets': {
+      id: '/_app/budgets'
+      path: '/budgets'
+      fullPath: '/budgets'
+      preLoaderRoute: typeof AppBudgetsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_settings/settings/': {
       id: '/_settings/settings/'
       path: '/'
@@ -408,6 +427,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppBudgetsRoute: typeof AppBudgetsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppProductsNewRoute: typeof AppProductsNewRoute
@@ -417,6 +437,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBudgetsRoute: AppBudgetsRoute,
   AppTransactionsRoute: AppTransactionsRoute,
   AppIndexRoute: AppIndexRoute,
   AppProductsNewRoute: AppProductsNewRoute,

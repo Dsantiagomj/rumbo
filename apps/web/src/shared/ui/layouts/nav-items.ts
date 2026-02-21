@@ -1,5 +1,5 @@
 import type { RemixiconComponentType } from '@remixicon/react';
-import { RiExchangeLine, RiHomeLine, RiWalletLine } from '@remixicon/react';
+import { RiExchangeLine, RiHomeLine, RiPieChartLine } from '@remixicon/react';
 
 export type NavItem = {
   label: string;
@@ -8,7 +8,7 @@ export type NavItem = {
 };
 
 export const navItems: NavItem[] = [
-  { label: 'Home', path: '/', icon: RiHomeLine },
+  { label: 'Dashboard', path: '/', icon: RiHomeLine },
   { label: 'Transactions', path: '/transactions', icon: RiExchangeLine },
-  { label: 'Products', path: '/products', icon: RiWalletLine },
+  { label: 'Budgets', path: '/budgets', icon: RiPieChartLine },
 ];

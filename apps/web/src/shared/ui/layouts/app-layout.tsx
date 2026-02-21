@@ -123,19 +123,22 @@ export function AppLayout({ children }: AppLayoutProps) {
   // Use resolvedLocation for breadcrumbs to prevent flash during cross-layout transitions.
   // resolvedLocation only updates after navigation completes, keeping the old breadcrumb
   // visible while the view transition animates to the new layout.
-  const resolvedPathname = useRouterState({ select: (s) => s.resolvedLocation.pathname });
+  const resolvedPathname = useRouterState({
+    select: (s) => s.resolvedLocation?.pathname ?? location.pathname,
+  });
 
   const breadcrumbs = useMemo(() => {
     const segmentLabels: Record<string, string> = {
       settings: 'Settings',
       transactions: 'Transactions',
       products: 'Products',
+      budgets: 'Budgets',
       new: 'New',
       edit: 'Edit',
     };
 
     const segments = resolvedPathname.split('/').filter(Boolean);
-    const crumbs: { label: string; path: string }[] = [{ label: 'Home', path: '/' }];
+    const crumbs: { label: string; path: string }[] = [{ label: 'Dashboard', path: '/' }];
 
     let currentPath = '';
     for (const segment of segments) {
