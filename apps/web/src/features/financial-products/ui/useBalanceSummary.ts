@@ -1,5 +1,4 @@
 import type { Currency, ProductResponse } from '@rumbo/shared';
-import { CURRENCIES } from '@rumbo/shared';
 import { CURRENCY_LABELS, formatBalance } from '../model/constants';
 
 export function useBalanceSummary(products: ProductResponse[], activeCurrency: Currency) {
@@ -14,7 +13,9 @@ export function useBalanceSummary(products: ProductResponse[], activeCurrency: C
     return acc;
   }, {});
 
-  const currencies = CURRENCIES;
+  const currencies = (Object.keys(totals) as Currency[]).filter(
+    (currency) => totals[currency] !== undefined,
+  );
   const total = totals[activeCurrency] ?? 0;
   const isNegative = total < 0;
   const formattedTotal = formatBalance(String(total), activeCurrency);
