@@ -163,35 +163,37 @@ export function TransactionsSection({ balance, currency, createdAt }: Transactio
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <RiSearchLine className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input type="search" placeholder="Buscar transaccion..." className="pl-9" disabled />
+      {/* Search + filters */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <RiSearchLine className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input type="search" placeholder="Buscar transaccion..." className="pl-9" disabled />
+        </div>
+        <div className="flex gap-1.5">
+          <FilterChip label="Categoria" />
+          <FilterChip label="Tipo" />
+          <FilterChip label="Fecha" />
+        </div>
       </div>
 
-      {/* Filter chips */}
-      <div className="flex flex-wrap items-center gap-2">
-        <FilterChip label="Categoria" />
-        <FilterChip label="Tipo" />
-        <FilterChip label="Fecha" />
-      </div>
-
-      {/* Column headers */}
+      {/* Select all bar */}
       <div className="flex items-center gap-3 rounded-lg bg-muted px-4 py-2.5">
         <Checkbox
           checked={isAllSelected}
           onCheckedChange={toggleSelectAll}
           aria-label="Seleccionar todas las transacciones"
         />
-        <span className="flex-1 text-xs font-medium uppercase text-muted-foreground">Fecha</span>
-        <span className="text-xs font-medium uppercase text-muted-foreground">Monto</span>
+        <span className="flex-1 text-xs font-medium text-muted-foreground">Seleccionar todas</span>
+        <span className="text-xs font-medium text-muted-foreground tabular-nums">
+          {allTransactionIds.length} transaccion{allTransactionIds.length !== 1 ? 'es' : ''}
+        </span>
       </div>
 
       {/* Date group */}
-      <div className="rounded-lg border border-border">
-        {/* Date header with expand/collapse */}
+      <div>
+        {/* Date header with balance reconciliation */}
         <details className="group">
-          <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden px-4 py-3 flex items-center justify-between text-xs font-medium text-muted-foreground">
+          <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden flex items-center justify-between px-1 py-2 text-xs font-semibold text-muted-foreground">
             <p className="uppercase">
               <span>{formattedDate}</span>
               <span className="mx-1.5">&middot;</span>
@@ -209,7 +211,7 @@ export function TransactionsSection({ balance, currency, createdAt }: Transactio
           </summary>
 
           {/* Balance reconciliation */}
-          <div className="space-y-2.5 border-t border-border px-4 py-3">
+          <div className="space-y-2.5 rounded-lg border border-border bg-muted/30 px-4 py-3 mb-2">
             <SummaryRow
               label="Balance inicial"
               amount={formattedBalance}
@@ -236,28 +238,64 @@ export function TransactionsSection({ balance, currency, createdAt }: Transactio
           </div>
         </details>
 
-        {/* Opening balance transaction row */}
-        <div className="flex items-center gap-3 border-t border-border px-4 py-3 transition-colors hover:bg-muted/50">
-          <Checkbox
-            checked={selectedIds.has(OPENING_BALANCE_ID)}
-            onCheckedChange={() => toggleSelection(OPENING_BALANCE_ID)}
-            aria-label="Seleccionar Balance inicial"
-          />
-          <button
-            type="button"
-            onClick={() => setIsDetailOpen(true)}
-            className="cursor-pointer flex flex-1 items-center gap-3 text-left"
-          >
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
-              <RiAddLine className="h-3.5 w-3.5 text-primary" />
+        {/* Transaction cards */}
+        <div className="space-y-2">
+          {/* Opening balance card */}
+          <div className="group relative rounded-xl border border-border p-4 transition-all hover:border-foreground/20 hover:shadow-sm">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                checked={selectedIds.has(OPENING_BALANCE_ID)}
+                onCheckedChange={() => toggleSelection(OPENING_BALANCE_ID)}
+                aria-label="Seleccionar Balance inicial"
+                className="mt-0.5"
+              />
+              <button
+                type="button"
+                onClick={() => setIsDetailOpen(true)}
+                className="cursor-pointer flex flex-1 items-start gap-3 text-left"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                  <RiAddLine className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold truncate">Balance inicial</p>
+                    <p
+                      className={`text-sm font-bold tabular-nums shrink-0 ${balanceValue < 0 ? 'text-destructive' : ''}`}
+                    >
+                      {formattedBalance}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      <RiPriceTag3Line className="mr-1 h-2.5 w-2.5" />
+                      Sin categoria
+                    </span>
+                  </div>
+                </div>
+              </button>
             </div>
-            <span className="flex-1 truncate text-sm font-medium">Balance inicial</span>
-            <span
-              className={`text-sm font-semibold tabular-nums ${balanceValue < 0 ? 'text-destructive' : ''}`}
-            >
-              {formattedBalance}
-            </span>
-          </button>
+
+            {/* Hover actions (desktop only) */}
+            <div className="absolute top-3 right-3 hidden items-center gap-0.5 rounded-lg border border-border bg-background p-0.5 shadow-sm md:group-hover:flex">
+              <button
+                type="button"
+                disabled
+                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Editar"
+              >
+                <RiEditLine className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                disabled
+                className="cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Eliminar"
+              >
+                <RiDeleteBinLine className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
