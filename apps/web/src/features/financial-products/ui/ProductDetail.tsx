@@ -5,7 +5,6 @@ import {
   RiExchangeLine,
   RiInformationLine,
   RiMoreLine,
-  RiTimeLine,
 } from '@remixicon/react';
 import type { ProductResponse } from '@rumbo/shared';
 import { Link, useRouter } from '@tanstack/react-router';
@@ -39,6 +38,7 @@ import { useIsMobile } from '@/shared/lib/useIsMobile';
 import { Button, Card, CardContent, Separator, Skeleton } from '@/shared/ui';
 import { PRODUCT_GROUPS } from '../model/constants';
 import { METADATA_FIELD_CONFIG, PRODUCT_TYPE_LABELS } from '../model/form-schemas';
+import { TransactionsSection } from './TransactionsSection';
 import { useProductCard } from './useProductCard';
 import { useProductDetail } from './useProductDetail';
 
@@ -379,14 +379,12 @@ export function ProductDetail({ productId }: { productId: string }) {
           createdDate={createdDate}
         />
 
-        {/* Transactions placeholder */}
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-            <RiTimeLine className="h-8 w-8 text-muted-foreground/50 mb-2" />
-            <p className="text-sm font-medium text-muted-foreground">Transacciones</p>
-            <p className="text-xs text-muted-foreground">Proximamente</p>
-          </CardContent>
-        </Card>
+        {/* Transactions */}
+        <TransactionsSection
+          balance={product.balance}
+          currency={product.currency}
+          createdAt={product.createdAt}
+        />
       </div>
 
       {/* Info sheet (mobile only) */}

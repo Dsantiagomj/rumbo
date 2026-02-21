@@ -30,7 +30,7 @@ function FilterChip({ label }: { label: string }) {
     <button
       type="button"
       disabled
-      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted disabled:opacity-60 disabled:cursor-not-allowed"
+      className="cursor-pointer inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {label}
       <RiArrowDownSLine className="h-3.5 w-3.5" />

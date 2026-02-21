@@ -23,7 +23,7 @@ export function ProductGroup({ group, products }: ProductGroupProps) {
       <button
         type="button"
         onClick={toggleOpen}
-        className="mb-3 flex w-full items-center gap-2 text-left"
+        className="cursor-pointer mb-3 flex w-full items-center gap-2 text-left"
       >
         <Icon className="h-5 w-5 text-muted-foreground" />
         <h2 className="text-lg font-semibold">{group.label}</h2>

@@ -89,7 +89,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <button
             type="button"
             onClick={handleLogout}
-            className="relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium transition-colors text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground w-full"
+            className="cursor-pointer relative flex items-center gap-3 rounded-md px-2.5 py-2 text-sm font-medium transition-colors text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground w-full"
           >
             <RiLogoutBoxRLine className="h-5 w-5 shrink-0" />
             <span className="whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
@@ -116,7 +116,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <button
             type="button"
             onClick={() => setUserDrawerOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground"
+            className="cursor-pointer flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground"
           >
             {initials}
           </button>
@@ -138,7 +138,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <>
             <button
               type="button"
-              className="fixed inset-0 z-40 bg-black/40 md:hidden"
+              className="cursor-pointer fixed inset-0 z-40 bg-black/40 md:hidden"
               onClick={() => setUserDrawerOpen(false)}
               aria-label="Close drawer"
             />
@@ -149,7 +149,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <button
                   type="button"
                   onClick={() => setUserDrawerOpen(false)}
-                  className="flex h-9 w-9 items-center justify-center rounded-md text-foreground hover:bg-accent"
+                  className="cursor-pointer flex h-9 w-9 items-center justify-center rounded-md text-foreground hover:bg-accent"
                 >
                   <RiCloseLine className="h-5 w-5" />
                 </button>
@@ -181,7 +181,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground/60 hover:bg-accent/50 hover:text-foreground transition-colors w-full"
+                  className="cursor-pointer flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground/60 hover:bg-accent/50 hover:text-foreground transition-colors w-full"
                 >
                   <RiLogoutBoxRLine className="h-5 w-5 shrink-0" />
                   <span>Log out</span>

@@ -2,6 +2,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
 import { Toaster } from 'sileo';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { queryClient } from '@/shared/api';
 import 'sileo/styles.css';
 
@@ -28,7 +29,9 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <TooltipProvider>
+        <Outlet />
+      </TooltipProvider>
       <Toaster
         position="top-right"
         options={{ fill: 'black', autopilot: true, styles: { description: 'text-white/75!' } }}
