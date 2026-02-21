@@ -10,8 +10,16 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product, icon: Icon }: ProductCardProps) {
-  const { isNegative, snippet, formattedBalance, balanceUsd, usagePercent } =
-    useProductCard(product);
+  const {
+    isNegative,
+    snippet,
+    formattedBalance,
+    balanceUsd,
+    isBalanceUsdNegative,
+    usagePercent,
+    creditLimitLabel,
+    loanProgress,
+  } = useProductCard(product);
 
   return (
     <Card className="ring-transparent border border-border hover:border-foreground/20 hover:bg-muted/50 transition-colors cursor-pointer">
@@ -26,11 +34,29 @@ export function ProductCard({ product, icon: Icon }: ProductCardProps) {
           </p>
           {snippet && <p className="truncate text-xs text-muted-foreground mt-0.5">{snippet}</p>}
           {usagePercent !== null && (
-            <div className="mt-1.5 h-1.5 w-full max-w-48 rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${usagePercent}%` }}
-              />
+            <div className="mt-1.5">
+              <div className="h-1.5 w-full max-w-48 rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${usagePercent}%` }}
+                />
+              </div>
+              {creditLimitLabel && (
+                <p className="text-xs text-muted-foreground mt-0.5">{creditLimitLabel}</p>
+              )}
+            </div>
+          )}
+          {loanProgress !== null && (
+            <div className="mt-1.5">
+              <div className="h-1.5 w-full max-w-48 rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${loanProgress.percent}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {loanProgress.paid} de {loanProgress.total} cuotas
+              </p>
             </div>
           )}
         </div>
@@ -46,7 +72,9 @@ export function ProductCard({ product, icon: Icon }: ProductCardProps) {
             )}
           </p>
           {balanceUsd && (
-            <p className="text-sm font-semibold tabular-nums">
+            <p
+              className={`text-sm font-semibold tabular-nums ${isBalanceUsdNegative ? 'text-destructive' : ''}`}
+            >
               {balanceUsd}
               <span className="ml-1 text-xs font-normal text-muted-foreground">USD</span>
             </p>

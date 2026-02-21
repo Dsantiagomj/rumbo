@@ -8,10 +8,14 @@ export function useProductCard(product: ProductResponse) {
   const formattedBalance = formatBalance(product.balance, product.currency);
 
   const meta = product.metadata as Record<string, unknown> | null;
-  const balanceUsd =
-    product.type === 'cash' && meta?.balanceUsd && typeof meta.balanceUsd === 'string'
-      ? formatBalance(meta.balanceUsd, 'USD')
+  const rawBalanceUsd =
+    (product.type === 'cash' || product.type === 'credit_card') &&
+    meta?.balanceUsd &&
+    typeof meta.balanceUsd === 'string'
+      ? meta.balanceUsd
       : null;
+  const balanceUsd = rawBalanceUsd ? formatBalance(rawBalanceUsd, 'USD') : null;
+  const isBalanceUsdNegative = rawBalanceUsd ? Number.parseFloat(rawBalanceUsd) < 0 : false;
 
   const creditLimit =
     product.type === 'credit_card' && meta?.creditLimit
@@ -21,12 +25,35 @@ export function useProductCard(product: ProductResponse) {
     creditLimit && creditLimit > 0
       ? Math.min(Math.round((Math.abs(balance) / creditLimit) * 100), 100)
       : null;
+  const creditLimitLabel =
+    creditLimit && creditLimit > 0
+      ? `Cupo: ${formatBalance(String(creditLimit), product.currency)}`
+      : null;
+
+  const isLoan = product.type === 'loan_free_investment' || product.type === 'loan_mortgage';
+  const totalTerm =
+    isLoan && meta?.totalTerm && typeof meta.totalTerm === 'number' ? meta.totalTerm : null;
+  const remainingTerm =
+    isLoan && meta?.remainingTerm && typeof meta.remainingTerm === 'number'
+      ? meta.remainingTerm
+      : null;
+  const loanProgress =
+    totalTerm && totalTerm > 0 && remainingTerm !== null
+      ? {
+          paid: totalTerm - remainingTerm,
+          total: totalTerm,
+          percent: Math.min(Math.round(((totalTerm - remainingTerm) / totalTerm) * 100), 100),
+        }
+      : null;
 
   return {
     isNegative,
     snippet,
     formattedBalance,
     balanceUsd,
+    isBalanceUsdNegative,
     usagePercent,
+    creditLimitLabel,
+    loanProgress,
   };
 }

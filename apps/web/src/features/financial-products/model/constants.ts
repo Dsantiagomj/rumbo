@@ -55,9 +55,8 @@ export function getMetadataSnippet(product: ProductResponse): string | null {
   switch (product.type) {
     case 'credit_card': {
       const last4 = meta.last4Digits as string | undefined;
-      const limit = meta.creditLimit as string | undefined;
-      if (!last4 || !limit) return null;
-      return `**** ${last4} \u00B7 Cupo: ${formatBalance(limit, product.currency)}`;
+      if (!last4) return null;
+      return `**** ${last4}`;
     }
 
     case 'savings':
