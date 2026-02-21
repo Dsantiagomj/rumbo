@@ -45,6 +45,7 @@ export function SettingsLayout() {
         <div className="flex h-14 items-center px-3.5">
           <Link
             to="/"
+            viewTransition
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             <RiArrowLeftLine className="h-4 w-4" />
@@ -69,6 +70,7 @@ export function SettingsLayout() {
         <header className="flex md:hidden h-14 items-center gap-3 border-b border-border px-4">
           <Link
             to="/"
+            viewTransition
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             <RiArrowLeftLine className="h-4 w-4" />

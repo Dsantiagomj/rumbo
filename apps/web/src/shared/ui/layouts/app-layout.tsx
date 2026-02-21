@@ -7,7 +7,13 @@ import {
   RiSideBarLine,
   RiSparklingLine,
 } from '@remixicon/react';
-import { Link, useLocation, useNavigate, useRouteContext } from '@tanstack/react-router';
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useRouteContext,
+  useRouterState,
+} from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DropdownMenu,
@@ -114,6 +120,11 @@ export function AppLayout({ children }: AppLayoutProps) {
     await navigate({ to: '/login' });
   };
 
+  // Use resolvedLocation for breadcrumbs to prevent flash during cross-layout transitions.
+  // resolvedLocation only updates after navigation completes, keeping the old breadcrumb
+  // visible while the view transition animates to the new layout.
+  const resolvedPathname = useRouterState({ select: (s) => s.resolvedLocation.pathname });
+
   const breadcrumbs = useMemo(() => {
     const segmentLabels: Record<string, string> = {
       settings: 'Settings',
@@ -123,7 +134,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       edit: 'Edit',
     };
 
-    const segments = location.pathname.split('/').filter(Boolean);
+    const segments = resolvedPathname.split('/').filter(Boolean);
     const crumbs: { label: string; path: string }[] = [{ label: 'Home', path: '/' }];
 
     let currentPath = '';
@@ -134,7 +145,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
 
     return crumbs;
-  }, [location.pathname]);
+  }, [resolvedPathname]);
 
   const linkClass = (active: boolean) =>
     `relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${
@@ -240,6 +251,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <div className="p-2">
           <Link
             to="/settings"
+            viewTransition
             className={linkClass(
               location.pathname === '/settings' || location.pathname.startsWith('/settings/'),
             )}
