@@ -1,14 +1,11 @@
 import {
+  RiArrowDownSLine,
   RiArrowRightSLine,
   RiCloseLine,
   RiLogoutBoxRLine,
-  RiMoonClearLine,
-  RiNotification3Line,
   RiSettingsLine,
   RiSideBarLine,
   RiSparklingLine,
-  RiSunLine,
-  RiUserLine,
 } from '@remixicon/react';
 import { Link, useLocation, useNavigate, useRouteContext } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -20,9 +17,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { authClient } from '@/shared/api';
 import { useLocalStorage } from '@/shared/lib/useLocalStorage';
-import { useTheme } from '@/shared/lib/useTheme';
 import { navItems } from './nav-items';
 
 interface AppLayoutProps {
@@ -37,20 +34,35 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [collapsed, setCollapsed] = useLocalStorage('sidebar-collapsed', false);
   const [assistantOpen, setAssistantOpen] = useLocalStorage('assistant-open', false);
   const [mobileAssistantOpen, setMobileAssistantOpen] = useState(false);
-  const { resolved, toggle: toggleTheme } = useTheme();
 
   const toggleSidebar = useCallback(() => setCollapsed((prev) => !prev), [setCollapsed]);
   const toggleAssistant = useCallback(() => setAssistantOpen((prev) => !prev), [setAssistantOpen]);
 
-  // ESC to close assistant panel (desktop)
+  const isMac = useMemo(
+    () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent),
+    [],
+  );
+  const modKey = isMac ? '\u2318' : 'Ctrl+';
+
+  // Keyboard shortcuts: ⌘B (sidebar), ⌘I (assistant), ESC (close assistant)
   useEffect(() => {
-    if (!assistantOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setAssistantOpen(false);
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+      if (mod && e.key === 'i') {
+        e.preventDefault();
+        toggleAssistant();
+      }
+      if (e.key === 'Escape' && assistantOpen) {
+        setAssistantOpen(false);
+      }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [assistantOpen, setAssistantOpen]);
+  }, [toggleSidebar, toggleAssistant, assistantOpen, setAssistantOpen]);
 
   const initials = user.name
     ? user.name
@@ -118,6 +130,53 @@ export function AppLayout({ children }: AppLayoutProps) {
           </span>
         </div>
 
+        {/* Workspace context */}
+        <div className="px-2 pb-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="cursor-pointer flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left hover:bg-sidebar-accent/50 transition-colors"
+              >
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground">
+                  {initials}
+                </div>
+                <div
+                  className={`flex flex-1 flex-col overflow-hidden transition-opacity duration-200 ${
+                    collapsed ? 'opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-sidebar-foreground/40">
+                    Space
+                  </span>
+                  <span className="text-sm font-semibold text-sidebar-foreground/80 truncate">
+                    Personal
+                  </span>
+                </div>
+                <RiArrowDownSLine
+                  className={`h-4 w-4 shrink-0 text-sidebar-foreground/40 transition-opacity duration-200 ${
+                    collapsed ? 'opacity-0' : 'opacity-100'
+                  }`}
+                />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="bottom" className="w-56">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                Spaces
+              </DropdownMenuLabel>
+              <DropdownMenuItem className="gap-2">
+                <span className="h-2 w-2 rounded-full bg-primary" />
+                Personal
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled className="gap-2 text-xs text-muted-foreground">
+                <span className="text-base leading-none">+</span>
+                Create space
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         {/* Navigation */}
         <nav className="flex flex-1 flex-col gap-0.5 p-2">
           {navItems.map((item) => {
@@ -166,14 +225,28 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="flex flex-1 flex-col overflow-hidden md:rounded-l-2xl bg-background md:shadow-sm">
         {/* Desktop content header */}
         <header className="hidden md:flex h-12 items-center gap-3 border-b border-border/40 px-4">
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            <RiSideBarLine className="h-[18px] w-[18px]" />
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+                  aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                >
+                  <RiSideBarLine className="h-[18px] w-[18px]" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <span className="flex items-center gap-2">
+                  Toggle sidebar
+                  <kbd className="rounded bg-background/20 px-1.5 py-0.5 font-mono text-[10px]">
+                    {modKey}B
+                  </kbd>
+                </span>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Breadcrumbs */}
           <nav className="flex flex-1 items-center gap-1 min-w-0" aria-label="Breadcrumb">
@@ -202,75 +275,32 @@ export function AppLayout({ children }: AppLayoutProps) {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleAssistant}
-              className={`cursor-pointer flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
-                assistantOpen
-                  ? 'bg-accent text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-              }`}
-              aria-label={assistantOpen ? 'Close assistant' : 'Open assistant'}
-              title="AI Assistant"
-            >
-              <RiSparklingLine className="h-[18px] w-[18px]" />
-            </button>
-
-            <button
-              type="button"
-              disabled
-              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground/40 cursor-not-allowed"
-              aria-label="Notifications"
-              title="Notifications (coming soon)"
-            >
-              <RiNotification3Line className="h-[18px] w-[18px]" />
-            </button>
-
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-              aria-label={resolved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {resolved === 'dark' ? (
-                <RiSunLine className="h-[18px] w-[18px]" />
-              ) : (
-                <RiMoonClearLine className="h-[18px] w-[18px]" />
-              )}
-            </button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <button
                   type="button"
-                  className="cursor-pointer flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground hover:ring-2 hover:ring-accent-foreground/20 transition-all"
+                  onClick={toggleAssistant}
+                  className={`cursor-pointer flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
+                    assistantOpen
+                      ? 'bg-accent text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                  }`}
+                  aria-label={assistantOpen ? 'Close assistant' : 'Open assistant'}
                 >
-                  {initials}
+                  <RiSparklingLine className="h-[18px] w-[18px]" />
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/settings">
-                    <RiUserLine className="mr-2 h-4 w-4" />
-                    Account
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <RiLogoutBoxRLine className="mr-2 h-4 w-4" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <span className="flex items-center gap-2">
+                  AI Assistant
+                  <kbd className="rounded bg-background/20 px-1.5 py-0.5 font-mono text-[10px]">
+                    {modKey}I
+                  </kbd>
+                </span>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </header>
 
         {/* Mobile header */}

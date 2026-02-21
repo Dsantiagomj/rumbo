@@ -10,16 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as SettingsRouteImport } from './routes/_settings'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as SettingsSettingsRouteImport } from './routes/_settings/settings'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
-import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as SettingsSettingsIndexRouteImport } from './routes/_settings/settings/index'
 import { Route as AppProductsIndexRouteImport } from './routes/_app/products.index'
+import { Route as SettingsSettingsSecurityRouteImport } from './routes/_settings/settings/security'
+import { Route as SettingsSettingsPreferencesRouteImport } from './routes/_settings/settings/preferences'
+import { Route as SettingsSettingsNotificationsRouteImport } from './routes/_settings/settings/notifications'
+import { Route as SettingsSettingsDataRouteImport } from './routes/_settings/settings/data'
 import { Route as AppProductsNewRouteImport } from './routes/_app/products.new'
 import { Route as AppProductsProductIdIndexRouteImport } from './routes/_app/products.$productId.index'
 import { Route as AppProductsProductIdEditRouteImport } from './routes/_app/products.$productId.edit'
@@ -27,6 +33,10 @@ import { Route as AppProductsProductIdEditRouteImport } from './routes/_app/prod
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/_settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -41,6 +51,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const SettingsSettingsRoute = SettingsSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -67,15 +82,38 @@ const AppTransactionsRoute = AppTransactionsRouteImport.update({
   path: '/transactions',
   getParentRoute: () => AppRoute,
 } as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
+const SettingsSettingsIndexRoute = SettingsSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SettingsSettingsRoute,
 } as any)
 const AppProductsIndexRoute = AppProductsIndexRouteImport.update({
   id: '/products/',
   path: '/products/',
   getParentRoute: () => AppRoute,
+} as any)
+const SettingsSettingsSecurityRoute =
+  SettingsSettingsSecurityRouteImport.update({
+    id: '/security',
+    path: '/security',
+    getParentRoute: () => SettingsSettingsRoute,
+  } as any)
+const SettingsSettingsPreferencesRoute =
+  SettingsSettingsPreferencesRouteImport.update({
+    id: '/preferences',
+    path: '/preferences',
+    getParentRoute: () => SettingsSettingsRoute,
+  } as any)
+const SettingsSettingsNotificationsRoute =
+  SettingsSettingsNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => SettingsSettingsRoute,
+  } as any)
+const SettingsSettingsDataRoute = SettingsSettingsDataRouteImport.update({
+  id: '/data',
+  path: '/data',
+  getParentRoute: () => SettingsSettingsRoute,
 } as any)
 const AppProductsNewRoute = AppProductsNewRouteImport.update({
   id: '/products/new',
@@ -98,28 +136,37 @@ const AppProductsProductIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/settings': typeof AppSettingsRoute
   '/transactions': typeof AppTransactionsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
+  '/settings': typeof SettingsSettingsRouteWithChildren
   '/products/new': typeof AppProductsNewRoute
+  '/settings/data': typeof SettingsSettingsDataRoute
+  '/settings/notifications': typeof SettingsSettingsNotificationsRoute
+  '/settings/preferences': typeof SettingsSettingsPreferencesRoute
+  '/settings/security': typeof SettingsSettingsSecurityRoute
   '/products/': typeof AppProductsIndexRoute
+  '/settings/': typeof SettingsSettingsIndexRoute
   '/products/$productId/edit': typeof AppProductsProductIdEditRoute
   '/products/$productId/': typeof AppProductsProductIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/verify-email': typeof VerifyEmailRoute
-  '/settings': typeof AppSettingsRoute
   '/transactions': typeof AppTransactionsRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/products/new': typeof AppProductsNewRoute
+  '/settings/data': typeof SettingsSettingsDataRoute
+  '/settings/notifications': typeof SettingsSettingsNotificationsRoute
+  '/settings/preferences': typeof SettingsSettingsPreferencesRoute
+  '/settings/security': typeof SettingsSettingsSecurityRoute
   '/products': typeof AppProductsIndexRoute
+  '/settings': typeof SettingsSettingsIndexRoute
   '/products/$productId/edit': typeof AppProductsProductIdEditRoute
   '/products/$productId': typeof AppProductsProductIdIndexRoute
 }
@@ -127,16 +174,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
+  '/_settings': typeof SettingsRouteWithChildren
   '/verify-email': typeof VerifyEmailRoute
-  '/_app/settings': typeof AppSettingsRoute
   '/_app/transactions': typeof AppTransactionsRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
+  '/_settings/settings': typeof SettingsSettingsRouteWithChildren
   '/_app/': typeof AppIndexRoute
   '/_app/products/new': typeof AppProductsNewRoute
+  '/_settings/settings/data': typeof SettingsSettingsDataRoute
+  '/_settings/settings/notifications': typeof SettingsSettingsNotificationsRoute
+  '/_settings/settings/preferences': typeof SettingsSettingsPreferencesRoute
+  '/_settings/settings/security': typeof SettingsSettingsSecurityRoute
   '/_app/products/': typeof AppProductsIndexRoute
+  '/_settings/settings/': typeof SettingsSettingsIndexRoute
   '/_app/products/$productId/edit': typeof AppProductsProductIdEditRoute
   '/_app/products/$productId/': typeof AppProductsProductIdIndexRoute
 }
@@ -145,44 +198,59 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/verify-email'
-    | '/settings'
     | '/transactions'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/settings'
     | '/products/new'
+    | '/settings/data'
+    | '/settings/notifications'
+    | '/settings/preferences'
+    | '/settings/security'
     | '/products/'
+    | '/settings/'
     | '/products/$productId/edit'
     | '/products/$productId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/verify-email'
-    | '/settings'
     | '/transactions'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/reset-password'
     | '/products/new'
+    | '/settings/data'
+    | '/settings/notifications'
+    | '/settings/preferences'
+    | '/settings/security'
     | '/products'
+    | '/settings'
     | '/products/$productId/edit'
     | '/products/$productId'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
+    | '/_settings'
     | '/verify-email'
-    | '/_app/settings'
     | '/_app/transactions'
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
     | '/_auth/reset-password'
+    | '/_settings/settings'
     | '/_app/'
     | '/_app/products/new'
+    | '/_settings/settings/data'
+    | '/_settings/settings/notifications'
+    | '/_settings/settings/preferences'
+    | '/_settings/settings/security'
     | '/_app/products/'
+    | '/_settings/settings/'
     | '/_app/products/$productId/edit'
     | '/_app/products/$productId/'
   fileRoutesById: FileRoutesById
@@ -190,6 +258,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  SettingsRoute: typeof SettingsRouteWithChildren
   VerifyEmailRoute: typeof VerifyEmailRoute
 }
 
@@ -200,6 +269,13 @@ declare module '@tanstack/react-router' {
       path: '/verify-email'
       fullPath: '/verify-email'
       preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_settings': {
+      id: '/_settings'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth': {
@@ -222,6 +298,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_settings/settings': {
+      id: '/_settings/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsSettingsRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/_auth/reset-password': {
       id: '/_auth/reset-password'
@@ -258,12 +341,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTransactionsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
+    '/_settings/settings/': {
+      id: '/_settings/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsSettingsIndexRouteImport
+      parentRoute: typeof SettingsSettingsRoute
     }
     '/_app/products/': {
       id: '/_app/products/'
@@ -271,6 +354,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/products/'
       preLoaderRoute: typeof AppProductsIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_settings/settings/security': {
+      id: '/_settings/settings/security'
+      path: '/security'
+      fullPath: '/settings/security'
+      preLoaderRoute: typeof SettingsSettingsSecurityRouteImport
+      parentRoute: typeof SettingsSettingsRoute
+    }
+    '/_settings/settings/preferences': {
+      id: '/_settings/settings/preferences'
+      path: '/preferences'
+      fullPath: '/settings/preferences'
+      preLoaderRoute: typeof SettingsSettingsPreferencesRouteImport
+      parentRoute: typeof SettingsSettingsRoute
+    }
+    '/_settings/settings/notifications': {
+      id: '/_settings/settings/notifications'
+      path: '/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof SettingsSettingsNotificationsRouteImport
+      parentRoute: typeof SettingsSettingsRoute
+    }
+    '/_settings/settings/data': {
+      id: '/_settings/settings/data'
+      path: '/data'
+      fullPath: '/settings/data'
+      preLoaderRoute: typeof SettingsSettingsDataRouteImport
+      parentRoute: typeof SettingsSettingsRoute
     }
     '/_app/products/new': {
       id: '/_app/products/new'
@@ -297,7 +408,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppSettingsRoute: typeof AppSettingsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppProductsNewRoute: typeof AppProductsNewRoute
@@ -307,7 +417,6 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppSettingsRoute: AppSettingsRoute,
   AppTransactionsRoute: AppTransactionsRoute,
   AppIndexRoute: AppIndexRoute,
   AppProductsNewRoute: AppProductsNewRoute,
@@ -334,9 +443,41 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface SettingsSettingsRouteChildren {
+  SettingsSettingsDataRoute: typeof SettingsSettingsDataRoute
+  SettingsSettingsNotificationsRoute: typeof SettingsSettingsNotificationsRoute
+  SettingsSettingsPreferencesRoute: typeof SettingsSettingsPreferencesRoute
+  SettingsSettingsSecurityRoute: typeof SettingsSettingsSecurityRoute
+  SettingsSettingsIndexRoute: typeof SettingsSettingsIndexRoute
+}
+
+const SettingsSettingsRouteChildren: SettingsSettingsRouteChildren = {
+  SettingsSettingsDataRoute: SettingsSettingsDataRoute,
+  SettingsSettingsNotificationsRoute: SettingsSettingsNotificationsRoute,
+  SettingsSettingsPreferencesRoute: SettingsSettingsPreferencesRoute,
+  SettingsSettingsSecurityRoute: SettingsSettingsSecurityRoute,
+  SettingsSettingsIndexRoute: SettingsSettingsIndexRoute,
+}
+
+const SettingsSettingsRouteWithChildren =
+  SettingsSettingsRoute._addFileChildren(SettingsSettingsRouteChildren)
+
+interface SettingsRouteChildren {
+  SettingsSettingsRoute: typeof SettingsSettingsRouteWithChildren
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsSettingsRoute: SettingsSettingsRouteWithChildren,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  SettingsRoute: SettingsRouteWithChildren,
   VerifyEmailRoute: VerifyEmailRoute,
 }
 export const routeTree = rootRouteImport
