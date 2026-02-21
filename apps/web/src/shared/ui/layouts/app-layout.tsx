@@ -8,7 +8,7 @@ import {
   RiSparklingLine,
 } from '@remixicon/react';
 import { Link, useLocation, useNavigate, useRouteContext } from '@tanstack/react-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +33,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [userDrawerOpen, setUserDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useLocalStorage('sidebar-collapsed', false);
   const [assistantOpen, setAssistantOpen] = useLocalStorage('assistant-open', false);
+  const [assistantWidth, setAssistantWidth] = useLocalStorage('assistant-width', 384);
   const [mobileAssistantOpen, setMobileAssistantOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef({ startX: 0, startWidth: 0 });
 
   const toggleSidebar = useCallback(() => setCollapsed((prev) => !prev), [setCollapsed]);
   const toggleAssistant = useCallback(() => setAssistantOpen((prev) => !prev), [setAssistantOpen]);
@@ -63,6 +66,38 @@ export function AppLayout({ children }: AppLayoutProps) {
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [toggleSidebar, toggleAssistant, assistantOpen, setAssistantOpen]);
+
+  // Assistant panel resize drag
+  const handleDragStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      dragRef.current = { startX: e.clientX, startWidth: assistantWidth };
+      setIsDragging(true);
+    },
+    [assistantWidth],
+  );
+
+  useEffect(() => {
+    if (!isDragging) return;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const delta = dragRef.current.startX - e.clientX;
+      const newWidth = Math.max(280, Math.min(600, dragRef.current.startWidth + delta));
+      setAssistantWidth(newWidth);
+    };
+    const handleMouseUp = () => setIsDragging(false);
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, setAssistantWidth]);
 
   const initials = user.name
     ? user.name
@@ -423,13 +458,46 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* Page content */}
           <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">{children}</main>
 
+          {/* Resizable divider */}
+          {assistantOpen && (
+            // biome-ignore lint/a11y/useSemanticElements: vertical resize handle, not a horizontal rule
+            <div
+              className="hidden md:flex items-center w-0 relative cursor-col-resize group"
+              onMouseDown={handleDragStart}
+              role="separator"
+              aria-orientation="vertical"
+              aria-valuenow={assistantWidth}
+              aria-valuemin={280}
+              aria-valuemax={600}
+              tabIndex={0}
+            >
+              <div
+                className={`absolute inset-y-0 -left-[3px] w-[6px] flex items-center justify-center ${
+                  isDragging ? 'z-10' : ''
+                }`}
+              >
+                <div
+                  className={`w-px h-full transition-colors duration-150 ${
+                    isDragging
+                      ? 'bg-gradient-to-b from-transparent via-primary to-transparent'
+                      : 'bg-gradient-to-b from-transparent via-border/60 to-transparent group-hover:via-primary/60'
+                  }`}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Desktop assistant panel */}
           <aside
-            className={`hidden md:flex flex-col border-l border-border/40 transition-[width] duration-200 overflow-hidden ${
-              assistantOpen ? 'w-96' : 'w-0 border-l-0'
-            }`}
+            className={`hidden md:flex flex-col overflow-hidden ${
+              assistantOpen ? '' : 'w-0'
+            } ${isDragging ? '' : 'transition-[width] duration-200'}`}
+            style={assistantOpen ? { width: assistantWidth } : undefined}
           >
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center min-w-96">
+            <div
+              className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center"
+              style={{ minWidth: assistantWidth }}
+            >
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent">
                 <RiSparklingLine className="h-6 w-6 text-muted-foreground" />
               </div>
