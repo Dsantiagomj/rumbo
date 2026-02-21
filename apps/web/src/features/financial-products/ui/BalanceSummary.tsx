@@ -32,7 +32,7 @@ export function BalanceSummary({
               key={currency}
               type="button"
               onClick={() => onCurrencyChange(currency)}
-              className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
+              className={`cursor-pointer rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
                 currency === activeCurrency
                   ? 'bg-foreground text-background'
                   : 'text-muted-foreground hover:bg-muted'

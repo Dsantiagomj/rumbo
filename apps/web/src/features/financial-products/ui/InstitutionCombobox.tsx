@@ -64,7 +64,7 @@ export function InstitutionCombobox({ value, onChange }: InstitutionComboboxProp
             <CommandEmpty>
               <button
                 type="button"
-                className="w-full px-2 py-1.5 text-left text-xs hover:bg-muted rounded-md"
+                className="cursor-pointer w-full px-2 py-1.5 text-left text-xs hover:bg-muted rounded-md"
                 onClick={() => {
                   onChange(search);
                   setOpen(false);

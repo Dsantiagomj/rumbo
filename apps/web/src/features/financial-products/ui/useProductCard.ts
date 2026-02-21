@@ -40,9 +40,12 @@ export function useProductCard(product: ProductResponse) {
   const loanProgress =
     totalTerm && totalTerm > 0 && remainingTerm !== null
       ? {
-          paid: totalTerm - remainingTerm,
+          paid: Math.max(totalTerm - remainingTerm, 0),
           total: totalTerm,
-          percent: Math.min(Math.round(((totalTerm - remainingTerm) / totalTerm) * 100), 100),
+          percent: Math.min(
+            Math.max(Math.round(((totalTerm - remainingTerm) / totalTerm) * 100), 0),
+            100,
+          ),
         }
       : null;
 

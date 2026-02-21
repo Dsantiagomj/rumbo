@@ -28,9 +28,9 @@ export function TypeSelector({ form }: { form: ProductFormReturn }) {
                   disabled={isDisabled}
                   onClick={() => handleTypeSelect(type)}
                   className={cn(
-                    'rounded-lg border p-4 text-left transition-colors',
+                    'cursor-pointer rounded-lg border p-4 text-left transition-colors',
                     isDisabled
-                      ? 'border-border bg-muted/50 opacity-60 cursor-not-allowed'
+                      ? 'border-border bg-muted/50 opacity-60 !cursor-not-allowed'
                       : isSelected
                         ? 'border-primary bg-primary/5'
                         : 'border-border hover:border-primary/50',
