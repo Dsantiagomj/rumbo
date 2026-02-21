@@ -44,8 +44,9 @@ export function useCreateProductForm() {
   async function goToNext() {
     if (currentStep === 'type') {
       const isValid = await form.trigger(['type']);
-      if (isValid && stepIndex < STEPS.length - 1) {
-        setCurrentStep(STEPS[stepIndex + 1]);
+      const next = STEPS[stepIndex + 1];
+      if (isValid && next) {
+        setCurrentStep(next);
       }
     } else if (currentStep === 'details') {
       const isValid = await form.trigger(['name', 'institution', 'balance', 'currency']);
@@ -64,16 +65,19 @@ export function useCreateProductForm() {
         return;
       }
 
-      setCurrentStep(STEPS[stepIndex + 1]);
+      const next = STEPS[stepIndex + 1];
+      if (next) setCurrentStep(next);
     }
   }
 
   function goToPrev() {
-    if (stepIndex > 0) setCurrentStep(STEPS[stepIndex - 1]);
+    const prev = STEPS[stepIndex - 1];
+    if (prev) setCurrentStep(prev);
   }
 
   function goToStep(step: number) {
-    if (step >= 0 && step < STEPS.length) setCurrentStep(STEPS[step]);
+    const target = STEPS[step];
+    if (target) setCurrentStep(target);
   }
 
   async function handleSubmit(values: CreateProductFormValues) {

@@ -1,10 +1,9 @@
 import { RiCheckLine } from '@remixicon/react';
-import type { UseFormReturn } from 'react-hook-form';
 import { cn } from '@/lib/utils';
-import type { CreateProductFormValues } from '../model/form-schemas';
+import type { ProductFormReturn } from '../model/form-schemas';
 import { useTypeSelector } from './useTypeSelector';
 
-export function TypeSelector({ form }: { form: UseFormReturn<CreateProductFormValues> }) {
+export function TypeSelector({ form }: { form: ProductFormReturn }) {
   const { selectedType, productGroups, typeLabels, handleTypeSelect, cashExists } =
     useTypeSelector(form);
 

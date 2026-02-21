@@ -1,10 +1,11 @@
 import type { ProductType } from '@rumbo/shared';
 import { createProductSchema, PRODUCT_TYPE_METADATA_MAP } from '@rumbo/shared';
+import type { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
 export const createProductFormSchema = createProductSchema
   .extend({
-    metadata: z.record(z.string(), z.unknown()).default({}),
+    metadata: z.record(z.string(), z.unknown()),
   })
   .superRefine((data, ctx) => {
     const metadataSchema = PRODUCT_TYPE_METADATA_MAP[data.type];
@@ -17,6 +18,9 @@ export const createProductFormSchema = createProductSchema
   });
 
 export type CreateProductFormValues = z.infer<typeof createProductFormSchema>;
+
+// biome-ignore lint/suspicious/noExplicitAny: react-hook-form resolver infers TContext and TTransformedValues generics
+export type ProductFormReturn = UseFormReturn<CreateProductFormValues, any, any>;
 
 export const PRODUCT_TYPE_LABELS: Record<ProductType, { label: string; description: string }> = {
   savings: { label: 'Cuenta de Ahorros', description: 'Cuenta bancaria para ahorros' },

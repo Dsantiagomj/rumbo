@@ -22,8 +22,9 @@ const INSTITUTION_TYPE_LABELS: Record<string, string> = {
 
 const groupedInstitutions = INSTITUTIONS.reduce(
   (acc, inst) => {
-    if (!acc[inst.type]) acc[inst.type] = [];
-    acc[inst.type].push(inst);
+    const group = acc[inst.type] ?? [];
+    group.push(inst);
+    acc[inst.type] = group;
     return acc;
   },
   {} as Record<string, (typeof INSTITUTIONS)[number][]>,

@@ -1,6 +1,5 @@
 import type { CreditCardNetwork, ProductType } from '@rumbo/shared';
 import { DUAL_CURRENCY_NETWORKS } from '@rumbo/shared';
-import type { UseFormReturn } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,8 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { CURRENCY_LABELS } from '../model/constants';
-import type { CreateProductFormValues } from '../model/form-schemas';
-import { PRODUCT_TYPE_LABELS } from '../model/form-schemas';
+import { PRODUCT_TYPE_LABELS, type ProductFormReturn } from '../model/form-schemas';
 import { InstitutionCombobox } from './InstitutionCombobox';
 import { MetadataFields } from './metadata-fields';
 
@@ -26,7 +24,7 @@ const NETWORK_OPTIONS = [
 ] as const;
 
 type ProductDetailsStepProps = {
-  form: UseFormReturn<CreateProductFormValues>;
+  form: ProductFormReturn;
   selectedType: ProductType;
 };
 

@@ -24,8 +24,9 @@ export function useProductsList() {
 
   useEffect(() => {
     if (availableCurrencies.length === 0) return;
-    if (!availableCurrencies.includes(activeCurrency)) {
-      setActiveCurrency(availableCurrencies[0]);
+    const fallback = availableCurrencies[0];
+    if (fallback && !availableCurrencies.includes(activeCurrency)) {
+      setActiveCurrency(fallback);
     }
   }, [availableCurrencies, activeCurrency]);
 

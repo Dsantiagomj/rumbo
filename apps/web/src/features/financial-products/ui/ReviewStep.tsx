@@ -1,15 +1,17 @@
 import { RiEditLine } from '@remixicon/react';
 import type { Currency } from '@rumbo/shared';
-import type { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { formatBalance, PRODUCT_GROUPS } from '../model/constants';
-import type { CreateProductFormValues } from '../model/form-schemas';
-import { METADATA_FIELD_CONFIG, PRODUCT_TYPE_LABELS } from '../model/form-schemas';
+import {
+  METADATA_FIELD_CONFIG,
+  PRODUCT_TYPE_LABELS,
+  type ProductFormReturn,
+} from '../model/form-schemas';
 
 type ReviewStepProps = {
-  form: UseFormReturn<CreateProductFormValues>;
+  form: ProductFormReturn;
   onEditStep: (step: number) => void;
 };
 

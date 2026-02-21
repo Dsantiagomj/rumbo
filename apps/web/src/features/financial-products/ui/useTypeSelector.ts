@@ -1,12 +1,10 @@
 import type { ProductType } from '@rumbo/shared';
 import { useQuery } from '@tanstack/react-query';
-import type { UseFormReturn } from 'react-hook-form';
 import { PRODUCT_GROUPS } from '../model/constants';
-import type { CreateProductFormValues } from '../model/form-schemas';
-import { PRODUCT_TYPE_LABELS } from '../model/form-schemas';
+import { PRODUCT_TYPE_LABELS, type ProductFormReturn } from '../model/form-schemas';
 import { listProductsQueryOptions } from '../model/queries';
 
-export function useTypeSelector(form: UseFormReturn<CreateProductFormValues>) {
+export function useTypeSelector(form: ProductFormReturn) {
   const { data } = useQuery(listProductsQueryOptions());
   const cashExists = data?.products.some((p) => p.type === 'cash') ?? false;
   const selectedType = form.watch('type');
