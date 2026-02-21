@@ -48,7 +48,7 @@ export function ProductsList() {
     );
   }
 
-  if (isError) {
+  if (isError && products.length === 0) {
     return (
       <div className="space-y-6">
         <Alert variant="destructive">
@@ -65,6 +65,8 @@ export function ProductsList() {
   if (products.length === 0) {
     return <ProductsEmptyState />;
   }
+
+  const showErrorBanner = isError && products.length > 0;
 
   return (
     <>
@@ -91,6 +93,19 @@ export function ProductsList() {
         </div>
 
         <div className="max-w-3xl space-y-6 mt-6 md:mt-0">
+          {showErrorBanner && (
+            <Alert variant="destructive">
+              <AlertTitle>Error al actualizar productos</AlertTitle>
+              <AlertDescription>
+                Mostramos datos en cache. Reintenta para actualizar la lista.
+              </AlertDescription>
+              <div className="mt-3">
+                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  Reintentar
+                </Button>
+              </div>
+            </Alert>
+          )}
           <ProductsToolbar />
 
           {productGroups.map(({ group, items }) => (

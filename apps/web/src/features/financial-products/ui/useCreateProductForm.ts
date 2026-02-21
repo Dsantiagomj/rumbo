@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { sileo } from 'sileo';
 import { ApiError } from '@/shared/api';
 import { type CreateProductFormValues, createProductFormSchema } from '../model/form-schemas';
 import { useCreateProductMutation } from '../model/queries';
@@ -107,7 +108,13 @@ export function useCreateProductForm() {
           form.setError(path as keyof CreateProductFormValues, { message: detail.message });
         }
         setCurrentStep('details');
+        return;
       }
+
+      sileo.error({
+        title: 'No se pudo crear el producto',
+        description: 'Intenta de nuevo en unos minutos.',
+      });
     }
   }
 
