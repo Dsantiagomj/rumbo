@@ -1,14 +1,6 @@
-import {
-  RiArrowDownLine,
-  RiArrowDownSFill,
-  RiArrowRightLine,
-  RiArrowUpLine,
-  RiArrowUpSFill,
-  RiBriefcaseLine,
-} from '@remixicon/react';
-import type { Currency, ProductResponse, ProductType } from '@rumbo/shared';
-import { Link } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { RiArrowDownSFill, RiArrowUpSFill } from '@remixicon/react';
+import type { Currency, ProductResponse } from '@rumbo/shared';
+import { useState } from 'react';
 import { formatBalance } from '@/features/financial-products/model/constants';
 import { NetWorthChart } from './NetWorthChart';
 import type { TimePeriod } from './useNetWorthTimeline';
@@ -41,8 +33,6 @@ const PERIOD_LABELS: Record<TimePeriod, string> = {
   ALL: 'en total',
 };
 
-const LIABILITY_TYPES: ProductType[] = ['credit_card', 'loan_free_investment', 'loan_mortgage'];
-
 export function DashboardHero({
   userName,
   products,
@@ -58,13 +48,6 @@ export function DashboardHero({
   const formattedBalance = formatBalance(String(currentBalance), activeCurrency);
   const formattedChange = formatBalance(String(Math.abs(changeAmount)), activeCurrency);
   const isNegativeBalance = currentBalance < 0;
-
-  const productSummary = useMemo(() => {
-    const total = products.length;
-    const liabilities = products.filter((p) => LIABILITY_TYPES.includes(p.type)).length;
-    const assets = total - liabilities;
-    return { total, assets, liabilities };
-  }, [products]);
 
   return (
     <div className="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
@@ -132,54 +115,6 @@ export function DashboardHero({
             ))}
           </div>
         )}
-
-        {/* Product summary */}
-        <div className="mt-2 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Tus productos
-            </h3>
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-0.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Ver todos
-              <RiArrowRightLine className="size-3" />
-            </Link>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <RiBriefcaseLine className="size-3.5" />
-                <span className="text-[10px] uppercase tracking-wide">Total</span>
-              </div>
-              <span className="text-lg font-semibold text-foreground">{productSummary.total}</span>
-            </div>
-
-            <div className="h-8 w-px bg-border/50" />
-
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-500">
-                <RiArrowUpLine className="size-3.5" />
-                <span className="text-[10px] uppercase tracking-wide">Activos</span>
-              </div>
-              <span className="text-lg font-semibold text-foreground">{productSummary.assets}</span>
-            </div>
-
-            <div className="h-8 w-px bg-border/50" />
-
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-1 text-red-600 dark:text-red-500">
-                <RiArrowDownLine className="size-3.5" />
-                <span className="text-[10px] uppercase tracking-wide">Pasivos</span>
-              </div>
-              <span className="text-lg font-semibold text-foreground">
-                {productSummary.liabilities}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Right column — chart (stretches to full height) */}

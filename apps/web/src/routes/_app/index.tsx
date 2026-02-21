@@ -2,14 +2,17 @@ import type { Currency } from '@rumbo/shared';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { DashboardHero } from '@/features/dashboard';
 import {
-  listProductsQueryOptions,
-  PRODUCT_GROUPS,
-  ProductGroup,
-  ProductsEmptyState,
-  ProductsToolbar,
-} from '@/features/financial-products';
+  AssetAllocationCard,
+  CashFlowCard,
+  DashboardHero,
+  GoalsProgressCard,
+  MonthlySpendingCard,
+  ProductGroupsCard,
+  RecentTransactionsCard,
+  UpcomingPaymentsCard,
+} from '@/features/dashboard';
+import { listProductsQueryOptions, ProductsEmptyState } from '@/features/financial-products';
 import { Alert, AlertDescription, AlertTitle, Button, Skeleton } from '@/shared/ui';
 
 export const Route = createFileRoute('/_app/')({
@@ -43,11 +46,6 @@ function DashboardPage() {
     }
   }, [currencies, activeCurrency]);
 
-  const productGroups = PRODUCT_GROUPS.map((group) => ({
-    group,
-    items: products.filter((p) => group.types.includes(p.type)),
-  }));
-
   if (isPending) {
     return (
       <div className="space-y-6">
@@ -56,10 +54,10 @@ function DashboardPage() {
           <Skeleton className="h-4 w-64" />
         </div>
         <Skeleton className="h-[280px] rounded-xl" />
-        <div className="space-y-3">
-          <Skeleton className="h-6 w-24" />
-          <Skeleton className="h-16" />
-          <Skeleton className="h-16" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <Skeleton className="h-48 rounded-lg" />
+          <Skeleton className="h-48 rounded-lg" />
+          <Skeleton className="h-48 rounded-lg" />
         </div>
       </div>
     );
@@ -109,11 +107,21 @@ function DashboardPage() {
         </Alert>
       )}
 
-      <ProductsToolbar />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <AssetAllocationCard products={products} activeCurrency={activeCurrency} />
+        <ProductGroupsCard products={products} activeCurrency={activeCurrency} />
+        <CashFlowCard />
 
-      {productGroups.map(({ group, items }) => (
-        <ProductGroup key={group.key} group={group} products={items} />
-      ))}
+        <div className="md:col-span-2">
+          <RecentTransactionsCard />
+        </div>
+        <UpcomingPaymentsCard />
+
+        <div className="md:col-span-2">
+          <GoalsProgressCard />
+        </div>
+        <MonthlySpendingCard />
+      </div>
     </div>
   );
 }
