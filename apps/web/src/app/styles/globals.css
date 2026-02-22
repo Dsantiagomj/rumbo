@@ -126,4 +126,18 @@
   html {
     @apply font-sans;
   }
+
+  /* Theme toggle — fast crossfade via View Transitions API */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 150ms;
+    animation-timing-function: ease-out;
+  }
+
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
