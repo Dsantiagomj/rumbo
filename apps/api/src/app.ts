@@ -9,6 +9,7 @@ import { requestId } from './lib/request-id.js';
 import { categoriesRouter } from './modules/categories/index.js';
 import { financialProductsRouter } from './modules/financial-products/index.js';
 import { health } from './modules/health/index.js';
+import { productTransactionsRouter, transactionsRouter } from './modules/transactions/index.js';
 
 export type Bindings = {
   ENVIRONMENT: string;
@@ -110,6 +111,10 @@ app.route('/api/categories', categoriesRouter);
 
 app.use('/api/financial-products/*', authMiddleware);
 app.route('/api/financial-products', financialProductsRouter);
+app.route('/api/financial-products', productTransactionsRouter);
+
+app.use('/api/transactions/*', authMiddleware);
+app.route('/api/transactions', transactionsRouter);
 
 // Auth routes (Better Auth handles /api/auth/* automatically)
 app.on(['POST', 'GET'], '/api/auth/**', async (c) => {

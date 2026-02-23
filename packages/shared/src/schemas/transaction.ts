@@ -33,6 +33,12 @@ export const transactionResponseSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
+export const transactionListResponseSchema = z.object({
+  transactions: z.array(transactionResponseSchema),
+  nextCursor: z.string().nullable(),
+});
+
 export type CreateTransaction = z.infer<typeof createTransactionSchema>;
 export type UpdateTransaction = z.infer<typeof updateTransactionSchema>;
 export type TransactionResponse = z.infer<typeof transactionResponseSchema>;
+export type TransactionListResponse = z.infer<typeof transactionListResponseSchema>;
