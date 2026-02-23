@@ -5,6 +5,7 @@ import { logger } from 'hono/logger';
 import { getAuth, pendingEmailPromises } from './lib/auth.js';
 import { authMiddleware } from './lib/auth-middleware.js';
 import { onError, onNotFound } from './lib/error-handler.js';
+import { requestId } from './lib/request-id.js';
 import { financialProductsRouter } from './modules/financial-products/index.js';
 import { health } from './modules/health/index.js';
 
@@ -41,6 +42,7 @@ export type AuthSession = {
 };
 
 export type Variables = {
+  requestId: string;
   user?: AuthUser;
   session?: AuthSession;
 };
@@ -74,6 +76,7 @@ app.onError(onError);
 app.notFound(onNotFound);
 
 // Middleware
+app.use('*', requestId);
 app.use('*', logger());
 app.use(
   '*',

@@ -45,13 +45,28 @@ export const onError: ErrorHandler = (err, c) => {
     );
   }
 
-  console.error('[unhandled error]', err);
+  const requestId = c.get('requestId') as string | undefined;
+
+  console.error(
+    JSON.stringify({
+      level: 'error',
+      message: err.message,
+      code: 'INTERNAL_SERVER_ERROR',
+      method: c.req.method,
+      path: c.req.path,
+      requestId,
+      timestamp: new Date().toISOString(),
+      stack: err.stack,
+    }),
+  );
+
   return c.json(
     {
       error: {
         message: isDev(c) ? err.message : 'Internal server error',
         code: 'INTERNAL_SERVER_ERROR',
         status: 500,
+        ...(requestId ? { requestId } : {}),
         ...(isDev(c) && err.stack ? { stack: err.stack } : {}),
       },
     },
