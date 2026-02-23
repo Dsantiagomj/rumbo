@@ -39,6 +39,9 @@ Thumbs.db
 docs/plans/
 docs/designs/
 
+# Codex
+AGENTS.md
+
 # Test coverage
 coverage/
 .coverage
