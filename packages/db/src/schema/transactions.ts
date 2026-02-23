@@ -1,4 +1,13 @@
-import { date, numeric, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  date,
+  numeric,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 import { categories } from './categories';
 import { transactionTypeEnum } from './enums';
 import { financialProducts } from './products';
@@ -11,6 +20,9 @@ export const transactions = pgTable('transactions', {
   categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
   transferId: uuid('transfer_id'),
   type: transactionTypeEnum('type').notNull(),
+  name: text('name').notNull(),
+  merchant: text('merchant'),
+  excluded: boolean('excluded').notNull().default(false),
   amount: numeric('amount', { precision: 15, scale: 2 }).notNull(),
   currency: varchar('currency', { length: 3 }).notNull(),
   date: date('date', { mode: 'date' }).notNull(),
