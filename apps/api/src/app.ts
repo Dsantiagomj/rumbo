@@ -6,6 +6,7 @@ import { getAuth, pendingEmailPromises } from './lib/auth.js';
 import { authMiddleware } from './lib/auth-middleware.js';
 import { onError, onNotFound } from './lib/error-handler.js';
 import { requestId } from './lib/request-id.js';
+import { categoriesRouter } from './modules/categories/index.js';
 import { financialProductsRouter } from './modules/financial-products/index.js';
 import { health } from './modules/health/index.js';
 
@@ -103,6 +104,9 @@ app.use(
 
 // Routes
 app.route('/health', health);
+
+app.use('/api/categories/*', authMiddleware);
+app.route('/api/categories', categoriesRouter);
 
 app.use('/api/financial-products/*', authMiddleware);
 app.route('/api/financial-products', financialProductsRouter);
