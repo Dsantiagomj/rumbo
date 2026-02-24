@@ -1,8 +1,8 @@
 import {
   RiAddLine,
   RiArrowDownSLine,
+  RiArrowRightSLine,
   RiDeleteBinLine,
-  RiEditLine,
   RiInformationLine,
   RiPriceTag3Line,
   RiSearchLine,
@@ -105,7 +105,7 @@ function TransactionCard({
   const displayAmount = isExpense ? `-${amount}` : `+${amount}`;
 
   return (
-    <div className="group relative rounded-xl border border-border p-4 transition-all hover:border-foreground/20 hover:shadow-sm">
+    <div className="group rounded-xl border border-border p-4 transition-all hover:border-foreground/20 hover:shadow-sm">
       <div className="flex items-start gap-3">
         <Checkbox
           checked={isSelected}
@@ -116,7 +116,7 @@ function TransactionCard({
         <Link
           to="/products/$productId/transactions/$transactionId"
           params={{ productId, transactionId: transaction.id }}
-          className="flex flex-1 items-start gap-3 text-left"
+          className="flex flex-1 items-center gap-3 text-left"
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
             <span className="text-xs font-medium text-primary">
@@ -146,26 +146,7 @@ function TransactionCard({
               )}
             </div>
           </div>
-        </Link>
-      </div>
-
-      <div className="absolute top-3 right-3 hidden items-center gap-0.5 rounded-lg border border-border bg-background p-0.5 shadow-sm md:group-hover:flex">
-        <Link
-          to="/products/$productId/transactions/$transactionId"
-          params={{ productId, transactionId: transaction.id }}
-          search={{ edit: true }}
-          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          aria-label="Editar"
-        >
-          <RiEditLine className="h-3.5 w-3.5" />
-        </Link>
-        <Link
-          to="/products/$productId/transactions/$transactionId"
-          params={{ productId, transactionId: transaction.id }}
-          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-          aria-label="Ver detalle"
-        >
-          <RiDeleteBinLine className="h-3.5 w-3.5" />
+          <RiArrowRightSLine className="h-4 w-4 shrink-0 text-muted-foreground/50 transition-colors group-hover:text-foreground" />
         </Link>
       </div>
     </div>
