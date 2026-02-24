@@ -113,6 +113,7 @@ app.use('/api/financial-products/*', authMiddleware);
 app.route('/api/financial-products', financialProductsRouter);
 app.route('/api/financial-products', productTransactionsRouter);
 
+app.use('/api/transactions', authMiddleware);
 app.use('/api/transactions/*', authMiddleware);
 app.route('/api/transactions', transactionsRouter);
 

@@ -8,6 +8,7 @@ import {
   deleteTransaction,
   getBalanceHistory,
   getTransaction,
+  listAllTransactions,
   listTransactions,
   updateTransaction,
   verifyProductOwnership,
@@ -16,6 +17,8 @@ import {
   balanceHistoryQuerySchema,
   balanceHistoryResponse,
   createTransactionBodySchema,
+  globalTransactionListResponse,
+  globalTransactionQuerySchema,
   productIdParamSchema,
   transactionIdParamSchema,
   transactionListResponse,
@@ -76,6 +79,22 @@ const createTransactionRoute = createRoute({
 });
 
 // -- Route definitions: flat at /api/transactions --
+
+const listAllTransactionsRoute = createRoute({
+  method: 'get',
+  path: '/',
+  tags: ['Transactions'],
+  summary: 'List all transactions across all products',
+  request: {
+    query: globalTransactionQuerySchema,
+  },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: globalTransactionListResponse } },
+      description: 'List of all transactions',
+    },
+  },
+});
 
 const balanceHistoryRoute = createRoute({
   method: 'get',
@@ -282,6 +301,27 @@ const transactionsRouter = new OpenAPIHono<AuthedEnv>({
       );
     }
   },
+});
+
+transactionsRouter.openapi(listAllTransactionsRoute, async (c) => {
+  const user = c.get('user');
+  const query = c.req.valid('query');
+  const db = await createDb(c.env);
+
+  const result = await listAllTransactions(db, user.id, {
+    search: query.search,
+    startDate: query.start_date,
+    endDate: query.end_date,
+    types: query.types?.split(','),
+    categories: query.categories?.split(','),
+    productIds: query.product_ids?.split(','),
+    amountMin: query.amount_min,
+    amountMax: query.amount_max,
+    cursor: query.cursor,
+    limit: query.limit ?? 25,
+  });
+
+  return c.json(result, 200);
 });
 
 transactionsRouter.openapi(balanceHistoryRoute, async (c) => {

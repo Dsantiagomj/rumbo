@@ -250,6 +250,112 @@ export async function listTransactions(
   };
 }
 
+type GlobalTransactionFilters = TransactionFilters & {
+  productIds?: string[];
+};
+
+function serializeGlobalTransaction(
+  tx: typeof transactions.$inferSelect,
+  productName: string,
+  productType: string,
+) {
+  return {
+    ...serializeTransaction(tx),
+    productName,
+    productType,
+  };
+}
+
+export async function listAllTransactions(
+  db: AppDatabase,
+  userId: string,
+  filters: GlobalTransactionFilters,
+) {
+  const conditions = [eq(financialProducts.userId, userId)];
+
+  if (filters.productIds && filters.productIds.length > 0) {
+    conditions.push(inArray(transactions.productId, filters.productIds));
+  }
+
+  if (filters.search) {
+    const pattern = `%${filters.search}%`;
+    const searchCondition = or(
+      ilike(transactions.name, pattern),
+      ilike(transactions.merchant, pattern),
+      ilike(transactions.notes, pattern),
+    );
+    if (searchCondition) conditions.push(searchCondition);
+  }
+
+  if (filters.startDate) {
+    conditions.push(sql`${transactions.date} >= ${filters.startDate}`);
+  }
+
+  if (filters.endDate) {
+    conditions.push(sql`${transactions.date} <= ${filters.endDate}`);
+  }
+
+  if (filters.types && filters.types.length > 0) {
+    conditions.push(inArray(transactions.type, filters.types as TransactionType[]));
+  }
+
+  if (filters.categories && filters.categories.length > 0) {
+    conditions.push(inArray(transactions.categoryId, filters.categories));
+  }
+
+  if (filters.amountMin) {
+    conditions.push(
+      sql`CAST(${transactions.amount} AS NUMERIC) >= CAST(${filters.amountMin} AS NUMERIC)`,
+    );
+  }
+
+  if (filters.amountMax) {
+    conditions.push(
+      sql`CAST(${transactions.amount} AS NUMERIC) <= CAST(${filters.amountMax} AS NUMERIC)`,
+    );
+  }
+
+  if (filters.cursor) {
+    const { date: cursorDate, id: cursorId } = decodeCursor(filters.cursor);
+    const cursorCondition = or(
+      sql`${transactions.date} < ${cursorDate}`,
+      and(sql`${transactions.date} = ${cursorDate}`, sql`${transactions.id} < ${cursorId}`),
+    );
+    if (cursorCondition) conditions.push(cursorCondition);
+  }
+
+  const rows = await db
+    .select({
+      transaction: transactions,
+      productName: financialProducts.name,
+      productType: financialProducts.type,
+    })
+    .from(transactions)
+    .innerJoin(financialProducts, eq(transactions.productId, financialProducts.id))
+    .where(and(...conditions))
+    .orderBy(desc(transactions.date), desc(transactions.id))
+    .limit(filters.limit + 1);
+
+  const hasMore = rows.length > filters.limit;
+  const data = hasMore ? rows.slice(0, filters.limit) : rows;
+  const lastItem = data[data.length - 1];
+
+  return {
+    transactions: data.map((row) =>
+      serializeGlobalTransaction(row.transaction, row.productName, row.productType),
+    ),
+    nextCursor:
+      hasMore && lastItem
+        ? encodeCursor(
+            lastItem.transaction.date instanceof Date
+              ? lastItem.transaction.date.toISOString().slice(0, 10)
+              : String(lastItem.transaction.date),
+            lastItem.transaction.id,
+          )
+        : null,
+  };
+}
+
 export async function getTransaction(db: AppDatabase, userId: string, transactionId: string) {
   const [result] = await db
     .select({ transaction: transactions })

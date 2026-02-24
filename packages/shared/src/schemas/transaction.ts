@@ -47,9 +47,22 @@ export const balanceHistoryResponseSchema = z.object({
   history: z.array(balanceHistoryPointSchema),
 });
 
+// Global transaction response — includes product context
+export const globalTransactionResponseSchema = transactionResponseSchema.extend({
+  productName: z.string(),
+  productType: z.string(),
+});
+
+export const globalTransactionListResponseSchema = z.object({
+  transactions: z.array(globalTransactionResponseSchema),
+  nextCursor: z.string().nullable(),
+});
+
 export type CreateTransaction = z.infer<typeof createTransactionSchema>;
 export type UpdateTransaction = z.infer<typeof updateTransactionSchema>;
 export type TransactionResponse = z.infer<typeof transactionResponseSchema>;
 export type TransactionListResponse = z.infer<typeof transactionListResponseSchema>;
+export type GlobalTransactionResponse = z.infer<typeof globalTransactionResponseSchema>;
+export type GlobalTransactionListResponse = z.infer<typeof globalTransactionListResponseSchema>;
 export type BalanceHistoryPoint = z.infer<typeof balanceHistoryPointSchema>;
 export type BalanceHistoryResponse = z.infer<typeof balanceHistoryResponseSchema>;

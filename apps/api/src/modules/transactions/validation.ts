@@ -2,6 +2,7 @@ import { z } from '@hono/zod-openapi';
 import {
   balanceHistoryResponseSchema,
   createTransactionSchema,
+  globalTransactionListResponseSchema,
   transactionListResponseSchema,
   transactionResponseSchema,
   updateTransactionSchema,
@@ -44,6 +45,29 @@ export const transactionQuerySchema = z.object({
   end_date: z.string().optional().openapi({ description: 'End date (ISO format)' }),
   types: z.string().optional().openapi({ description: 'Comma-separated transaction types' }),
   categories: z.string().optional().openapi({ description: 'Comma-separated category UUIDs' }),
+  amount_min: z.string().optional().openapi({ description: 'Minimum amount' }),
+  amount_max: z.string().optional().openapi({ description: 'Maximum amount' }),
+  cursor: z.string().optional().openapi({ description: 'Pagination cursor' }),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .default(25)
+    .optional()
+    .openapi({ description: 'Page size (1-100, default 25)' }),
+});
+
+export const globalTransactionListResponse =
+  globalTransactionListResponseSchema.openapi('GlobalTransactionList');
+
+export const globalTransactionQuerySchema = z.object({
+  search: z.string().optional().openapi({ description: 'Text search (name, merchant, notes)' }),
+  start_date: z.string().optional().openapi({ description: 'Start date (ISO format)' }),
+  end_date: z.string().optional().openapi({ description: 'End date (ISO format)' }),
+  types: z.string().optional().openapi({ description: 'Comma-separated transaction types' }),
+  categories: z.string().optional().openapi({ description: 'Comma-separated category UUIDs' }),
+  product_ids: z.string().optional().openapi({ description: 'Comma-separated product UUIDs' }),
   amount_min: z.string().optional().openapi({ description: 'Minimum amount' }),
   amount_max: z.string().optional().openapi({ description: 'Maximum amount' }),
   cursor: z.string().optional().openapi({ description: 'Pagination cursor' }),
