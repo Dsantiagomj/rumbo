@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { authClient } from '@/shared/api';
+import { useBreadcrumbLabels } from '@/shared/lib/useBreadcrumbStore';
 import { useLocalStorage } from '@/shared/lib/useLocalStorage';
 import { navItems } from './nav-items';
 
@@ -143,14 +144,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     select: (s) => s.resolvedLocation?.pathname ?? location.pathname,
   });
 
+  const dynamicLabels = useBreadcrumbLabels();
+
   const breadcrumbs = useMemo(() => {
     const segmentLabels: Record<string, string> = {
       settings: 'Settings',
-      transactions: 'Transactions',
-      products: 'Products',
+      transactions: 'Transacciones',
+      products: 'Productos',
       budgets: 'Budgets',
-      new: 'New',
-      edit: 'Edit',
+      new: 'Nueva',
+      edit: 'Editar',
     };
 
     const segments = resolvedPathname.split('/').filter(Boolean);
@@ -159,12 +162,12 @@ export function AppLayout({ children }: AppLayoutProps) {
     let currentPath = '';
     for (const segment of segments) {
       currentPath += `/${segment}`;
-      const label = segmentLabels[segment] ?? segment;
+      const label = segmentLabels[segment] ?? dynamicLabels[segment] ?? segment;
       crumbs.push({ label, path: currentPath });
     }
 
     return crumbs;
-  }, [resolvedPathname]);
+  }, [resolvedPathname, dynamicLabels]);
 
   const linkClass = (active: boolean) =>
     `relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors ${

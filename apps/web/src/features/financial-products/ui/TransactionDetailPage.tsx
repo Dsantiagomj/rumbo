@@ -11,7 +11,7 @@ import {
 import { type Currency, TRANSACTION_TYPES, type TransactionResponse } from '@rumbo/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type FieldPath, useForm } from 'react-hook-form';
 import { sileo } from 'sileo';
 import {
@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ApiError, apiClient } from '@/shared/api';
+import { setBreadcrumbLabel } from '@/shared/lib/useBreadcrumbStore';
 import { Button, Card, CardContent, Input, Separator, Skeleton } from '@/shared/ui';
 import { listCategoriesQueryOptions } from '../model/category-queries';
 import { formatBalance } from '../model/constants';
@@ -259,6 +260,18 @@ export function TransactionDetailPage({
   const isPending = isProductPending || isTransactionPending;
   const transaction = transactionData;
   const currency = product?.currency ?? 'COP';
+
+  useEffect(() => {
+    if (product?.name) {
+      setBreadcrumbLabel(productId, product.name);
+    }
+  }, [productId, product?.name]);
+
+  useEffect(() => {
+    if (transaction?.name) {
+      setBreadcrumbLabel(transactionId, transaction.name);
+    }
+  }, [transactionId, transaction?.name]);
 
   async function handleDelete() {
     try {
