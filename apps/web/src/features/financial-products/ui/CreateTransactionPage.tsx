@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiArrowLeftLine } from '@remixicon/react';
-import { type CreateTransaction, TRANSACTION_TYPES } from '@rumbo/shared';
+import type { CreateTransaction } from '@rumbo/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { type FieldPath, useForm } from 'react-hook-form';
 import { sileo } from 'sileo';
 import { ApiError } from '@/shared/api';
-import { Button, Card, CardContent, Input, Separator, Skeleton } from '@/shared/ui';
+import { Button, Card, CardContent, Separator, Skeleton } from '@/shared/ui';
 import { listCategoriesQueryOptions } from '../model/category-queries';
 import { getProductQueryOptions } from '../model/queries';
 import {
@@ -14,15 +14,10 @@ import {
   transactionFormSchema,
 } from '../model/transaction-form-schema';
 import { useCreateTransactionMutation } from '../model/transaction-queries';
+import { TransactionFormFields } from './TransactionFormFields';
 
 type CreateTransactionPageProps = {
   productId: string;
-};
-
-const TRANSACTION_TYPE_LABELS: Record<TransactionFormValues['type'], string> = {
-  income: 'Ingreso',
-  expense: 'Gasto',
-  transfer: 'Transferencia',
 };
 
 function getDefaultValues(): TransactionFormValues {
@@ -53,7 +48,6 @@ export function CreateTransactionPage({ productId }: CreateTransactionPageProps)
     defaultValues: getDefaultValues(),
   });
 
-  const selectedType = form.watch('type');
   const categories = categoriesData?.categories ?? [];
 
   async function handleSubmit(values: TransactionFormValues) {
@@ -133,166 +127,26 @@ export function CreateTransactionPage({ productId }: CreateTransactionPageProps)
       <Card>
         <CardContent className="py-6">
           <form onSubmit={form.handleSubmit(handleSubmit)}>
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label htmlFor="txn-name" className="text-sm font-medium">
-                  Nombre
-                </label>
-                <Input
-                  id="txn-name"
-                  placeholder="Ej: Almuerzo, Nomina..."
-                  {...form.register('name')}
-                />
-                {form.formState.errors.name && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.name.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <span className="text-sm font-medium">Tipo</span>
-                <div className="flex gap-2">
-                  {TRANSACTION_TYPES.map((type) => (
-                    <Button
-                      key={type}
-                      type="button"
-                      size="sm"
-                      variant={selectedType === type ? 'default' : 'outline'}
-                      className={
-                        selectedType === type
-                          ? 'bg-primary text-primary-foreground flex-1'
-                          : 'flex-1'
-                      }
-                      onClick={() => form.setValue('type', type, { shouldValidate: true })}
-                    >
-                      {TRANSACTION_TYPE_LABELS[type]}
-                    </Button>
-                  ))}
-                </div>
-                {form.formState.errors.type && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.type.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="txn-amount" className="text-sm font-medium">
-                  Monto
-                </label>
-                <Input
-                  id="txn-amount"
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  {...form.register('amount')}
-                />
-                {form.formState.errors.amount && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.amount.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="txn-date" className="text-sm font-medium">
-                  Fecha
-                </label>
-                <Input id="txn-date" type="date" {...form.register('date')} />
-                {form.formState.errors.date && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.date.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="txn-category" className="text-sm font-medium">
-                  Categoria
-                </label>
-                <select
-                  id="txn-category"
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                  {...form.register('categoryId', {
-                    setValueAs: (v: string) => (v === '' ? null : v),
-                  })}
-                >
-                  <option value="">Sin categoria</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-                {form.formState.errors.categoryId && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.categoryId.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="txn-merchant" className="text-sm font-medium">
-                  Comercio
-                </label>
-                <Input
-                  id="txn-merchant"
-                  placeholder="Ej: Exito, Rappi..."
-                  {...form.register('merchant')}
-                />
-                {form.formState.errors.merchant && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.merchant.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="txn-notes" className="text-sm font-medium">
-                  Notas
-                </label>
-                <textarea
-                  id="txn-notes"
-                  rows={3}
-                  className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                  placeholder="Notas adicionales..."
-                  {...form.register('notes')}
-                />
-                {form.formState.errors.notes && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.notes.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  id="txn-excluded"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-input"
-                  {...form.register('excluded')}
-                />
-                <label htmlFor="txn-excluded" className="text-sm font-medium">
-                  Excluir de reportes
-                </label>
-              </div>
-
-              <Separator />
-
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => router.history.back()}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" className="flex-1" disabled={mutation.isPending}>
-                  {mutation.isPending ? 'Creando...' : 'Crear'}
-                </Button>
-              </div>
+            <TransactionFormFields
+              form={form}
+              currency={product.currency}
+              categories={categories}
+              excludedLabel="Excluir de reportes"
+              idPrefix="txn"
+            />
+            <Separator />
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => router.history.back()}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" className="flex-1" disabled={mutation.isPending}>
+                {mutation.isPending ? 'Creando...' : 'Crear'}
+              </Button>
             </div>
           </form>
         </CardContent>

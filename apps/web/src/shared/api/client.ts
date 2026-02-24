@@ -52,5 +52,14 @@ export async function apiClient<T>(path: string, options?: RequestInit): Promise
     throw new ApiError(response.status, code, message, details);
   }
 
+  if (response.status === 204 || response.status === 205) {
+    return undefined as T;
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) {
+    return (await response.text()) as T;
+  }
+
   return response.json() as Promise<T>;
 }

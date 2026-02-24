@@ -16,7 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { setBreadcrumbLabel } from '@/shared/lib/useBreadcrumbStore';
 import { Button, Input, Skeleton } from '@/shared/ui';
 import { listCategoriesQueryOptions } from '../model/category-queries';
-import { formatBalance } from '../model/constants';
+import { formatBalance, TRANSACTION_TYPE_LABELS } from '../model/constants';
 import { listTransactionsQueryOptions } from '../model/transaction-queries';
 
 type TransactionsSectionProps = {
@@ -24,12 +24,6 @@ type TransactionsSectionProps = {
   balance: string;
   currency: Currency;
   createdAt: string;
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  income: 'Ingreso',
-  expense: 'Gasto',
-  transfer: 'Transferencia',
 };
 
 function FilterChip({ label }: { label: string }) {
@@ -123,7 +117,7 @@ function TransactionCard({
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
             <span className="text-xs font-medium text-primary">
-              {TYPE_LABELS[transaction.type]?.charAt(0) ?? '?'}
+              {TRANSACTION_TYPE_LABELS[transaction.type]?.charAt(0) ?? '?'}
             </span>
           </div>
           <div className="flex-1 min-w-0">

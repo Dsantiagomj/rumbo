@@ -8,7 +8,7 @@ import {
   RiEyeOffLine,
   RiPriceTag3Line,
 } from '@remixicon/react';
-import { type Currency, TRANSACTION_TYPES, type TransactionResponse } from '@rumbo/shared';
+import type { Currency, TransactionResponse } from '@rumbo/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
@@ -25,10 +25,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ApiError, apiClient } from '@/shared/api';
-import { setBreadcrumbLabel } from '@/shared/lib/useBreadcrumbStore';
-import { Button, Card, CardContent, Input, Separator, Skeleton } from '@/shared/ui';
+import { clearBreadcrumbLabel, setBreadcrumbLabel } from '@/shared/lib/useBreadcrumbStore';
+import { Button, Card, CardContent, Separator, Skeleton } from '@/shared/ui';
 import { listCategoriesQueryOptions } from '../model/category-queries';
-import { formatBalance } from '../model/constants';
+import { formatBalance, TRANSACTION_TYPE_LABELS } from '../model/constants';
 import { getProductQueryOptions } from '../model/queries';
 import {
   type TransactionFormValues,
@@ -38,12 +38,7 @@ import {
   useDeleteTransactionMutation,
   useUpdateTransactionMutation,
 } from '../model/transaction-queries';
-
-const TYPE_LABELS: Record<string, string> = {
-  income: 'Ingreso',
-  expense: 'Gasto',
-  transfer: 'Transferencia',
-};
+import { TransactionFormFields } from './TransactionFormFields';
 
 type TransactionDetailPageProps = {
   productId: string;
@@ -67,6 +62,7 @@ function TransactionEditForm({
   const queryClient = useQueryClient();
   const updateMutation = useUpdateTransactionMutation();
   const { data: categoriesData } = useQuery(listCategoriesQueryOptions());
+  const categories = categoriesData?.categories ?? [];
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionFormSchema),
@@ -82,8 +78,6 @@ function TransactionEditForm({
       excluded: transaction.excluded,
     },
   });
-
-  const selectedType = form.watch('type');
 
   async function onSubmit(values: TransactionFormValues) {
     try {
@@ -124,105 +118,13 @@ function TransactionEditForm({
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-1.5">
-        <label htmlFor="edit-name" className="text-sm font-medium">
-          Nombre
-        </label>
-        <Input id="edit-name" {...form.register('name')} />
-        {form.formState.errors.name && (
-          <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
-        )}
-      </div>
-
-      <div className="space-y-1.5">
-        <span className="text-sm font-medium">Tipo</span>
-        <div className="flex gap-1">
-          {TRANSACTION_TYPES.map((t) => (
-            <Button
-              key={t}
-              type="button"
-              size="sm"
-              variant={selectedType === t ? 'default' : 'outline'}
-              className="flex-1"
-              onClick={() => form.setValue('type', t, { shouldValidate: true })}
-            >
-              {TYPE_LABELS[t]}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="edit-amount" className="text-sm font-medium">
-          Monto ({currency})
-        </label>
-        <Input id="edit-amount" type="text" inputMode="decimal" {...form.register('amount')} />
-        {form.formState.errors.amount && (
-          <p className="text-xs text-destructive">{form.formState.errors.amount.message}</p>
-        )}
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="edit-date" className="text-sm font-medium">
-          Fecha
-        </label>
-        <Input id="edit-date" type="date" {...form.register('date')} />
-        {form.formState.errors.date && (
-          <p className="text-xs text-destructive">{form.formState.errors.date.message}</p>
-        )}
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="edit-category" className="text-sm font-medium">
-          Categoria
-        </label>
-        <select
-          id="edit-category"
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          {...form.register('categoryId')}
-          defaultValue={transaction.categoryId ?? ''}
-        >
-          <option value="">Sin categoria</option>
-          {categoriesData?.categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="edit-merchant" className="text-sm font-medium">
-          Comercio
-        </label>
-        <Input id="edit-merchant" {...form.register('merchant')} placeholder="Opcional" />
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="edit-notes" className="text-sm font-medium">
-          Notas
-        </label>
-        <textarea
-          id="edit-notes"
-          className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          rows={2}
-          placeholder="Opcional"
-          {...form.register('notes')}
-        />
-      </div>
-
-      <div className="flex items-center justify-between">
-        <label htmlFor="edit-excluded" className="text-sm font-medium">
-          Excluir de resumen
-        </label>
-        <input
-          id="edit-excluded"
-          type="checkbox"
-          className="h-4 w-4 rounded border-input"
-          {...form.register('excluded')}
-        />
-      </div>
-
+      <TransactionFormFields
+        form={form}
+        currency={currency}
+        categories={categories}
+        excludedLabel="Excluir de resumen"
+        idPrefix="edit"
+      />
       <div className="flex gap-2 pt-2">
         <Button type="button" variant="outline" className="flex-1" onClick={onCancel}>
           Cancelar
@@ -262,15 +164,15 @@ export function TransactionDetailPage({
   const currency = product?.currency ?? 'COP';
 
   useEffect(() => {
-    if (product?.name) {
-      setBreadcrumbLabel(productId, product.name);
-    }
+    if (!product?.name) return;
+    setBreadcrumbLabel(productId, product.name);
+    return () => clearBreadcrumbLabel(productId);
   }, [productId, product?.name]);
 
   useEffect(() => {
-    if (transaction?.name) {
-      setBreadcrumbLabel(transactionId, transaction.name);
-    }
+    if (!transaction?.name) return;
+    setBreadcrumbLabel(transactionId, transaction.name);
+    return () => clearBreadcrumbLabel(transactionId);
   }, [transactionId, transaction?.name]);
 
   async function handleDelete() {
@@ -415,7 +317,7 @@ export function TransactionDetailPage({
                   </span>
                   <span className="text-sm text-muted-foreground">Tipo</span>
                   <span className="ml-auto text-sm font-medium">
-                    {TYPE_LABELS[transaction.type] ?? transaction.type}
+                    {TRANSACTION_TYPE_LABELS[transaction.type] ?? transaction.type}
                   </span>
                 </div>
 

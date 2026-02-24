@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { sileo } from 'sileo';
-import { setBreadcrumbLabel } from '@/shared/lib/useBreadcrumbStore';
+import { clearBreadcrumbLabel, setBreadcrumbLabel } from '@/shared/lib/useBreadcrumbStore';
 import { getProductQueryOptions, useDeleteProductMutation } from '../model/queries';
 
 export function useProductDetail(productId: string) {
@@ -12,9 +12,9 @@ export function useProductDetail(productId: string) {
 
   const { data: product, isPending, isError } = useQuery(getProductQueryOptions(productId));
   useEffect(() => {
-    if (product?.name) {
-      setBreadcrumbLabel(productId, product.name);
-    }
+    if (!product?.name) return;
+    setBreadcrumbLabel(productId, product.name);
+    return () => clearBreadcrumbLabel(productId);
   }, [productId, product?.name]);
 
   const deleteMutation = useDeleteProductMutation(productId);

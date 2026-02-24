@@ -6,7 +6,7 @@ import {
   RiHandCoinLine,
   RiLineChartLine,
 } from '@remixicon/react';
-import type { Currency, ProductResponse, ProductType } from '@rumbo/shared';
+import type { Currency, ProductResponse, ProductType, TRANSACTION_TYPES } from '@rumbo/shared';
 
 export const CURRENCY_LABELS: Record<Currency, string> = {
   COP: 'COP - Pesos Colombianos',
@@ -37,6 +37,12 @@ export const PRODUCT_GROUPS: ProductGroup[] = [
   },
   { key: 'cash', label: 'Efectivo', types: ['cash'], icon: RiCashLine },
 ];
+
+export const TRANSACTION_TYPE_LABELS: Record<(typeof TRANSACTION_TYPES)[number], string> = {
+  income: 'Ingreso',
+  expense: 'Gasto',
+  transfer: 'Transferencia',
+};
 
 export function formatBalance(balance: string, currency: Currency): string {
   const value = Number.parseFloat(balance);
