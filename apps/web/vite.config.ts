@@ -18,6 +18,7 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
+  envDir: '../../',
   server: {
     port: 5173,
   },
