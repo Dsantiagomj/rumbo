@@ -10,6 +10,7 @@ export function useTransactionsPage() {
   const [search, setSearch] = useState('');
   const [selectedProductId, setSelectedProductId] = useState<string>(ALL_SENTINEL);
   const [selectedType, setSelectedType] = useState<string>(ALL_SENTINEL);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(ALL_SENTINEL);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -18,10 +19,11 @@ export function useTransactionsPage() {
       search: search || undefined,
       productIds: selectedProductId !== ALL_SENTINEL ? selectedProductId : undefined,
       types: selectedType !== ALL_SENTINEL ? selectedType : undefined,
+      categories: selectedCategoryId !== ALL_SENTINEL ? selectedCategoryId : undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     }),
-    [search, selectedProductId, selectedType, startDate, endDate],
+    [search, selectedProductId, selectedType, selectedCategoryId, startDate, endDate],
   );
 
   const { data, isPending, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery(
@@ -37,6 +39,7 @@ export function useTransactionsPage() {
   );
 
   const products = productsData?.products ?? [];
+  const categories = categoriesData?.categories ?? [];
 
   const categoryMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -50,6 +53,7 @@ export function useTransactionsPage() {
     setSearch('');
     setSelectedProductId(ALL_SENTINEL);
     setSelectedType(ALL_SENTINEL);
+    setSelectedCategoryId(ALL_SENTINEL);
     setStartDate('');
     setEndDate('');
   }, []);
@@ -58,6 +62,7 @@ export function useTransactionsPage() {
     search ||
     selectedProductId !== ALL_SENTINEL ||
     selectedType !== ALL_SENTINEL ||
+    selectedCategoryId !== ALL_SENTINEL ||
     startDate ||
     endDate
   );
@@ -66,6 +71,7 @@ export function useTransactionsPage() {
     // Data
     transactions,
     products,
+    categories,
     categoryMap,
     isPending,
     isFetchingNextPage,
@@ -78,6 +84,8 @@ export function useTransactionsPage() {
     setSelectedProductId,
     selectedType,
     setSelectedType,
+    selectedCategoryId,
+    setSelectedCategoryId,
     startDate,
     setStartDate,
     endDate,
