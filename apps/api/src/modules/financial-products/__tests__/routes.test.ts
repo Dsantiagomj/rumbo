@@ -87,6 +87,29 @@ describe('Financial Products API', () => {
     db.function('gen_random_uuid', () => randomUUID());
     db.function('now', () => new Date().toISOString());
 
+    // Patch: SQLite can only bind primitives. Convert booleans, Dates, and
+    // objects (jsonb) to SQLite-compatible values.
+    const origPrepare = db.prepare.bind(db);
+    // biome-ignore lint/suspicious/noExplicitAny: patching better-sqlite3 internals for PG→SQLite type compat
+    (db as any).prepare = (sql: string) => {
+      const stmt = origPrepare(sql);
+      const patchValue = (a: unknown): unknown => {
+        if (typeof a === 'boolean') return a ? 1 : 0;
+        if (a instanceof Date) return a.toISOString();
+        if (Array.isArray(a)) return a.map(patchValue);
+        if (a !== null && typeof a === 'object') return JSON.stringify(a);
+        return a;
+      };
+      const patchFn =
+        (fn: (...args: unknown[]) => unknown) =>
+        (...args: unknown[]) =>
+          fn(...args.map(patchValue));
+      stmt.run = patchFn(stmt.run.bind(stmt)) as typeof stmt.run;
+      stmt.get = patchFn(stmt.get.bind(stmt)) as typeof stmt.get;
+      stmt.all = patchFn(stmt.all.bind(stmt)) as typeof stmt.all;
+      return stmt;
+    };
+
     // 2. Run Better Auth migrations for auth tables
     const config = {
       database: db,
@@ -117,8 +140,34 @@ describe('Financial Products API', () => {
       )
     `);
 
+    // 3b. Create transactions table (needed by createProduct for initial balance)
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS transactions (
+        id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-4' || substr(hex(randomblob(2)),2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(hex(randomblob(2)),2) || '-' || hex(randomblob(6)))),
+        product_id TEXT NOT NULL,
+        category_id TEXT,
+        transfer_id TEXT,
+        type TEXT NOT NULL,
+        name TEXT NOT NULL,
+        merchant TEXT,
+        excluded INTEGER NOT NULL DEFAULT 0,
+        amount TEXT NOT NULL,
+        currency TEXT NOT NULL,
+        date TEXT NOT NULL,
+        notes TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (product_id) REFERENCES financial_products(id) ON DELETE CASCADE
+      )
+    `);
+
     // 4. Initialize Drizzle with SQLite
     testDb = drizzle(db, { schema });
+
+    // Patch: better-sqlite3 transactions are sync-only but our services use
+    // async callbacks. Replace with a passthrough that feeds the same db.
+    // biome-ignore lint/suspicious/noExplicitAny: patching drizzle internals for SQLite test compat
+    (testDb as any).transaction = async (fn: (tx: typeof testDb) => Promise<any>) => fn(testDb);
 
     // 5. Sign up a test user to get session cookies
     const signUpRes = await app.request('/api/auth/sign-up/email', {

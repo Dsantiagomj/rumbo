@@ -101,15 +101,24 @@ describe('Transactions API', () => {
     db.function('gen_random_uuid', () => randomUUID());
     db.function('now', () => new Date().toISOString());
 
+    // Patch: SQLite can only bind primitives. Convert booleans, Dates, and
+    // objects (jsonb) to SQLite-compatible values. Also convert ILIKE→LIKE.
     const origPrepare = db.prepare.bind(db);
-    // biome-ignore lint/suspicious/noExplicitAny: patching better-sqlite3 internals for boolean→int and ILIKE→LIKE conversion
+    // biome-ignore lint/suspicious/noExplicitAny: patching better-sqlite3 internals for PG→SQLite type compat
     (db as any).prepare = (sql: string) => {
       const adjustedSql = sql.replace(/\bILIKE\b/gi, 'LIKE');
       const stmt = origPrepare(adjustedSql);
+      const patchValue = (a: unknown): unknown => {
+        if (typeof a === 'boolean') return a ? 1 : 0;
+        if (a instanceof Date) return a.toISOString();
+        if (Array.isArray(a)) return a.map(patchValue);
+        if (a !== null && typeof a === 'object') return JSON.stringify(a);
+        return a;
+      };
       const patchFn =
         (fn: (...args: unknown[]) => unknown) =>
         (...args: unknown[]) =>
-          fn(...args.map((a) => (typeof a === 'boolean' ? (a ? 1 : 0) : a)));
+          fn(...args.map(patchValue));
       stmt.run = patchFn(stmt.run.bind(stmt)) as typeof stmt.run;
       stmt.get = patchFn(stmt.get.bind(stmt)) as typeof stmt.get;
       stmt.all = patchFn(stmt.all.bind(stmt)) as typeof stmt.all;
@@ -165,6 +174,11 @@ describe('Transactions API', () => {
     `);
 
     testDb = drizzle(db, { schema });
+
+    // Patch: better-sqlite3 transactions are sync-only but our services use
+    // async callbacks. Replace with a passthrough that feeds the same db.
+    // biome-ignore lint/suspicious/noExplicitAny: patching drizzle internals for SQLite test compat
+    (testDb as any).transaction = async (fn: (tx: typeof testDb) => Promise<any>) => fn(testDb);
 
     const signUpRes = await app.request('/api/auth/sign-up/email', {
       method: 'POST',

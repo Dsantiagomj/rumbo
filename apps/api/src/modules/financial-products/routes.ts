@@ -3,6 +3,7 @@ import { PRODUCT_TYPE_METADATA_MAP } from '@rumbo/shared/schemas';
 import type { AuthedEnv } from '../../app.js';
 import { createDb } from '../../lib/db.js';
 import { errorResponseSchema, validationErrorResponseSchema } from '../../lib/error-schemas.js';
+import { InsufficientBalanceError } from '../../lib/errors.js';
 import {
   createProduct,
   deleteProduct,
@@ -180,11 +181,29 @@ financialProductsRouter.openapi(createProductRoute, async (c) => {
   }
 
   const db = await createDb(c.env);
-  const product = await createProduct(db, user.id, {
-    ...body,
-    metadata: metadataResult.data,
-  });
-  return c.json(product, 201);
+
+  try {
+    const product = await createProduct(db, user.id, {
+      ...body,
+      metadata: metadataResult.data,
+    });
+    return c.json(product, 201);
+  } catch (error) {
+    if (error instanceof InsufficientBalanceError) {
+      return c.json(
+        {
+          error: {
+            message: error.message,
+            code: 'VALIDATION_ERROR' as const,
+            status: 422 as const,
+            details: [{ path: ['balance'] as (string | number)[], message: error.message }],
+          },
+        },
+        422,
+      );
+    }
+    throw error;
+  }
 });
 
 financialProductsRouter.openapi(getProductRoute, async (c) => {
@@ -261,22 +280,40 @@ financialProductsRouter.openapi(updateProductRoute, async (c) => {
     ...body,
     ...(sanitizedMetadata !== undefined ? { metadata: sanitizedMetadata } : {}),
   };
-  const product = await updateProduct(db, user.id, id, updatePayload);
 
-  if (!product) {
-    return c.json(
-      {
-        error: {
-          message: 'Financial product not found',
-          code: 'NOT_FOUND',
-          status: 404,
+  try {
+    const product = await updateProduct(db, user.id, id, updatePayload);
+
+    if (!product) {
+      return c.json(
+        {
+          error: {
+            message: 'Financial product not found',
+            code: 'NOT_FOUND',
+            status: 404,
+          },
         },
-      },
-      404,
-    );
-  }
+        404,
+      );
+    }
 
-  return c.json(product, 200);
+    return c.json(product, 200);
+  } catch (error) {
+    if (error instanceof InsufficientBalanceError) {
+      return c.json(
+        {
+          error: {
+            message: error.message,
+            code: 'VALIDATION_ERROR' as const,
+            status: 422 as const,
+            details: [{ path: ['balance'] as (string | number)[], message: error.message }],
+          },
+        },
+        422,
+      );
+    }
+    throw error;
+  }
 });
 
 financialProductsRouter.openapi(deleteProductRoute, async (c) => {

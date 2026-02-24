@@ -2,6 +2,9 @@ import { financialProducts, transactions } from '@rumbo/db/schema';
 import type { CreateTransaction, TransactionType, UpdateTransaction } from '@rumbo/shared/schemas';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
+import { InsufficientBalanceError } from '../../lib/errors.js';
+
+const NON_NEGATIVE_BALANCE_TYPES: ReadonlySet<string> = new Set(['cash']);
 
 type TransactionFilters = {
   search?: string;
@@ -59,6 +62,20 @@ async function recalculateBalance(db: AppDatabase, productId: string) {
     .update(financialProducts)
     .set({ balance: normalizedBalance, updatedAt: new Date() })
     .where(eq(financialProducts.id, productId));
+}
+
+async function validateBalanceConstraint(db: AppDatabase, productId: string, balanceDelta: number) {
+  const [product] = await db
+    .select({ type: financialProducts.type, balance: financialProducts.balance })
+    .from(financialProducts)
+    .where(eq(financialProducts.id, productId));
+
+  if (!product || !NON_NEGATIVE_BALANCE_TYPES.has(product.type)) return;
+
+  const currentBalance = Number.parseFloat(product.balance ?? '0');
+  if (currentBalance + balanceDelta < 0) {
+    throw new InsufficientBalanceError();
+  }
 }
 
 export async function verifyProductOwnership(db: AppDatabase, userId: string, productId: string) {
@@ -168,6 +185,10 @@ export async function createTransaction(
   productId: string,
   data: Omit<CreateTransaction, 'productId'>,
 ) {
+  const amount = Number.parseFloat(data.amount);
+  const delta = data.type === 'income' ? amount : -amount;
+  await validateBalanceConstraint(db, productId, delta);
+
   const [tx] = await db
     .insert(transactions)
     .values({
@@ -199,6 +220,13 @@ export async function updateTransaction(
   const existing = await getTransaction(db, userId, transactionId);
   if (!existing) return null;
 
+  const oldAmount = Number.parseFloat(existing.amount);
+  const oldDelta = existing.type === 'income' ? oldAmount : -oldAmount;
+  const newAmount = Number.parseFloat(data.amount ?? existing.amount);
+  const newType = data.type ?? existing.type;
+  const newDelta = newType === 'income' ? newAmount : -newAmount;
+  await validateBalanceConstraint(db, existing.productId, newDelta - oldDelta);
+
   const [updated] = await db
     .update(transactions)
     .set({
@@ -221,6 +249,10 @@ export async function updateTransaction(
 export async function deleteTransaction(db: AppDatabase, userId: string, transactionId: string) {
   const existing = await getTransaction(db, userId, transactionId);
   if (!existing) return null;
+
+  const amount = Number.parseFloat(existing.amount);
+  const delta = existing.type === 'income' ? -amount : amount;
+  await validateBalanceConstraint(db, existing.productId, delta);
 
   const [deleted] = await db
     .delete(transactions)

@@ -1,7 +1,10 @@
-import { financialProducts } from '@rumbo/db/schema';
+import { financialProducts, transactions } from '@rumbo/db/schema';
 import type { CreateProduct, Currency, UpdateProduct } from '@rumbo/shared/schemas';
 import { and, eq } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
+import { InsufficientBalanceError } from '../../lib/errors.js';
+
+const NON_NEGATIVE_BALANCE_TYPES: ReadonlySet<string> = new Set(['cash']);
 
 export async function listProducts(db: AppDatabase, userId: string) {
   const results = await db
@@ -22,24 +25,43 @@ export async function getProduct(db: AppDatabase, userId: string, productId: str
 }
 
 export async function createProduct(db: AppDatabase, userId: string, data: CreateProduct) {
-  const [product] = await db
-    .insert(financialProducts)
-    .values({
-      userId,
-      type: data.type,
-      name: data.name,
-      institution: data.institution,
-      balance: data.balance,
-      currency: data.currency,
-      metadata: data.metadata ?? {},
-    })
-    .returning();
-
-  if (!product) {
-    throw new Error('Failed to create product');
+  if (NON_NEGATIVE_BALANCE_TYPES.has(data.type) && Number.parseFloat(data.balance) < 0) {
+    throw new InsufficientBalanceError();
   }
 
-  return serializeProduct(product);
+  return await db.transaction(async (tx) => {
+    const [product] = await tx
+      .insert(financialProducts)
+      .values({
+        userId,
+        type: data.type,
+        name: data.name,
+        institution: data.institution,
+        balance: data.balance,
+        currency: data.currency,
+        metadata: data.metadata ?? {},
+      })
+      .returning();
+
+    if (!product) {
+      throw new Error('Failed to create product');
+    }
+
+    const balanceNum = Number.parseFloat(data.balance);
+    if (balanceNum !== 0) {
+      await tx.insert(transactions).values({
+        productId: product.id,
+        type: balanceNum >= 0 ? 'income' : 'expense',
+        name: 'Balance inicial',
+        amount: Math.abs(balanceNum).toFixed(2),
+        currency: data.currency,
+        date: new Date(),
+        excluded: false,
+      });
+    }
+
+    return serializeProduct(product);
+  });
 }
 
 export async function updateProduct(
@@ -48,6 +70,17 @@ export async function updateProduct(
   productId: string,
   data: UpdateProduct,
 ) {
+  if (data.balance !== undefined && Number.parseFloat(data.balance) < 0) {
+    const [existing] = await db
+      .select({ type: financialProducts.type })
+      .from(financialProducts)
+      .where(and(eq(financialProducts.id, productId), eq(financialProducts.userId, userId)));
+
+    if (existing && NON_NEGATIVE_BALANCE_TYPES.has(existing.type)) {
+      throw new InsufficientBalanceError();
+    }
+  }
+
   const [product] = await db
     .update(financialProducts)
     .set({
