@@ -30,6 +30,8 @@ import { Route as SettingsSettingsDataRouteImport } from './routes/_settings/set
 import { Route as AppProductsNewRouteImport } from './routes/_app/products.new'
 import { Route as AppProductsProductIdIndexRouteImport } from './routes/_app/products.$productId.index'
 import { Route as AppProductsProductIdEditRouteImport } from './routes/_app/products.$productId.edit'
+import { Route as AppProductsProductIdTransactionsNewRouteImport } from './routes/_app/products.$productId.transactions.new'
+import { Route as AppProductsProductIdTransactionsTransactionIdRouteImport } from './routes/_app/products.$productId.transactions.$transactionId'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -138,6 +140,18 @@ const AppProductsProductIdEditRoute =
     path: '/products/$productId/edit',
     getParentRoute: () => AppRoute,
   } as any)
+const AppProductsProductIdTransactionsNewRoute =
+  AppProductsProductIdTransactionsNewRouteImport.update({
+    id: '/products/$productId/transactions/new',
+    path: '/products/$productId/transactions/new',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppProductsProductIdTransactionsTransactionIdRoute =
+  AppProductsProductIdTransactionsTransactionIdRouteImport.update({
+    id: '/products/$productId/transactions/$transactionId',
+    path: '/products/$productId/transactions/$transactionId',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -158,6 +172,8 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof SettingsSettingsIndexRoute
   '/products/$productId/edit': typeof AppProductsProductIdEditRoute
   '/products/$productId/': typeof AppProductsProductIdIndexRoute
+  '/products/$productId/transactions/$transactionId': typeof AppProductsProductIdTransactionsTransactionIdRoute
+  '/products/$productId/transactions/new': typeof AppProductsProductIdTransactionsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
@@ -177,6 +193,8 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsSettingsIndexRoute
   '/products/$productId/edit': typeof AppProductsProductIdEditRoute
   '/products/$productId': typeof AppProductsProductIdIndexRoute
+  '/products/$productId/transactions/$transactionId': typeof AppProductsProductIdTransactionsTransactionIdRoute
+  '/products/$productId/transactions/new': typeof AppProductsProductIdTransactionsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -201,6 +219,8 @@ export interface FileRoutesById {
   '/_settings/settings/': typeof SettingsSettingsIndexRoute
   '/_app/products/$productId/edit': typeof AppProductsProductIdEditRoute
   '/_app/products/$productId/': typeof AppProductsProductIdIndexRoute
+  '/_app/products/$productId/transactions/$transactionId': typeof AppProductsProductIdTransactionsTransactionIdRoute
+  '/_app/products/$productId/transactions/new': typeof AppProductsProductIdTransactionsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -223,6 +243,8 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/products/$productId/edit'
     | '/products/$productId/'
+    | '/products/$productId/transactions/$transactionId'
+    | '/products/$productId/transactions/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -242,6 +264,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/products/$productId/edit'
     | '/products/$productId'
+    | '/products/$productId/transactions/$transactionId'
+    | '/products/$productId/transactions/new'
   id:
     | '__root__'
     | '/_app'
@@ -265,6 +289,8 @@ export interface FileRouteTypes {
     | '/_settings/settings/'
     | '/_app/products/$productId/edit'
     | '/_app/products/$productId/'
+    | '/_app/products/$productId/transactions/$transactionId'
+    | '/_app/products/$productId/transactions/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -423,6 +449,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProductsProductIdEditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/products/$productId/transactions/new': {
+      id: '/_app/products/$productId/transactions/new'
+      path: '/products/$productId/transactions/new'
+      fullPath: '/products/$productId/transactions/new'
+      preLoaderRoute: typeof AppProductsProductIdTransactionsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/products/$productId/transactions/$transactionId': {
+      id: '/_app/products/$productId/transactions/$transactionId'
+      path: '/products/$productId/transactions/$transactionId'
+      fullPath: '/products/$productId/transactions/$transactionId'
+      preLoaderRoute: typeof AppProductsProductIdTransactionsTransactionIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -434,6 +474,8 @@ interface AppRouteChildren {
   AppProductsIndexRoute: typeof AppProductsIndexRoute
   AppProductsProductIdEditRoute: typeof AppProductsProductIdEditRoute
   AppProductsProductIdIndexRoute: typeof AppProductsProductIdIndexRoute
+  AppProductsProductIdTransactionsTransactionIdRoute: typeof AppProductsProductIdTransactionsTransactionIdRoute
+  AppProductsProductIdTransactionsNewRoute: typeof AppProductsProductIdTransactionsNewRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -444,6 +486,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppProductsIndexRoute: AppProductsIndexRoute,
   AppProductsProductIdEditRoute: AppProductsProductIdEditRoute,
   AppProductsProductIdIndexRoute: AppProductsProductIdIndexRoute,
+  AppProductsProductIdTransactionsTransactionIdRoute:
+    AppProductsProductIdTransactionsTransactionIdRoute,
+  AppProductsProductIdTransactionsNewRoute:
+    AppProductsProductIdTransactionsNewRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

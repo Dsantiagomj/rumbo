@@ -2,16 +2,23 @@ import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import type { AuthedEnv } from '../../app.js';
 import { createDb } from '../../lib/db.js';
 import { errorResponseSchema, validationErrorResponseSchema } from '../../lib/error-schemas.js';
+import { InsufficientBalanceError } from '../../lib/errors.js';
 import {
   createTransaction,
   deleteTransaction,
+  getBalanceHistory,
   getTransaction,
+  listAllTransactions,
   listTransactions,
   updateTransaction,
   verifyProductOwnership,
 } from './service.js';
 import {
+  balanceHistoryQuerySchema,
+  balanceHistoryResponse,
   createTransactionBodySchema,
+  globalTransactionListResponse,
+  globalTransactionQuerySchema,
   productIdParamSchema,
   transactionIdParamSchema,
   transactionListResponse,
@@ -72,6 +79,38 @@ const createTransactionRoute = createRoute({
 });
 
 // -- Route definitions: flat at /api/transactions --
+
+const listAllTransactionsRoute = createRoute({
+  method: 'get',
+  path: '/',
+  tags: ['Transactions'],
+  summary: 'List all transactions across all products',
+  request: {
+    query: globalTransactionQuerySchema,
+  },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: globalTransactionListResponse } },
+      description: 'List of all transactions',
+    },
+  },
+});
+
+const balanceHistoryRoute = createRoute({
+  method: 'get',
+  path: '/balance-history',
+  tags: ['Transactions'],
+  summary: 'Get daily cumulative balance history for all products',
+  request: {
+    query: balanceHistoryQuerySchema,
+  },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: balanceHistoryResponse } },
+      description: 'Daily balance history',
+    },
+  },
+});
 
 const getTransactionRoute = createRoute({
   method: 'get',
@@ -137,6 +176,10 @@ const deleteTransactionRoute = createRoute({
     404: {
       content: { 'application/json': { schema: errorResponseSchema } },
       description: 'Transaction not found',
+    },
+    422: {
+      content: { 'application/json': { schema: validationErrorResponseSchema } },
+      description: 'Validation error',
     },
   },
 });
@@ -218,8 +261,25 @@ productTransactionsRouter.openapi(createTransactionRoute, async (c) => {
     );
   }
 
-  const transaction = await createTransaction(db, productId, body);
-  return c.json(transaction, 201);
+  try {
+    const transaction = await createTransaction(db, productId, body);
+    return c.json(transaction, 201);
+  } catch (error) {
+    if (error instanceof InsufficientBalanceError) {
+      return c.json(
+        {
+          error: {
+            message: error.message,
+            code: 'VALIDATION_ERROR' as const,
+            status: 422 as const,
+            details: [{ path: ['amount'] as (string | number)[], message: error.message }],
+          },
+        },
+        422,
+      );
+    }
+    throw error;
+  }
 });
 
 const transactionsRouter = new OpenAPIHono<AuthedEnv>({
@@ -241,6 +301,35 @@ const transactionsRouter = new OpenAPIHono<AuthedEnv>({
       );
     }
   },
+});
+
+transactionsRouter.openapi(listAllTransactionsRoute, async (c) => {
+  const user = c.get('user');
+  const query = c.req.valid('query');
+  const db = await createDb(c.env);
+
+  const result = await listAllTransactions(db, user.id, {
+    search: query.search,
+    startDate: query.start_date,
+    endDate: query.end_date,
+    types: query.types?.split(','),
+    categories: query.categories?.split(','),
+    productIds: query.product_ids?.split(','),
+    amountMin: query.amount_min,
+    amountMax: query.amount_max,
+    cursor: query.cursor,
+    limit: query.limit ?? 25,
+  });
+
+  return c.json(result, 200);
+});
+
+transactionsRouter.openapi(balanceHistoryRoute, async (c) => {
+  const user = c.get('user');
+  const { currency } = c.req.valid('query');
+  const db = await createDb(c.env);
+  const result = await getBalanceHistory(db, user.id, currency);
+  return c.json(result, 200);
 });
 
 transactionsRouter.openapi(getTransactionRoute, async (c) => {
@@ -270,44 +359,78 @@ transactionsRouter.openapi(updateTransactionRoute, async (c) => {
   const { id } = c.req.valid('param');
   const body = c.req.valid('json');
   const db = await createDb(c.env);
-  const transaction = await updateTransaction(db, user.id, id, body);
+  try {
+    const transaction = await updateTransaction(db, user.id, id, body);
 
-  if (!transaction) {
-    return c.json(
-      {
-        error: {
-          message: 'Transaction not found',
-          code: 'NOT_FOUND',
-          status: 404,
+    if (!transaction) {
+      return c.json(
+        {
+          error: {
+            message: 'Transaction not found',
+            code: 'NOT_FOUND',
+            status: 404,
+          },
         },
-      },
-      404,
-    );
-  }
+        404,
+      );
+    }
 
-  return c.json(transaction, 200);
+    return c.json(transaction, 200);
+  } catch (error) {
+    if (error instanceof InsufficientBalanceError) {
+      return c.json(
+        {
+          error: {
+            message: error.message,
+            code: 'VALIDATION_ERROR' as const,
+            status: 422 as const,
+            details: [{ path: ['amount'] as (string | number)[], message: error.message }],
+          },
+        },
+        422,
+      );
+    }
+    throw error;
+  }
 });
 
 transactionsRouter.openapi(deleteTransactionRoute, async (c) => {
   const user = c.get('user');
   const { id } = c.req.valid('param');
   const db = await createDb(c.env);
-  const transaction = await deleteTransaction(db, user.id, id);
+  try {
+    const transaction = await deleteTransaction(db, user.id, id);
 
-  if (!transaction) {
-    return c.json(
-      {
-        error: {
-          message: 'Transaction not found',
-          code: 'NOT_FOUND',
-          status: 404,
+    if (!transaction) {
+      return c.json(
+        {
+          error: {
+            message: 'Transaction not found',
+            code: 'NOT_FOUND',
+            status: 404,
+          },
         },
-      },
-      404,
-    );
-  }
+        404,
+      );
+    }
 
-  return c.json(transaction, 200);
+    return c.json(transaction, 200);
+  } catch (error) {
+    if (error instanceof InsufficientBalanceError) {
+      return c.json(
+        {
+          error: {
+            message: error.message,
+            code: 'VALIDATION_ERROR' as const,
+            status: 422 as const,
+            details: [{ path: ['amount'] as (string | number)[], message: error.message }],
+          },
+        },
+        422,
+      );
+    }
+    throw error;
+  }
 });
 
 export { productTransactionsRouter, transactionsRouter };

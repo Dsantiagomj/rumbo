@@ -68,7 +68,7 @@ export const METADATA_FIELD_CONFIG: Record<string, MetadataFieldConfig> = {
       { value: 'none', label: 'Sin franquicia' },
     ],
   },
-  balanceUsd: { label: 'Saldo consumido (USD)', placeholder: '0.00', type: 'text' },
+  balanceUsd: { label: 'Saldo en dolares (USD)', placeholder: '0.00', type: 'text' },
   monthlyPayment: { label: 'Cuota mensual', placeholder: '500000', type: 'text' },
   totalTerm: { label: 'Plazo total (meses)', placeholder: '60', type: 'number' },
   remainingTerm: { label: 'Plazo restante (meses)', placeholder: '48', type: 'number' },

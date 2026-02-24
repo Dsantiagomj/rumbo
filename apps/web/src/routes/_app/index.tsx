@@ -12,12 +12,31 @@ import {
   RecentTransactionsCard,
   UpcomingPaymentsCard,
 } from '@/features/dashboard';
+import { balanceHistoryQueryOptions } from '@/features/dashboard/model/queries';
 import { listProductsQueryOptions, ProductsEmptyState } from '@/features/financial-products';
 import { Alert, AlertDescription, AlertTitle, Button, Skeleton } from '@/shared/ui';
 
 export const Route = createFileRoute('/_app/')({
   component: DashboardPage,
 });
+
+function getProductBalance(
+  product: { currency: Currency; balance: string; metadata: unknown },
+  currency: Currency,
+): number | null {
+  if (product.currency === currency) {
+    return Number.parseFloat(product.balance);
+  }
+
+  if (currency === 'USD') {
+    const meta = product.metadata as Record<string, unknown> | null;
+    if (meta?.balanceUsd && typeof meta.balanceUsd === 'string') {
+      return Number.parseFloat(meta.balanceUsd);
+    }
+  }
+
+  return null;
+}
 
 function DashboardPage() {
   const { user } = Route.useRouteContext();
@@ -45,6 +64,21 @@ function DashboardPage() {
       setActiveCurrency(fallback);
     }
   }, [currencies, activeCurrency]);
+
+  const totalBalance = useMemo(() => {
+    let total = 0;
+    for (const product of products) {
+      const balance = getProductBalance(product, activeCurrency);
+      if (balance !== null) total += balance;
+    }
+    return total;
+  }, [products, activeCurrency]);
+
+  const { data: historyData } = useQuery({
+    ...balanceHistoryQueryOptions(activeCurrency),
+    enabled: products.length > 0,
+  });
+  const balanceHistory = historyData?.history ?? [];
 
   if (isPending) {
     return (
@@ -87,7 +121,8 @@ function DashboardPage() {
     <div className="space-y-6">
       <DashboardHero
         userName={user.name || user.email}
-        products={products}
+        totalBalance={totalBalance}
+        balanceHistory={balanceHistory}
         activeCurrency={activeCurrency}
         currencies={currencies}
         onCurrencyChange={setActiveCurrency}

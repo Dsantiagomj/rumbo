@@ -381,6 +381,7 @@ export function ProductDetail({ productId }: { productId: string }) {
 
         {/* Transactions */}
         <TransactionsSection
+          productId={productId}
           balance={product.balance}
           currency={product.currency}
           createdAt={product.createdAt}

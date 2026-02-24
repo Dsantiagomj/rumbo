@@ -5,6 +5,7 @@ export const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 30_000,
+  defaultViewTransition: true,
 });
 
 declare module '@tanstack/react-router' {

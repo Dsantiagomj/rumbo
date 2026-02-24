@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PRODUCT_TYPE_METADATA_MAP, type ProductResponse } from '@rumbo/shared';
+import { PRODUCT_TYPE_METADATA_MAP } from '@rumbo/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -97,7 +97,7 @@ export function useCreateProductForm() {
     }
 
     try {
-      const newProduct = await mutation.mutateAsync({
+      await mutation.mutateAsync({
         type: values.type,
         name: values.name,
         institution: values.institution,
@@ -105,9 +105,7 @@ export function useCreateProductForm() {
         currency: values.currency,
         metadata,
       });
-      queryClient.setQueryData<{ products: ProductResponse[] }>(['financial-products'], (old) => ({
-        products: [...(old?.products ?? []), newProduct],
-      }));
+      await queryClient.invalidateQueries({ queryKey: ['financial-products'] });
       router.history.back();
     } catch (error) {
       if (error instanceof ApiError && error.details) {

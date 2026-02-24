@@ -41,7 +41,7 @@ export function ReviewStep({ form, onEditStep }: ReviewStepProps) {
   const typeLabel = PRODUCT_TYPE_LABELS[values.type];
   const metadata = (values.metadata ?? {}) as Record<string, unknown>;
   const metadataEntries = Object.entries(metadata).filter(
-    ([, v]) => v !== undefined && v !== '' && v !== null,
+    ([k, v]) => v !== undefined && v !== '' && v !== null && k !== 'balanceUsd',
   );
 
   return (

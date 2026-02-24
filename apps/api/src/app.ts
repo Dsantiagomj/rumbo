@@ -113,11 +113,12 @@ app.use('/api/financial-products/*', authMiddleware);
 app.route('/api/financial-products', financialProductsRouter);
 app.route('/api/financial-products', productTransactionsRouter);
 
+app.use('/api/transactions', authMiddleware);
 app.use('/api/transactions/*', authMiddleware);
 app.route('/api/transactions', transactionsRouter);
 
 // Auth routes (Better Auth handles /api/auth/* automatically)
-app.on(['POST', 'GET'], '/api/auth/**', async (c) => {
+app.on(['POST', 'GET'], '/api/auth/*', async (c) => {
   const auth = await getAuth(c.env);
   const response = await auth.handler(c.req.raw);
 

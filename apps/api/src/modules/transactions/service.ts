@@ -2,6 +2,9 @@ import { financialProducts, transactions } from '@rumbo/db/schema';
 import type { CreateTransaction, TransactionType, UpdateTransaction } from '@rumbo/shared/schemas';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
+import { InsufficientBalanceError } from '../../lib/errors.js';
+
+const NON_NEGATIVE_BALANCE_TYPES: ReadonlySet<string> = new Set(['cash']);
 
 type TransactionFilters = {
   search?: string;
@@ -45,20 +48,114 @@ function serializeTransaction(tx: typeof transactions.$inferSelect) {
 }
 
 async function recalculateBalance(db: AppDatabase, productId: string) {
-  const [result] = await db
+  const [product] = await db
+    .select({ currency: financialProducts.currency, metadata: financialProducts.metadata })
+    .from(financialProducts)
+    .where(eq(financialProducts.id, productId));
+
+  if (!product) return;
+
+  const results = await db
     .select({
+      currency: transactions.currency,
       balance: sql<string>`COALESCE(SUM(CASE WHEN ${transactions.type} = 'income' THEN ${transactions.amount} ELSE -${transactions.amount} END), 0)`,
     })
     .from(transactions)
-    .where(eq(transactions.productId, productId));
+    .where(eq(transactions.productId, productId))
+    .groupBy(transactions.currency);
 
-  const rawBalance = result?.balance ?? '0';
-  const normalizedBalance = Number.parseFloat(rawBalance).toFixed(2);
+  const balanceByCurrency: Record<string, string> = {};
+  for (const row of results) {
+    balanceByCurrency[row.currency] = Number.parseFloat(row.balance).toFixed(2);
+  }
+
+  const mainBalance = balanceByCurrency[product.currency] ?? '0.00';
+
+  const metadata =
+    typeof product.metadata === 'string'
+      ? (JSON.parse(product.metadata) as Record<string, unknown>)
+      : { ...((product.metadata as Record<string, unknown>) ?? {}) };
+
+  const hasUsd = 'balanceUsd' in metadata;
+
+  if (hasUsd) {
+    metadata.balanceUsd = balanceByCurrency.USD ?? '0.00';
+  }
 
   await db
     .update(financialProducts)
-    .set({ balance: normalizedBalance, updatedAt: new Date() })
+    .set({
+      balance: mainBalance,
+      ...(hasUsd ? { metadata } : {}),
+      updatedAt: new Date(),
+    })
     .where(eq(financialProducts.id, productId));
+}
+
+async function validateBalanceConstraint(
+  db: AppDatabase,
+  productId: string,
+  balanceDelta: number,
+  currency: string,
+) {
+  const [product] = await db
+    .select({
+      type: financialProducts.type,
+      balance: financialProducts.balance,
+      metadata: financialProducts.metadata,
+    })
+    .from(financialProducts)
+    .where(eq(financialProducts.id, productId));
+
+  if (!product || !NON_NEGATIVE_BALANCE_TYPES.has(product.type)) return;
+
+  let currentBalance: number;
+  if (currency === 'USD') {
+    const metadata =
+      typeof product.metadata === 'string'
+        ? (JSON.parse(product.metadata) as Record<string, unknown>)
+        : ((product.metadata as Record<string, unknown>) ?? {});
+    currentBalance = Number.parseFloat((metadata.balanceUsd as string) ?? '0');
+  } else {
+    currentBalance = Number.parseFloat(product.balance ?? '0');
+  }
+
+  if (currentBalance + balanceDelta < 0) {
+    throw new InsufficientBalanceError();
+  }
+}
+
+export async function getBalanceHistory(db: AppDatabase, userId: string, currency: string) {
+  const rows = await db
+    .select({
+      type: transactions.type,
+      amount: transactions.amount,
+      createdAt: transactions.createdAt,
+    })
+    .from(transactions)
+    .innerJoin(financialProducts, eq(transactions.productId, financialProducts.id))
+    .where(
+      and(
+        eq(financialProducts.userId, userId),
+        eq(transactions.currency, currency),
+        eq(transactions.excluded, false),
+      ),
+    )
+    .orderBy(transactions.date, transactions.createdAt);
+
+  let cumulative = 0;
+  const history = rows.map((row) => {
+    const amount = Number.parseFloat(row.amount);
+    cumulative += row.type === 'income' ? amount : -amount;
+    const dateStr =
+      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt);
+    return {
+      date: dateStr,
+      balance: cumulative.toFixed(2),
+    };
+  });
+
+  return { history };
 }
 
 export async function verifyProductOwnership(db: AppDatabase, userId: string, productId: string) {
@@ -153,6 +250,112 @@ export async function listTransactions(
   };
 }
 
+type GlobalTransactionFilters = TransactionFilters & {
+  productIds?: string[];
+};
+
+function serializeGlobalTransaction(
+  tx: typeof transactions.$inferSelect,
+  productName: string,
+  productType: string,
+) {
+  return {
+    ...serializeTransaction(tx),
+    productName,
+    productType,
+  };
+}
+
+export async function listAllTransactions(
+  db: AppDatabase,
+  userId: string,
+  filters: GlobalTransactionFilters,
+) {
+  const conditions = [eq(financialProducts.userId, userId)];
+
+  if (filters.productIds && filters.productIds.length > 0) {
+    conditions.push(inArray(transactions.productId, filters.productIds));
+  }
+
+  if (filters.search) {
+    const pattern = `%${filters.search}%`;
+    const searchCondition = or(
+      ilike(transactions.name, pattern),
+      ilike(transactions.merchant, pattern),
+      ilike(transactions.notes, pattern),
+    );
+    if (searchCondition) conditions.push(searchCondition);
+  }
+
+  if (filters.startDate) {
+    conditions.push(sql`${transactions.date} >= ${filters.startDate}`);
+  }
+
+  if (filters.endDate) {
+    conditions.push(sql`${transactions.date} <= ${filters.endDate}`);
+  }
+
+  if (filters.types && filters.types.length > 0) {
+    conditions.push(inArray(transactions.type, filters.types as TransactionType[]));
+  }
+
+  if (filters.categories && filters.categories.length > 0) {
+    conditions.push(inArray(transactions.categoryId, filters.categories));
+  }
+
+  if (filters.amountMin) {
+    conditions.push(
+      sql`CAST(${transactions.amount} AS NUMERIC) >= CAST(${filters.amountMin} AS NUMERIC)`,
+    );
+  }
+
+  if (filters.amountMax) {
+    conditions.push(
+      sql`CAST(${transactions.amount} AS NUMERIC) <= CAST(${filters.amountMax} AS NUMERIC)`,
+    );
+  }
+
+  if (filters.cursor) {
+    const { date: cursorDate, id: cursorId } = decodeCursor(filters.cursor);
+    const cursorCondition = or(
+      sql`${transactions.date} < ${cursorDate}`,
+      and(sql`${transactions.date} = ${cursorDate}`, sql`${transactions.id} < ${cursorId}`),
+    );
+    if (cursorCondition) conditions.push(cursorCondition);
+  }
+
+  const rows = await db
+    .select({
+      transaction: transactions,
+      productName: financialProducts.name,
+      productType: financialProducts.type,
+    })
+    .from(transactions)
+    .innerJoin(financialProducts, eq(transactions.productId, financialProducts.id))
+    .where(and(...conditions))
+    .orderBy(desc(transactions.date), desc(transactions.id))
+    .limit(filters.limit + 1);
+
+  const hasMore = rows.length > filters.limit;
+  const data = hasMore ? rows.slice(0, filters.limit) : rows;
+  const lastItem = data[data.length - 1];
+
+  return {
+    transactions: data.map((row) =>
+      serializeGlobalTransaction(row.transaction, row.productName, row.productType),
+    ),
+    nextCursor:
+      hasMore && lastItem
+        ? encodeCursor(
+            lastItem.transaction.date instanceof Date
+              ? lastItem.transaction.date.toISOString().slice(0, 10)
+              : String(lastItem.transaction.date),
+            lastItem.transaction.id,
+          )
+        : null,
+  };
+}
+
 export async function getTransaction(db: AppDatabase, userId: string, transactionId: string) {
   const [result] = await db
     .select({ transaction: transactions })
@@ -168,6 +371,10 @@ export async function createTransaction(
   productId: string,
   data: Omit<CreateTransaction, 'productId'>,
 ) {
+  const amount = Number.parseFloat(data.amount);
+  const delta = data.type === 'income' ? amount : -amount;
+  await validateBalanceConstraint(db, productId, delta, data.currency);
+
   const [tx] = await db
     .insert(transactions)
     .values({
@@ -199,6 +406,14 @@ export async function updateTransaction(
   const existing = await getTransaction(db, userId, transactionId);
   if (!existing) return null;
 
+  const oldAmount = Number.parseFloat(existing.amount);
+  const oldDelta = existing.type === 'income' ? oldAmount : -oldAmount;
+  const newAmount = Number.parseFloat(data.amount ?? existing.amount);
+  const newType = data.type ?? existing.type;
+  const newDelta = newType === 'income' ? newAmount : -newAmount;
+  const txCurrency = data.currency ?? existing.currency;
+  await validateBalanceConstraint(db, existing.productId, newDelta - oldDelta, txCurrency);
+
   const [updated] = await db
     .update(transactions)
     .set({
@@ -221,6 +436,10 @@ export async function updateTransaction(
 export async function deleteTransaction(db: AppDatabase, userId: string, transactionId: string) {
   const existing = await getTransaction(db, userId, transactionId);
   if (!existing) return null;
+
+  const amount = Number.parseFloat(existing.amount);
+  const delta = existing.type === 'income' ? -amount : amount;
+  await validateBalanceConstraint(db, existing.productId, delta, existing.currency);
 
   const [deleted] = await db
     .delete(transactions)
