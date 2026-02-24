@@ -145,7 +145,7 @@ function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <AssetAllocationCard products={products} activeCurrency={activeCurrency} />
         <ProductGroupsCard products={products} />
-        <CashFlowCard />
+        <CashFlowCard activeCurrency={activeCurrency} />
 
         <div className="md:col-span-2">
           <RecentTransactionsCard />

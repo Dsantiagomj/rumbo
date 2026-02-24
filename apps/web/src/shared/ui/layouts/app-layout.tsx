@@ -1,4 +1,5 @@
 import {
+  RiAddLine,
   RiArrowDownSLine,
   RiArrowRightSLine,
   RiCloseLine,
@@ -7,6 +8,7 @@ import {
   RiSideBarLine,
   RiSparklingLine,
 } from '@remixicon/react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import {
@@ -18,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { listProductsQueryOptions } from '@/features/financial-products';
 import { navItems } from './nav-items';
 import { type Breadcrumb, useAppLayout } from './useAppLayout';
 
@@ -221,6 +224,47 @@ function DesktopSidebar({ collapsed, initials, pathname }: DesktopSidebarProps) 
   );
 }
 
+function QuickActions() {
+  const { data } = useQuery(listProductsQueryOptions());
+  const products = data?.products ?? [];
+
+  return (
+    <div className="flex items-center gap-1">
+      {products.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="cursor-pointer flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <RiAddLine className="h-3.5 w-3.5" />
+              Transaccion
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Seleccionar cuenta</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {products.map((p) => (
+              <DropdownMenuItem key={p.id} asChild>
+                <Link to="/products/$productId/transactions/new" params={{ productId: p.id }}>
+                  {p.name}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+      <Link
+        to="/products/new"
+        className="flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      >
+        <RiAddLine className="h-3.5 w-3.5" />
+        Producto
+      </Link>
+    </div>
+  );
+}
+
 type DesktopHeaderProps = {
   collapsed: boolean;
   assistantOpen: boolean;
@@ -288,6 +332,8 @@ function DesktopHeader({
         })}
       </nav>
 
+      <QuickActions />
+
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -324,6 +370,44 @@ type MobileHeaderProps = {
   onOpenAssistant: () => void;
 };
 
+function MobileQuickActions() {
+  const { data } = useQuery(listProductsQueryOptions());
+  const products = data?.products ?? [];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="cursor-pointer flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+          aria-label="Quick actions"
+        >
+          <RiAddLine className="h-5 w-5" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {products.length > 0 && (
+          <>
+            <DropdownMenuLabel>Nueva transaccion</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {products.map((p) => (
+              <DropdownMenuItem key={p.id} asChild>
+                <Link to="/products/$productId/transactions/new" params={{ productId: p.id }}>
+                  {p.name}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+          </>
+        )}
+        <DropdownMenuItem asChild>
+          <Link to="/products/new">Nuevo producto</Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function MobileHeader({ initials, onOpenDrawer, onOpenAssistant }: MobileHeaderProps) {
   return (
     <header className="flex md:hidden h-14 items-center border-b border-border bg-background px-4">
@@ -340,6 +424,7 @@ function MobileHeader({ initials, onOpenDrawer, onOpenAssistant }: MobileHeaderP
         </div>
         <span className="text-base font-bold">Rumbo</span>
       </div>
+      <MobileQuickActions />
       <button
         type="button"
         onClick={onOpenAssistant}
