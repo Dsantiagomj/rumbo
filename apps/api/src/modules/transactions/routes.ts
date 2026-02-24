@@ -6,12 +6,15 @@ import { InsufficientBalanceError } from '../../lib/errors.js';
 import {
   createTransaction,
   deleteTransaction,
+  getBalanceHistory,
   getTransaction,
   listTransactions,
   updateTransaction,
   verifyProductOwnership,
 } from './service.js';
 import {
+  balanceHistoryQuerySchema,
+  balanceHistoryResponse,
   createTransactionBodySchema,
   productIdParamSchema,
   transactionIdParamSchema,
@@ -73,6 +76,22 @@ const createTransactionRoute = createRoute({
 });
 
 // -- Route definitions: flat at /api/transactions --
+
+const balanceHistoryRoute = createRoute({
+  method: 'get',
+  path: '/balance-history',
+  tags: ['Transactions'],
+  summary: 'Get daily cumulative balance history for all products',
+  request: {
+    query: balanceHistoryQuerySchema,
+  },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: balanceHistoryResponse } },
+      description: 'Daily balance history',
+    },
+  },
+});
 
 const getTransactionRoute = createRoute({
   method: 'get',
@@ -263,6 +282,14 @@ const transactionsRouter = new OpenAPIHono<AuthedEnv>({
       );
     }
   },
+});
+
+transactionsRouter.openapi(balanceHistoryRoute, async (c) => {
+  const user = c.get('user');
+  const { currency } = c.req.valid('query');
+  const db = await createDb(c.env);
+  const result = await getBalanceHistory(db, user.id, currency);
+  return c.json(result, 200);
 });
 
 transactionsRouter.openapi(getTransactionRoute, async (c) => {

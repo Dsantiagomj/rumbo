@@ -1,4 +1,4 @@
-import type { Currency, ProductResponse } from '@rumbo/shared';
+import type { BalanceHistoryPoint } from '@rumbo/shared';
 import { useMemo } from 'react';
 
 export type TimePeriod = 'WTD' | 'MTD' | 'YTD' | '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL';
@@ -24,16 +24,14 @@ function getStartDate(period: TimePeriod): Date | null {
     case 'WTD': {
       const d = new Date(now);
       const day = d.getDay();
-      d.setDate(d.getDate() - (day === 0 ? 6 : day - 1)); // Monday
+      d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
       d.setHours(0, 0, 0, 0);
       return d;
     }
-    case 'MTD': {
+    case 'MTD':
       return new Date(now.getFullYear(), now.getMonth(), 1);
-    }
-    case 'YTD': {
+    case 'YTD':
       return new Date(now.getFullYear(), 0, 1);
-    }
     case '1W': {
       const d = new Date(now);
       d.setDate(d.getDate() - 7);
@@ -69,39 +67,18 @@ function getStartDate(period: TimePeriod): Date | null {
   }
 }
 
-function getProductBalance(product: ProductResponse, currency: Currency): number | null {
-  if (product.currency === currency) {
-    return Number.parseFloat(product.balance);
-  }
-
-  if (currency === 'USD') {
-    const meta = product.metadata as Record<string, unknown> | null;
-    if (meta?.balanceUsd && typeof meta.balanceUsd === 'string') {
-      return Number.parseFloat(meta.balanceUsd);
-    }
-  }
-
-  return null;
-}
-
 export function useNetWorthTimeline(
-  products: ProductResponse[],
-  currency: Currency,
+  history: BalanceHistoryPoint[],
+  currentBalance: number,
   period: TimePeriod,
 ): NetWorthTimelineResult {
   return useMemo(() => {
-    const productBalances = products
-      .map((p) => ({ product: p, balance: getProductBalance(p, currency) }))
-      .filter(
-        (entry): entry is { product: ProductResponse; balance: number } => entry.balance !== null,
-      );
-
     const periodStartDate = getStartDate(period);
 
-    if (productBalances.length === 0) {
+    if (history.length === 0) {
       return {
         points: [],
-        currentBalance: 0,
+        currentBalance,
         changeAmount: 0,
         changePercent: 0,
         isPositive: true,
@@ -109,59 +86,54 @@ export function useNetWorthTimeline(
       };
     }
 
-    // Sort by creation date ascending
-    const sorted = [...productBalances].sort(
-      (a, b) => new Date(a.product.createdAt).getTime() - new Date(b.product.createdAt).getTime(),
-    );
+    // Convert API history to timestamped points
+    const allPoints: TimelinePoint[] = history.map((h) => ({
+      date: new Date(`${h.date}T12:00:00`).getTime(),
+      balance: Number.parseFloat(h.balance),
+    }));
 
-    // Build cumulative timeline: each product creation adds its balance
-    const events: { date: Date; cumulativeBalance: number }[] = [];
-    let cumulative = 0;
-
-    for (const { product, balance } of sorted) {
-      cumulative += balance;
-      events.push({
-        date: new Date(product.createdAt),
-        cumulativeBalance: cumulative,
+    // Add today as final point if last history entry isn't today
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    const lastEntry = history[history.length - 1];
+    if (lastEntry && lastEntry.date !== todayStr) {
+      allPoints.push({
+        date: now.getTime(),
+        balance: currentBalance,
       });
     }
 
-    const now = new Date();
-    const currentBalance = cumulative;
-
-    // Add "today" as final point if last event isn't today
-    const lastEvent = events[events.length - 1];
-    if (lastEvent && lastEvent.date.toDateString() !== now.toDateString()) {
-      events.push({ date: now, cumulativeBalance: currentBalance });
-    }
-
     // Filter by period
-    let filtered = events;
+    let filtered = allPoints;
 
     if (periodStartDate) {
-      // Find the balance at the start of the period (last event before startDate)
-      const beforeStart = events.filter((e) => e.date < periodStartDate);
-      const lastBeforeStart = beforeStart[beforeStart.length - 1];
-      const balanceAtStart = lastBeforeStart ? lastBeforeStart.cumulativeBalance : 0;
+      const startTs = periodStartDate.getTime();
 
-      // Include a synthetic point at the start boundary
+      // Find the balance at the start of the period (last point before startDate)
+      const beforeStart = allPoints.filter((p) => p.date < startTs);
+      const balanceAtStart =
+        beforeStart.length > 0 ? (beforeStart[beforeStart.length - 1]?.balance ?? 0) : 0;
+
+      // Synthetic point at period boundary + points within range
       filtered = [
-        { date: periodStartDate, cumulativeBalance: balanceAtStart },
-        ...events.filter((e) => e.date >= periodStartDate),
+        { date: startTs, balance: balanceAtStart },
+        ...allPoints.filter((p) => p.date >= startTs),
       ];
     }
 
-    const points: TimelinePoint[] = filtered.map((e) => ({
-      date: e.date.getTime(),
-      balance: e.cumulativeBalance,
-    }));
-
     // Calculate change
-    const startBalance = points[0]?.balance ?? 0;
+    const startBalance = filtered[0]?.balance ?? 0;
     const changeAmount = currentBalance - startBalance;
     const changePercent = startBalance !== 0 ? (changeAmount / Math.abs(startBalance)) * 100 : 0;
     const isPositive = changeAmount >= 0;
 
-    return { points, currentBalance, changeAmount, changePercent, isPositive, periodStartDate };
-  }, [products, currency, period]);
+    return {
+      points: filtered,
+      currentBalance,
+      changeAmount,
+      changePercent,
+      isPositive,
+      periodStartDate,
+    };
+  }, [history, currentBalance, period]);
 }

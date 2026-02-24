@@ -1,5 +1,6 @@
 import { z } from '@hono/zod-openapi';
 import {
+  balanceHistoryResponseSchema,
   createTransactionSchema,
   transactionListResponseSchema,
   transactionResponseSchema,
@@ -29,6 +30,12 @@ export const transactionIdParamSchema = z.object({
     description: 'Transaction ID',
     example: '550e8400-e29b-41d4-a716-446655440000',
   }),
+});
+
+export const balanceHistoryResponse = balanceHistoryResponseSchema.openapi('BalanceHistory');
+
+export const balanceHistoryQuerySchema = z.object({
+  currency: z.string().openapi({ description: 'Currency code (COP, USD)', example: 'COP' }),
 });
 
 export const transactionQuerySchema = z.object({

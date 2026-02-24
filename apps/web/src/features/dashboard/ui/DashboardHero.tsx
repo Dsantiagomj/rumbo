@@ -1,5 +1,5 @@
 import { RiArrowDownSFill, RiArrowUpSFill } from '@remixicon/react';
-import type { Currency, ProductResponse } from '@rumbo/shared';
+import type { BalanceHistoryPoint, Currency } from '@rumbo/shared';
 import { useState } from 'react';
 import { formatBalance } from '@/features/financial-products/model/constants';
 import { NetWorthChart } from './NetWorthChart';
@@ -8,7 +8,8 @@ import { useNetWorthTimeline } from './useNetWorthTimeline';
 
 type DashboardHeroProps = {
   userName: string;
-  products: ProductResponse[];
+  totalBalance: number;
+  balanceHistory: BalanceHistoryPoint[];
   activeCurrency: Currency;
   currencies: Currency[];
   onCurrencyChange: (currency: Currency) => void;
@@ -35,14 +36,15 @@ const PERIOD_LABELS: Record<TimePeriod, string> = {
 
 export function DashboardHero({
   userName,
-  products,
+  totalBalance,
+  balanceHistory,
   activeCurrency,
   currencies,
   onCurrencyChange,
 }: DashboardHeroProps) {
   const [period, setPeriod] = useState<TimePeriod>('1M');
   const { points, currentBalance, changeAmount, changePercent, isPositive, periodStartDate } =
-    useNetWorthTimeline(products, activeCurrency, period);
+    useNetWorthTimeline(balanceHistory, totalBalance, period);
 
   const firstName = userName.split(' ')[0] || userName;
   const formattedBalance = formatBalance(String(currentBalance), activeCurrency);

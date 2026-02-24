@@ -125,6 +125,36 @@ async function validateBalanceConstraint(
   }
 }
 
+export async function getBalanceHistory(db: AppDatabase, userId: string, currency: string) {
+  const rows = await db
+    .select({
+      day: transactions.date,
+      dailyNet: sql<string>`SUM(CASE WHEN ${transactions.type} = 'income' THEN CAST(${transactions.amount} AS numeric) ELSE -CAST(${transactions.amount} AS numeric) END)`,
+    })
+    .from(transactions)
+    .innerJoin(financialProducts, eq(transactions.productId, financialProducts.id))
+    .where(
+      and(
+        eq(financialProducts.userId, userId),
+        eq(transactions.currency, currency),
+        eq(transactions.excluded, false),
+      ),
+    )
+    .groupBy(transactions.date)
+    .orderBy(transactions.date);
+
+  let cumulative = 0;
+  const history = rows.map((row) => {
+    cumulative += Number.parseFloat(row.dailyNet);
+    return {
+      date: row.day instanceof Date ? row.day.toISOString().slice(0, 10) : String(row.day),
+      balance: cumulative.toFixed(2),
+    };
+  });
+
+  return { history };
+}
+
 export async function verifyProductOwnership(db: AppDatabase, userId: string, productId: string) {
   const [product] = await db
     .select({ id: financialProducts.id })

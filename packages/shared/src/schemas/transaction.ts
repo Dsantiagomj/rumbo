@@ -38,7 +38,18 @@ export const transactionListResponseSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 
+export const balanceHistoryPointSchema = z.object({
+  date: z.string(),
+  balance: z.string(),
+});
+
+export const balanceHistoryResponseSchema = z.object({
+  history: z.array(balanceHistoryPointSchema),
+});
+
 export type CreateTransaction = z.infer<typeof createTransactionSchema>;
 export type UpdateTransaction = z.infer<typeof updateTransactionSchema>;
 export type TransactionResponse = z.infer<typeof transactionResponseSchema>;
 export type TransactionListResponse = z.infer<typeof transactionListResponseSchema>;
+export type BalanceHistoryPoint = z.infer<typeof balanceHistoryPointSchema>;
+export type BalanceHistoryResponse = z.infer<typeof balanceHistoryResponseSchema>;
