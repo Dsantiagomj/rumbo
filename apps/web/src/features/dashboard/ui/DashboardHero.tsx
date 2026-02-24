@@ -23,6 +23,7 @@ function getGreeting(): string {
 }
 
 const PERIOD_LABELS: Record<TimePeriod, string> = {
+  TODAY: 'hoy',
   WTD: 'esta semana',
   MTD: 'este mes',
   YTD: 'este año',

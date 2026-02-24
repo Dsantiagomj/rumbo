@@ -128,8 +128,9 @@ async function validateBalanceConstraint(
 export async function getBalanceHistory(db: AppDatabase, userId: string, currency: string) {
   const rows = await db
     .select({
-      day: transactions.date,
-      dailyNet: sql<string>`SUM(CASE WHEN ${transactions.type} = 'income' THEN CAST(${transactions.amount} AS numeric) ELSE -CAST(${transactions.amount} AS numeric) END)`,
+      type: transactions.type,
+      amount: transactions.amount,
+      createdAt: transactions.createdAt,
     })
     .from(transactions)
     .innerJoin(financialProducts, eq(transactions.productId, financialProducts.id))
@@ -140,14 +141,16 @@ export async function getBalanceHistory(db: AppDatabase, userId: string, currenc
         eq(transactions.excluded, false),
       ),
     )
-    .groupBy(transactions.date)
-    .orderBy(transactions.date);
+    .orderBy(transactions.date, transactions.createdAt);
 
   let cumulative = 0;
   const history = rows.map((row) => {
-    cumulative += Number.parseFloat(row.dailyNet);
+    const amount = Number.parseFloat(row.amount);
+    cumulative += row.type === 'income' ? amount : -amount;
+    const dateStr =
+      row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt);
     return {
-      date: row.day instanceof Date ? row.day.toISOString().slice(0, 10) : String(row.day),
+      date: dateStr,
       balance: cumulative.toFixed(2),
     };
   });

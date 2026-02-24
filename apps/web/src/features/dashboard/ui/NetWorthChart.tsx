@@ -1,6 +1,16 @@
 import type { Currency } from '@rumbo/shared';
 import { useMemo } from 'react';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { formatBalance } from '@/features/financial-products/model/constants';
 import type { TimelinePoint, TimePeriod } from './useNetWorthTimeline';
 
@@ -13,16 +23,24 @@ type NetWorthChartProps = {
   periodStartDate: Date | null;
 };
 
-const PERIODS: { value: TimePeriod; label: string }[] = [
-  { value: '1M', label: '1M' },
-  { value: '3M', label: '3M' },
-  { value: '6M', label: '6M' },
-  { value: '1Y', label: '1A' },
-  { value: 'ALL', label: 'Todo' },
-];
+const PERIOD_SELECT_LABELS: Record<TimePeriod, string> = {
+  TODAY: 'Hoy',
+  WTD: 'Esta semana',
+  MTD: 'Este mes',
+  YTD: 'Este año',
+  '1W': 'Última semana',
+  '1M': 'Último mes',
+  '3M': '3 meses',
+  '6M': '6 meses',
+  '1Y': '1 año',
+  ALL: 'Todo',
+};
 
 function formatDateLabel(timestamp: number, period: TimePeriod): string {
   const date = new Date(timestamp);
+  if (period === 'TODAY') {
+    return date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+  }
   if (period === 'WTD' || period === '1W') {
     return date.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric' });
   }
@@ -173,28 +191,38 @@ export function NetWorthChart({
         )}
       </div>
 
-      {/* Date range + time period selectors */}
+      {/* Date range + time period selector */}
       <div className="flex items-center gap-2">
         {formatDateRange(periodStartDate) && (
           <span className="text-xs text-muted-foreground/60">
             {formatDateRange(periodStartDate)}
           </span>
         )}
-        <div className="ml-auto flex items-center gap-1">
-          {PERIODS.map((p) => (
-            <button
-              key={p.value}
-              type="button"
-              onClick={() => onPeriodChange(p.value)}
-              className={`cursor-pointer rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                period === p.value
-                  ? 'bg-foreground text-background'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="ml-auto">
+          <Select value={period} onValueChange={(v) => onPeriodChange(v as TimePeriod)}>
+            <SelectTrigger size="sm">
+              <SelectValue>{PERIOD_SELECT_LABELS[period]}</SelectValue>
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectGroup>
+                <SelectLabel>Al día</SelectLabel>
+                <SelectItem value="TODAY">Hoy</SelectItem>
+                <SelectItem value="WTD">Esta semana</SelectItem>
+                <SelectItem value="MTD">Este mes</SelectItem>
+                <SelectItem value="YTD">Este año</SelectItem>
+              </SelectGroup>
+              <SelectSeparator />
+              <SelectGroup>
+                <SelectLabel>Periodo</SelectLabel>
+                <SelectItem value="1W">Última semana</SelectItem>
+                <SelectItem value="1M">Último mes</SelectItem>
+                <SelectItem value="3M">3 meses</SelectItem>
+                <SelectItem value="6M">6 meses</SelectItem>
+                <SelectItem value="1Y">1 año</SelectItem>
+                <SelectItem value="ALL">Todo</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

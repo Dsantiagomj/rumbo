@@ -1,7 +1,7 @@
 import type { BalanceHistoryPoint } from '@rumbo/shared';
 import { useMemo } from 'react';
 
-export type TimePeriod = 'WTD' | 'MTD' | 'YTD' | '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL';
+export type TimePeriod = 'TODAY' | 'WTD' | 'MTD' | 'YTD' | '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL';
 
 export type TimelinePoint = {
   date: number;
@@ -21,6 +21,11 @@ function getStartDate(period: TimePeriod): Date | null {
   const now = new Date();
 
   switch (period) {
+    case 'TODAY': {
+      const d = new Date(now);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
     case 'WTD': {
       const d = new Date(now);
       const day = d.getDay();
@@ -86,21 +91,36 @@ export function useNetWorthTimeline(
       };
     }
 
-    // Convert API history to timestamped points
-    const allPoints: TimelinePoint[] = history.map((h) => ({
-      date: new Date(`${h.date}T12:00:00`).getTime(),
+    // Convert API history to timestamped points (dates are full ISO datetimes)
+    let allPoints: TimelinePoint[] = history.map((h) => ({
+      date: new Date(h.date).getTime(),
       balance: Number.parseFloat(h.balance),
     }));
 
-    // Add today as final point if last history entry isn't today
+    // Add today as final point with current balance
     const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
-    const lastEntry = history[history.length - 1];
-    if (lastEntry && lastEntry.date !== todayStr) {
+    const lastPoint = allPoints[allPoints.length - 1];
+    if (!lastPoint || now.getTime() - lastPoint.date > 60_000) {
       allPoints.push({
         date: now.getTime(),
         balance: currentBalance,
       });
+    }
+
+    // For multi-day periods, collapse to end-of-day balances to avoid
+    // misleading intra-day spikes (e.g. 500K → 100K on the same day).
+    // Only "Hoy" shows individual transaction granularity.
+    if (period !== 'TODAY') {
+      const dayMap = new Map<string, TimelinePoint>();
+      for (const point of allPoints) {
+        const d = new Date(point.date);
+        const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        dayMap.set(dayKey, {
+          date: new Date(`${dayKey}T12:00:00`).getTime(),
+          balance: point.balance,
+        });
+      }
+      allPoints = Array.from(dayMap.values()).sort((a, b) => a.date - b.date);
     }
 
     // Filter by period
