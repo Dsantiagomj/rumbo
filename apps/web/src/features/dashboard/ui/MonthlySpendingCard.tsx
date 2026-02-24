@@ -16,10 +16,10 @@ export function MonthlySpendingCard() {
           Categoriza tus gastos para entender a dónde va tu plata
         </p>
         <Link
-          to="/products"
+          to="/categories"
           className="inline-flex items-center gap-1 text-xs font-medium text-foreground transition-colors hover:text-foreground/80"
         >
-          Categorizar gastos
+          Gestionar categorías
           <RiArrowRightLine className="size-3" />
         </Link>
       </CardContent>
