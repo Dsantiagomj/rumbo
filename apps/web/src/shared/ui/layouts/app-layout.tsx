@@ -158,6 +158,9 @@ export function AppLayout({ children }: AppLayoutProps) {
       edit: 'Editar',
     };
 
+    // Namespace segments without their own route — hidden from breadcrumbs.
+    const hiddenSegments = new Set(['transactions']);
+
     const segments = resolvedPathname.split('/').filter(Boolean);
     const crumbs: { label: string; path: string; loading?: boolean }[] = [
       { label: 'Dashboard', path: '/' },
@@ -166,6 +169,9 @@ export function AppLayout({ children }: AppLayoutProps) {
     let currentPath = '';
     for (const segment of segments) {
       currentPath += `/${segment}`;
+
+      if (hiddenSegments.has(segment)) continue;
+
       const staticLabel = segmentLabels[segment];
       const dynamicLabel = dynamicLabels[segment];
       const isUuid = UUID_RE.test(segment);
