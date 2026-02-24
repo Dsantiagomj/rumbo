@@ -140,4 +140,27 @@
     animation: none !important;
     transition: none !important;
   }
+
+  /* Page navigation transitions — only animate the main content area */
+  ::view-transition-old(main-content) {
+    animation: page-out 180ms ease-in forwards;
+  }
+
+  ::view-transition-new(main-content) {
+    animation: page-in 180ms ease-out;
+  }
+
+  @keyframes page-out {
+    to {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
 }

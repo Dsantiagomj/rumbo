@@ -146,6 +146,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const dynamicLabels = useBreadcrumbLabels();
 
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
   const breadcrumbs = useMemo(() => {
     const segmentLabels: Record<string, string> = {
       settings: 'Settings',
@@ -157,13 +159,26 @@ export function AppLayout({ children }: AppLayoutProps) {
     };
 
     const segments = resolvedPathname.split('/').filter(Boolean);
-    const crumbs: { label: string; path: string }[] = [{ label: 'Dashboard', path: '/' }];
+    const crumbs: { label: string; path: string; loading?: boolean }[] = [
+      { label: 'Dashboard', path: '/' },
+    ];
 
     let currentPath = '';
     for (const segment of segments) {
       currentPath += `/${segment}`;
-      const label = segmentLabels[segment] ?? dynamicLabels[segment] ?? segment;
-      crumbs.push({ label, path: currentPath });
+      const staticLabel = segmentLabels[segment];
+      const dynamicLabel = dynamicLabels[segment];
+      const isUuid = UUID_RE.test(segment);
+
+      if (staticLabel) {
+        crumbs.push({ label: staticLabel, path: currentPath });
+      } else if (dynamicLabel) {
+        crumbs.push({ label: dynamicLabel, path: currentPath });
+      } else if (isUuid) {
+        crumbs.push({ label: '', path: currentPath, loading: true });
+      } else {
+        crumbs.push({ label: segment, path: currentPath });
+      }
     }
 
     return crumbs;
@@ -326,7 +341,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                   {i > 0 && (
                     <RiArrowRightSLine className="h-4 w-4 shrink-0 text-muted-foreground/50" />
                   )}
-                  {isLast ? (
+                  {crumb.loading ? (
+                    <span className="inline-block h-4 w-20 animate-pulse rounded bg-muted" />
+                  ) : isLast ? (
                     <span className="text-sm font-semibold text-foreground truncate">
                       {crumb.label}
                     </span>
@@ -490,7 +507,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Content row: main content + assistant panel */}
         <div className="flex flex-1 overflow-hidden">
           {/* Page content */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">{children}</main>
+          <main
+            className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6"
+            style={{ viewTransitionName: 'main-content' }}
+          >
+            {children}
+          </main>
 
           {/* Resizable divider */}
           {assistantOpen && (

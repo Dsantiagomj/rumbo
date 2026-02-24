@@ -2,6 +2,7 @@ import type { RemixiconComponentType } from '@remixicon/react';
 import { RiArrowRightSLine } from '@remixicon/react';
 import type { ProductResponse } from '@rumbo/shared';
 import { Link } from '@tanstack/react-router';
+import { setBreadcrumbLabel } from '@/shared/lib/useBreadcrumbStore';
 import { Card, CardContent } from '@/shared/ui';
 import { useProductCard } from './useProductCard';
 
@@ -23,7 +24,13 @@ export function ProductCard({ product, icon: Icon }: ProductCardProps) {
   } = useProductCard(product);
 
   return (
-    <Link to="/products/$productId" params={{ productId: product.id }} className="block">
+    <Link
+      to="/products/$productId"
+      params={{ productId: product.id }}
+      className="block"
+      viewTransition
+      onClick={() => setBreadcrumbLabel(product.id, product.name)}
+    >
       <Card className="ring-transparent border border-border hover:border-foreground/20 hover:bg-muted/50 transition-colors cursor-pointer">
         <CardContent className="flex items-center gap-4 py-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">

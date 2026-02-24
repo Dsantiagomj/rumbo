@@ -13,6 +13,7 @@ import { Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { setBreadcrumbLabel } from '@/shared/lib/useBreadcrumbStore';
 import { Button, Input, Skeleton } from '@/shared/ui';
 import { listCategoriesQueryOptions } from '../model/category-queries';
 import { formatBalance } from '../model/constants';
@@ -117,6 +118,8 @@ function TransactionCard({
           to="/products/$productId/transactions/$transactionId"
           params={{ productId, transactionId: transaction.id }}
           className="flex flex-1 items-center gap-3 text-left"
+          viewTransition
+          onClick={() => setBreadcrumbLabel(transaction.id, transaction.name)}
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
             <span className="text-xs font-medium text-primary">
