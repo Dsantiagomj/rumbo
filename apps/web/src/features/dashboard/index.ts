@@ -1,4 +1,8 @@
-export { balanceHistoryQueryOptions } from './model/queries';
+export {
+  balanceHistoryQueryOptions,
+  monthlyTransactionsQueryOptions,
+  recentTransactionsQueryOptions,
+} from './model/queries';
 export { AssetAllocationCard } from './ui/AssetAllocationCard';
 export { CashFlowCard } from './ui/CashFlowCard';
 export { DashboardHero } from './ui/DashboardHero';
