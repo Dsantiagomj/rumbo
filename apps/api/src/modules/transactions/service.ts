@@ -48,31 +48,78 @@ function serializeTransaction(tx: typeof transactions.$inferSelect) {
 }
 
 async function recalculateBalance(db: AppDatabase, productId: string) {
-  const [result] = await db
+  const [product] = await db
+    .select({ currency: financialProducts.currency, metadata: financialProducts.metadata })
+    .from(financialProducts)
+    .where(eq(financialProducts.id, productId));
+
+  if (!product) return;
+
+  const results = await db
     .select({
+      currency: transactions.currency,
       balance: sql<string>`COALESCE(SUM(CASE WHEN ${transactions.type} = 'income' THEN ${transactions.amount} ELSE -${transactions.amount} END), 0)`,
     })
     .from(transactions)
-    .where(eq(transactions.productId, productId));
+    .where(eq(transactions.productId, productId))
+    .groupBy(transactions.currency);
 
-  const rawBalance = result?.balance ?? '0';
-  const normalizedBalance = Number.parseFloat(rawBalance).toFixed(2);
+  const balanceByCurrency: Record<string, string> = {};
+  for (const row of results) {
+    balanceByCurrency[row.currency] = Number.parseFloat(row.balance).toFixed(2);
+  }
+
+  const mainBalance = balanceByCurrency[product.currency] ?? '0.00';
+
+  const metadata =
+    typeof product.metadata === 'string'
+      ? (JSON.parse(product.metadata) as Record<string, unknown>)
+      : { ...((product.metadata as Record<string, unknown>) ?? {}) };
+
+  const hasUsd = 'balanceUsd' in metadata;
+
+  if (hasUsd) {
+    metadata.balanceUsd = balanceByCurrency.USD ?? '0.00';
+  }
 
   await db
     .update(financialProducts)
-    .set({ balance: normalizedBalance, updatedAt: new Date() })
+    .set({
+      balance: mainBalance,
+      ...(hasUsd ? { metadata } : {}),
+      updatedAt: new Date(),
+    })
     .where(eq(financialProducts.id, productId));
 }
 
-async function validateBalanceConstraint(db: AppDatabase, productId: string, balanceDelta: number) {
+async function validateBalanceConstraint(
+  db: AppDatabase,
+  productId: string,
+  balanceDelta: number,
+  currency: string,
+) {
   const [product] = await db
-    .select({ type: financialProducts.type, balance: financialProducts.balance })
+    .select({
+      type: financialProducts.type,
+      balance: financialProducts.balance,
+      metadata: financialProducts.metadata,
+    })
     .from(financialProducts)
     .where(eq(financialProducts.id, productId));
 
   if (!product || !NON_NEGATIVE_BALANCE_TYPES.has(product.type)) return;
 
-  const currentBalance = Number.parseFloat(product.balance ?? '0');
+  let currentBalance: number;
+  if (currency === 'USD') {
+    const metadata =
+      typeof product.metadata === 'string'
+        ? (JSON.parse(product.metadata) as Record<string, unknown>)
+        : ((product.metadata as Record<string, unknown>) ?? {});
+    currentBalance = Number.parseFloat((metadata.balanceUsd as string) ?? '0');
+  } else {
+    currentBalance = Number.parseFloat(product.balance ?? '0');
+  }
+
   if (currentBalance + balanceDelta < 0) {
     throw new InsufficientBalanceError();
   }
@@ -187,7 +234,7 @@ export async function createTransaction(
 ) {
   const amount = Number.parseFloat(data.amount);
   const delta = data.type === 'income' ? amount : -amount;
-  await validateBalanceConstraint(db, productId, delta);
+  await validateBalanceConstraint(db, productId, delta, data.currency);
 
   const [tx] = await db
     .insert(transactions)
@@ -225,7 +272,8 @@ export async function updateTransaction(
   const newAmount = Number.parseFloat(data.amount ?? existing.amount);
   const newType = data.type ?? existing.type;
   const newDelta = newType === 'income' ? newAmount : -newAmount;
-  await validateBalanceConstraint(db, existing.productId, newDelta - oldDelta);
+  const txCurrency = data.currency ?? existing.currency;
+  await validateBalanceConstraint(db, existing.productId, newDelta - oldDelta, txCurrency);
 
   const [updated] = await db
     .update(transactions)
@@ -252,7 +300,7 @@ export async function deleteTransaction(db: AppDatabase, userId: string, transac
 
   const amount = Number.parseFloat(existing.amount);
   const delta = existing.type === 'income' ? -amount : amount;
-  await validateBalanceConstraint(db, existing.productId, delta);
+  await validateBalanceConstraint(db, existing.productId, delta, existing.currency);
 
   const [deleted] = await db
     .delete(transactions)

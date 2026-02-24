@@ -29,6 +29,14 @@ export async function createProduct(db: AppDatabase, userId: string, data: Creat
     throw new InsufficientBalanceError();
   }
 
+  const metadata = (data.metadata ?? {}) as Record<string, unknown>;
+  const balanceUsdStr = typeof metadata.balanceUsd === 'string' ? metadata.balanceUsd : null;
+  const balanceUsdNum = balanceUsdStr ? Number.parseFloat(balanceUsdStr) : 0;
+
+  if (NON_NEGATIVE_BALANCE_TYPES.has(data.type) && balanceUsdNum < 0) {
+    throw new InsufficientBalanceError();
+  }
+
   return await db.transaction(async (tx) => {
     const [product] = await tx
       .insert(financialProducts)
@@ -55,6 +63,18 @@ export async function createProduct(db: AppDatabase, userId: string, data: Creat
         name: 'Balance inicial',
         amount: Math.abs(balanceNum).toFixed(2),
         currency: data.currency,
+        date: new Date(),
+        excluded: false,
+      });
+    }
+
+    if (balanceUsdNum !== 0) {
+      await tx.insert(transactions).values({
+        productId: product.id,
+        type: balanceUsdNum >= 0 ? 'income' : 'expense',
+        name: 'Balance inicial',
+        amount: Math.abs(balanceUsdNum).toFixed(2),
+        currency: 'USD',
         date: new Date(),
         excluded: false,
       });
