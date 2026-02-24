@@ -109,6 +109,7 @@ export function TransactionsPage() {
   const {
     transactions,
     products,
+    categories,
     categoryMap,
     isPending,
     isFetchingNextPage,
@@ -120,6 +121,8 @@ export function TransactionsPage() {
     setSelectedProductId,
     selectedType,
     setSelectedType,
+    selectedCategoryId,
+    setSelectedCategoryId,
     startDate,
     setStartDate,
     endDate,
@@ -173,6 +176,21 @@ export function TransactionsPage() {
             <SelectItem value="income">Ingreso</SelectItem>
             <SelectItem value="expense">Gasto</SelectItem>
             <SelectItem value="transfer">Transferencia</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Category filter */}
+        <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
+          <SelectTrigger className="h-8 w-[170px] text-xs">
+            <SelectValue placeholder="Todas las categorias" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las categorias</SelectItem>
+            {categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
