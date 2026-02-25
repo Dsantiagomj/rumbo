@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { listProductsQueryOptions } from '@/features/financial-products';
 import { navItems } from './nav-items';
 import { type Breadcrumb, useAppLayout } from './useAppLayout';
+import { useQuickActionsContext } from './useQuickActionsContext';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -225,43 +226,54 @@ function DesktopSidebar({ collapsed, initials, pathname }: DesktopSidebarProps) 
 }
 
 function QuickActions() {
-  const { data } = useQuery(listProductsQueryOptions());
-  const products = data?.products ?? [];
+  const mode = useQuickActionsContext();
 
-  return (
-    <div className="flex items-center gap-1">
-      {products.length > 0 && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="cursor-pointer flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            >
-              <RiAddLine className="h-3.5 w-3.5" />
-              Transaccion
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Seleccionar cuenta</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {products.map((p) => (
-              <DropdownMenuItem key={p.id} asChild>
-                <Link to="/products/$productId/transactions/new" params={{ productId: p.id }}>
-                  {p.name}
-                </Link>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+  if (mode === 'transaction-only') {
+    return (
+      <Link
+        to="/transactions/new"
+        className="flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      >
+        <RiAddLine className="h-3.5 w-3.5" />
+        Agregar Transaccion
+      </Link>
+    );
+  }
+
+  if (mode === 'product-only') {
+    return (
       <Link
         to="/products/new"
         className="flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
       >
         <RiAddLine className="h-3.5 w-3.5" />
-        Producto
+        Agregar Producto
       </Link>
-    </div>
+    );
+  }
+
+  // Default: dropdown mode
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="cursor-pointer flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <RiAddLine className="h-3.5 w-3.5" />
+          Agregar
+          <RiArrowDownSLine className="h-3.5 w-3.5" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to="/transactions/new">Agregar Transaccion</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/products/new">Agregar Producto</Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
