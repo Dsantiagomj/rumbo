@@ -3,6 +3,7 @@ import { RiArrowLeftLine } from '@remixicon/react';
 import type { CreateTransaction } from '@rumbo/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
+import { useState } from 'react';
 import { type FieldPath, useForm } from 'react-hook-form';
 import { sileo } from 'sileo';
 import { ApiError } from '@/shared/api';
@@ -14,10 +15,11 @@ import {
   transactionFormSchema,
 } from '../model/transaction-form-schema';
 import { useCreateTransactionMutation } from '../model/transaction-queries';
+import { ProductSelector } from './ProductSelector';
 import { TransactionFormFields } from './TransactionFormFields';
 
 type CreateTransactionPageProps = {
-  productId: string;
+  productId?: string;
 };
 
 function getDefaultValues(): TransactionFormValues {
@@ -36,10 +38,12 @@ function getDefaultValues(): TransactionFormValues {
 export function CreateTransactionPage({ productId }: CreateTransactionPageProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const mutation = useCreateTransactionMutation(productId);
-  const { data: product, isPending: isProductPending } = useQuery(
-    getProductQueryOptions(productId),
-  );
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(productId ?? null);
+  const mutation = useCreateTransactionMutation(selectedProductId ?? '');
+  const { data: product, isPending: isProductPending } = useQuery({
+    ...getProductQueryOptions(selectedProductId ?? ''),
+    enabled: !!selectedProductId,
+  });
   const { data: categoriesData } = useQuery(listCategoriesQueryOptions());
 
   const form = useForm<TransactionFormValues>({
@@ -66,8 +70,8 @@ export function CreateTransactionPage({ productId }: CreateTransactionPageProps)
 
     try {
       await mutation.mutateAsync(body);
-      await queryClient.invalidateQueries({ queryKey: ['transactions', productId] });
-      await queryClient.invalidateQueries({ queryKey: ['financial-products', productId] });
+      await queryClient.invalidateQueries({ queryKey: ['transactions', selectedProductId] });
+      await queryClient.invalidateQueries({ queryKey: ['financial-products', selectedProductId] });
       await queryClient.invalidateQueries({ queryKey: ['financial-products'] });
       sileo.success({ title: 'Transaccion creada' });
       router.history.back();
@@ -87,6 +91,25 @@ export function CreateTransactionPage({ productId }: CreateTransactionPageProps)
         description: 'Intenta de nuevo.',
       });
     }
+  }
+
+  if (!selectedProductId) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-6">
+        <div className="flex items-center gap-2 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Volver"
+            onClick={() => router.history.back()}
+          >
+            <RiArrowLeftLine className="h-5 w-5" />
+          </Button>
+          <span className="font-medium">Nueva transaccion</span>
+        </div>
+        <ProductSelector onSelect={setSelectedProductId} />
+      </div>
+    );
   }
 
   if (isProductPending) {
