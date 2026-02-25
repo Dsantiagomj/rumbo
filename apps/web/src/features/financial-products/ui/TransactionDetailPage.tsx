@@ -44,6 +44,7 @@ type TransactionDetailPageProps = {
   productId: string;
   transactionId: string;
   initialEdit?: boolean;
+  from?: 'transactions';
 };
 
 function TransactionEditForm({

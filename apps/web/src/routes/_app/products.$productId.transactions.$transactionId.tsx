@@ -4,6 +4,7 @@ import { TransactionDetailPage } from '@/features/financial-products';
 
 const searchSchema = z.object({
   edit: z.boolean().optional(),
+  from: z.enum(['transactions']).optional(),
 });
 
 export const Route = createFileRoute('/_app/products/$productId/transactions/$transactionId')({
@@ -13,8 +14,13 @@ export const Route = createFileRoute('/_app/products/$productId/transactions/$tr
 
 function TransactionDetailRoute() {
   const { productId, transactionId } = Route.useParams();
-  const { edit } = Route.useSearch();
+  const { edit, from } = Route.useSearch();
   return (
-    <TransactionDetailPage productId={productId} transactionId={transactionId} initialEdit={edit} />
+    <TransactionDetailPage
+      productId={productId}
+      transactionId={transactionId}
+      initialEdit={edit}
+      from={from}
+    />
   );
 }
