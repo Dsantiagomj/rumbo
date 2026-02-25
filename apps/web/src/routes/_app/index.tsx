@@ -3,12 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AssetAllocationCard,
   CashFlowCard,
   DashboardHero,
+  FinancialOverviewCard,
   GoalsProgressCard,
   MonthlySpendingCard,
-  ProductGroupsCard,
   RecentTransactionsCard,
   UpcomingPaymentsCard,
 } from '@/features/dashboard';
@@ -143,8 +142,7 @@ function DashboardPage() {
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <AssetAllocationCard products={products} activeCurrency={activeCurrency} />
-        <ProductGroupsCard products={products} />
+        <FinancialOverviewCard products={products} activeCurrency={activeCurrency} />
         <CashFlowCard activeCurrency={activeCurrency} />
 
         <div className="md:col-span-2">

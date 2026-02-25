@@ -1,12 +1,14 @@
 import type { CategoryResponse } from '@rumbo/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { sileo } from 'sileo';
 import {
   listCategoriesQueryOptions,
   useCreateCategoryMutation,
   useDeleteCategoryMutation,
   useUpdateCategoryMutation,
 } from '@/features/financial-products/model/category-queries';
+import { ApiError } from '@/shared/api';
 
 export type CategoryGroup = {
   parent: CategoryResponse;
@@ -35,7 +37,7 @@ export function useCategoriesPage() {
 
   // Expanded parent groups
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
-  const [initialized, setInitialized] = useState(false);
+  const initializedRef = useRef(false);
 
   // Group categories into parent-child hierarchy
   const parentCategories = useMemo(
@@ -43,18 +45,39 @@ export function useCategoriesPage() {
     [categories],
   );
 
-  const groups: CategoryGroup[] = useMemo(() => {
-    return parentCategories.map((parent) => ({
-      parent,
-      children: categories.filter((c) => c.parentId === parent.id),
-    }));
-  }, [parentCategories, categories]);
+  const childrenByParent = useMemo(() => {
+    const map = new Map<string, CategoryResponse[]>();
+    for (const category of categories) {
+      if (!category.parentId) continue;
+      const list = map.get(category.parentId) ?? [];
+      list.push(category);
+      map.set(category.parentId, list);
+    }
+    return map;
+  }, [categories]);
+
+  const groups: CategoryGroup[] = useMemo(
+    () =>
+      parentCategories.map((parent) => ({
+        parent,
+        children: childrenByParent.get(parent.id) ?? [],
+      })),
+    [parentCategories, childrenByParent],
+  );
 
   // Initialize all groups as expanded once data loads
-  if (!initialized && parentCategories.length > 0) {
-    setExpandedIds(new Set(parentCategories.map((p) => p.id)));
-    setInitialized(true);
-  }
+  useEffect(() => {
+    if (!initializedRef.current && parentCategories.length > 0) {
+      setExpandedIds(new Set(parentCategories.map((p) => p.id)));
+      initializedRef.current = true;
+    }
+  }, [parentCategories]);
+
+  const getErrorMessage = useCallback((error: unknown, fallback: string) => {
+    if (error instanceof ApiError && error.message) return error.message;
+    if (error instanceof Error && error.message) return error.message;
+    return fallback;
+  }, []);
 
   // Toggle expanded state
   const toggleExpanded = useCallback((parentId: string) => {
@@ -87,14 +110,28 @@ export function useCategoriesPage() {
         parentId: selectedParentId ?? undefined,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setNewName('');
           setSelectedParentId(null);
           invalidateCategories();
+          if (!data.parentId) {
+            setExpandedIds((prev) => {
+              const next = new Set(prev);
+              next.add(data.id);
+              return next;
+            });
+          }
+          sileo.success({ title: 'Categoría creada' });
+        },
+        onError: (error) => {
+          sileo.error({
+            title: 'No se pudo crear la categoría',
+            description: getErrorMessage(error, 'Intenta de nuevo en unos minutos.'),
+          });
         },
       },
     );
-  }, [newName, selectedParentId, createMutation, invalidateCategories]);
+  }, [newName, selectedParentId, createMutation, invalidateCategories, getErrorMessage]);
 
   // Start editing a category
   const startEditing = useCallback((category: CategoryResponse) => {
@@ -121,10 +158,17 @@ export function useCategoriesPage() {
           setEditingId(null);
           setEditName('');
           invalidateCategories();
+          sileo.success({ title: 'Categoría renombrada' });
+        },
+        onError: (error) => {
+          sileo.error({
+            title: 'No se pudo renombrar la categoría',
+            description: getErrorMessage(error, 'Intenta de nuevo en unos minutos.'),
+          });
         },
       },
     );
-  }, [editingId, editName, updateMutation, invalidateCategories]);
+  }, [editingId, editName, updateMutation, invalidateCategories, getErrorMessage]);
 
   // Delete category
   const handleDelete = useCallback(
@@ -132,10 +176,17 @@ export function useCategoriesPage() {
       deleteMutation.mutate(id, {
         onSuccess: () => {
           invalidateCategories();
+          sileo.success({ title: 'Categoría eliminada' });
+        },
+        onError: (error) => {
+          sileo.error({
+            title: 'No se pudo eliminar la categoría',
+            description: getErrorMessage(error, 'Intenta de nuevo en unos minutos.'),
+          });
         },
       });
     },
-    [deleteMutation, invalidateCategories],
+    [deleteMutation, invalidateCategories, getErrorMessage],
   );
 
   return {
