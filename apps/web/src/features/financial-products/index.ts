@@ -11,6 +11,7 @@ export { CreateTransactionPage } from './ui/CreateTransactionPage';
 export { EditProductForm } from './ui/EditProductForm';
 export { ProductDetail } from './ui/ProductDetail';
 export { ProductGroup } from './ui/ProductGroup';
+export { ProductSelector } from './ui/ProductSelector';
 export { ProductsEmptyState } from './ui/ProductsEmptyState';
 export { ProductsList } from './ui/ProductsList';
 export { ProductsToolbar } from './ui/ProductsToolbar';
