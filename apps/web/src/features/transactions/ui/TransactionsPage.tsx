@@ -63,6 +63,7 @@ function GlobalTransactionCard({
     <Link
       to="/products/$productId/transactions/$transactionId"
       params={{ productId: transaction.productId, transactionId: transaction.id }}
+      search={{ from: 'transactions' }}
       className="group block rounded-xl border border-border p-4 transition-all hover:border-foreground/20 hover:shadow-sm"
       viewTransition
       onClick={() => setBreadcrumbLabel(transaction.id, transaction.name)}

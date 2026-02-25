@@ -117,6 +117,10 @@ export function useAppLayout() {
     select: (s) => s.resolvedLocation?.pathname ?? location.pathname,
   });
 
+  const searchParams = useRouterState({
+    select: (s) => s.resolvedLocation?.search as { from?: string } | undefined,
+  });
+
   const dynamicLabels = useBreadcrumbLabels();
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -130,10 +134,28 @@ export function useAppLayout() {
       edit: 'Editar',
     };
 
-    const hiddenSegments = new Set(['transactions']);
-
     const segments = resolvedPathname.split('/').filter(Boolean);
     const crumbs: Breadcrumb[] = [{ label: 'Dashboard', path: '/' }];
+
+    // Contextual breadcrumb: when coming from /transactions, show simplified path
+    const isTransactionDetail =
+      segments[0] === 'products' && segments[2] === 'transactions' && segments[3];
+    const fromTransactions = searchParams?.from === 'transactions';
+
+    if (isTransactionDetail && fromTransactions) {
+      const transactionId = segments[3] as string;
+      const transactionLabel = dynamicLabels[transactionId];
+      crumbs.push({ label: 'Transacciones', path: '/transactions' });
+      if (transactionLabel) {
+        crumbs.push({ label: transactionLabel, path: resolvedPathname });
+      } else {
+        crumbs.push({ label: '', path: resolvedPathname, loading: true });
+      }
+      return crumbs;
+    }
+
+    // Default breadcrumb behavior
+    const hiddenSegments = new Set(['transactions']);
 
     let currentPath = '';
     for (const segment of segments) {
@@ -157,7 +179,7 @@ export function useAppLayout() {
     }
 
     return crumbs;
-  }, [resolvedPathname, dynamicLabels]);
+  }, [resolvedPathname, dynamicLabels, searchParams]);
 
   return {
     location,
