@@ -28,6 +28,7 @@ import { Route as SettingsSettingsSecurityRouteImport } from './routes/_settings
 import { Route as SettingsSettingsPreferencesRouteImport } from './routes/_settings/settings/preferences'
 import { Route as SettingsSettingsNotificationsRouteImport } from './routes/_settings/settings/notifications'
 import { Route as SettingsSettingsDataRouteImport } from './routes/_settings/settings/data'
+import { Route as AppTransactionsNewRouteImport } from './routes/_app/transactions.new'
 import { Route as AppProductsNewRouteImport } from './routes/_app/products.new'
 import { Route as AppProductsProductIdIndexRouteImport } from './routes/_app/products.$productId.index'
 import { Route as AppProductsProductIdEditRouteImport } from './routes/_app/products.$productId.edit'
@@ -129,6 +130,11 @@ const SettingsSettingsDataRoute = SettingsSettingsDataRouteImport.update({
   path: '/data',
   getParentRoute: () => SettingsSettingsRoute,
 } as any)
+const AppTransactionsNewRoute = AppTransactionsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppTransactionsRoute,
+} as any)
 const AppProductsNewRoute = AppProductsNewRouteImport.update({
   id: '/products/new',
   path: '/products/new',
@@ -164,13 +170,14 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof VerifyEmailRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
-  '/transactions': typeof AppTransactionsRoute
+  '/transactions': typeof AppTransactionsRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/settings': typeof SettingsSettingsRouteWithChildren
   '/products/new': typeof AppProductsNewRoute
+  '/transactions/new': typeof AppTransactionsNewRoute
   '/settings/data': typeof SettingsSettingsDataRoute
   '/settings/notifications': typeof SettingsSettingsNotificationsRoute
   '/settings/preferences': typeof SettingsSettingsPreferencesRoute
@@ -187,12 +194,13 @@ export interface FileRoutesByTo {
   '/verify-email': typeof VerifyEmailRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
-  '/transactions': typeof AppTransactionsRoute
+  '/transactions': typeof AppTransactionsRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/products/new': typeof AppProductsNewRoute
+  '/transactions/new': typeof AppTransactionsNewRoute
   '/settings/data': typeof SettingsSettingsDataRoute
   '/settings/notifications': typeof SettingsSettingsNotificationsRoute
   '/settings/preferences': typeof SettingsSettingsPreferencesRoute
@@ -212,7 +220,7 @@ export interface FileRoutesById {
   '/verify-email': typeof VerifyEmailRoute
   '/_app/budgets': typeof AppBudgetsRoute
   '/_app/categories': typeof AppCategoriesRoute
-  '/_app/transactions': typeof AppTransactionsRoute
+  '/_app/transactions': typeof AppTransactionsRouteWithChildren
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/_settings/settings': typeof SettingsSettingsRouteWithChildren
   '/_app/': typeof AppIndexRoute
   '/_app/products/new': typeof AppProductsNewRoute
+  '/_app/transactions/new': typeof AppTransactionsNewRoute
   '/_settings/settings/data': typeof SettingsSettingsDataRoute
   '/_settings/settings/notifications': typeof SettingsSettingsNotificationsRoute
   '/_settings/settings/preferences': typeof SettingsSettingsPreferencesRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/settings'
     | '/products/new'
+    | '/transactions/new'
     | '/settings/data'
     | '/settings/notifications'
     | '/settings/preferences'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/products/new'
+    | '/transactions/new'
     | '/settings/data'
     | '/settings/notifications'
     | '/settings/preferences'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/_settings/settings'
     | '/_app/'
     | '/_app/products/new'
+    | '/_app/transactions/new'
     | '/_settings/settings/data'
     | '/_settings/settings/notifications'
     | '/_settings/settings/preferences'
@@ -447,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsSettingsDataRouteImport
       parentRoute: typeof SettingsSettingsRoute
     }
+    '/_app/transactions/new': {
+      id: '/_app/transactions/new'
+      path: '/new'
+      fullPath: '/transactions/new'
+      preLoaderRoute: typeof AppTransactionsNewRouteImport
+      parentRoute: typeof AppTransactionsRoute
+    }
     '/_app/products/new': {
       id: '/_app/products/new'
       path: '/products/new'
@@ -485,10 +504,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppTransactionsRouteChildren {
+  AppTransactionsNewRoute: typeof AppTransactionsNewRoute
+}
+
+const AppTransactionsRouteChildren: AppTransactionsRouteChildren = {
+  AppTransactionsNewRoute: AppTransactionsNewRoute,
+}
+
+const AppTransactionsRouteWithChildren = AppTransactionsRoute._addFileChildren(
+  AppTransactionsRouteChildren,
+)
+
 interface AppRouteChildren {
   AppBudgetsRoute: typeof AppBudgetsRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
-  AppTransactionsRoute: typeof AppTransactionsRoute
+  AppTransactionsRoute: typeof AppTransactionsRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
   AppProductsNewRoute: typeof AppProductsNewRoute
   AppProductsIndexRoute: typeof AppProductsIndexRoute
@@ -501,7 +532,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppBudgetsRoute: AppBudgetsRoute,
   AppCategoriesRoute: AppCategoriesRoute,
-  AppTransactionsRoute: AppTransactionsRoute,
+  AppTransactionsRoute: AppTransactionsRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
   AppProductsNewRoute: AppProductsNewRoute,
   AppProductsIndexRoute: AppProductsIndexRoute,
