@@ -14,13 +14,8 @@ export const Route = createFileRoute('/_app/products/$productId/transactions/$tr
 
 function TransactionDetailRoute() {
   const { productId, transactionId } = Route.useParams();
-  const { edit, from } = Route.useSearch();
+  const { edit } = Route.useSearch();
   return (
-    <TransactionDetailPage
-      productId={productId}
-      transactionId={transactionId}
-      initialEdit={edit}
-      from={from}
-    />
+    <TransactionDetailPage productId={productId} transactionId={transactionId} initialEdit={edit} />
   );
 }
