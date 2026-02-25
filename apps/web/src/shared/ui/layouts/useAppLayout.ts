@@ -143,7 +143,7 @@ export function useAppLayout() {
     const fromTransactions = searchParams?.from === 'transactions';
 
     if (isTransactionDetail && fromTransactions) {
-      const transactionId = segments[3];
+      const transactionId = segments[3] as string;
       const transactionLabel = dynamicLabels[transactionId];
       crumbs.push({ label: 'Transacciones', path: '/transactions' });
       if (transactionLabel) {
