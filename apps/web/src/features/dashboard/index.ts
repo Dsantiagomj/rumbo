@@ -6,6 +6,7 @@ export {
 export { AssetAllocationCard } from './ui/AssetAllocationCard';
 export { CashFlowCard } from './ui/CashFlowCard';
 export { DashboardHero } from './ui/DashboardHero';
+export { FinancialOverviewCard } from './ui/FinancialOverviewCard';
 export { GoalsProgressCard } from './ui/GoalsProgressCard';
 export { MonthlySpendingCard } from './ui/MonthlySpendingCard';
 export { ProductGroupsCard } from './ui/ProductGroupsCard';
