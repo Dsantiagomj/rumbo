@@ -25,6 +25,9 @@
     "*.{ts,tsx,js,jsx,json,css}": "biome check --write --no-errors-on-unmatched"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ],
     "overrides": {
       "@esbuild-kit/core-utils>esbuild": ">=0.25.0"
     }

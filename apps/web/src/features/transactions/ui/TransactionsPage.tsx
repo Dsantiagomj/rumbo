@@ -182,10 +182,10 @@ export function TransactionsPage() {
         {/* Category filter */}
         <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
           <SelectTrigger className="h-8 w-[170px] text-xs">
-            <SelectValue placeholder="Todas las categorias" />
+            <SelectValue placeholder="Todas las categorías" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas las categorias</SelectItem>
+            <SelectItem value="all">Todas las categorías</SelectItem>
             {categories.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}
