@@ -9,7 +9,7 @@ import {
   RiSparklingLine,
 } from '@remixicon/react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
+import { Link, useLocation } from '@tanstack/react-router';
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import {
   DropdownMenu,
@@ -23,7 +23,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { listProductsQueryOptions } from '@/features/financial-products';
 import { navItems } from './nav-items';
 import { type Breadcrumb, useAppLayout } from './useAppLayout';
-import { useQuickActionsContext } from './useQuickActionsContext';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -226,33 +225,10 @@ function DesktopSidebar({ collapsed, initials, pathname }: DesktopSidebarProps) 
 }
 
 function QuickActions() {
-  const mode = useQuickActionsContext();
+  const { pathname } = useLocation();
+  const isOnTransactionsNew = pathname === '/transactions/new';
+  const isOnProductsNew = pathname === '/products/new';
 
-  if (mode === 'transaction-only') {
-    return (
-      <Link
-        to="/transactions/new"
-        className="flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-      >
-        <RiAddLine className="h-3.5 w-3.5" />
-        Agregar Transaccion
-      </Link>
-    );
-  }
-
-  if (mode === 'product-only') {
-    return (
-      <Link
-        to="/products/new"
-        className="flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-      >
-        <RiAddLine className="h-3.5 w-3.5" />
-        Agregar Producto
-      </Link>
-    );
-  }
-
-  // Default: dropdown mode
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -266,10 +242,10 @@ function QuickActions() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild disabled={isOnTransactionsNew}>
           <Link to="/transactions/new">Agregar Transaccion</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild disabled={isOnProductsNew}>
           <Link to="/products/new">Agregar Producto</Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
