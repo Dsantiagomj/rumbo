@@ -1,4 +1,4 @@
-import { type Currency, TRANSACTION_TYPES } from '@rumbo/shared';
+import { CURRENCIES, type Currency, TRANSACTION_TYPES } from '@rumbo/shared';
 import type { UseFormReturn } from 'react-hook-form';
 import { CategoryPickerField, DatePickerField } from '@/features/transactions/ui/components';
 import { Button, Input } from '@/shared/ui';
@@ -9,6 +9,7 @@ type TransactionFormFieldsProps = {
   form: UseFormReturn<TransactionFormValues>;
   currency: Currency;
   categories: { id: string; name: string; parentId: string | null; transactionCount: number }[];
+  currencies?: Currency[];
   typeLabels?: Record<TransactionFormValues['type'], string>;
   excludedLabel?: string;
   idPrefix?: string;
@@ -18,11 +19,13 @@ export function TransactionFormFields({
   form,
   currency,
   categories,
+  currencies,
   typeLabels = TRANSACTION_TYPE_LABELS,
   excludedLabel = 'Excluir de reportes',
   idPrefix = 'transaction',
 }: TransactionFormFieldsProps) {
   const selectedType = form.watch('type');
+  const selectedCurrency = form.watch('currency') ?? currency;
   const nameId = `${idPrefix}-name`;
   const amountId = `${idPrefix}-amount`;
   const dateId = `${idPrefix}-date`;
@@ -31,18 +34,11 @@ export function TransactionFormFields({
   const notesId = `${idPrefix}-notes`;
   const excludedId = `${idPrefix}-excluded`;
 
+  const showCurrencySelector = currencies && currencies.length > 1;
+
   return (
     <div className="space-y-4">
-      <div className="space-y-1.5">
-        <label htmlFor={nameId} className="text-sm font-medium">
-          Nombre
-        </label>
-        <Input id={nameId} placeholder="Ej: Almuerzo, Nomina..." {...form.register('name')} />
-        {form.formState.errors.name && (
-          <p className="text-sm text-destructive mt-1">{form.formState.errors.name.message}</p>
-        )}
-      </div>
-
+      {/* Tipo - primero */}
       <div className="space-y-1.5">
         <span className="text-sm font-medium">Tipo</span>
         <div className="flex gap-2">
@@ -66,17 +62,54 @@ export function TransactionFormFields({
         )}
       </div>
 
+      {/* Nombre - segundo */}
+      <div className="space-y-1.5">
+        <label htmlFor={nameId} className="text-sm font-medium">
+          Nombre
+        </label>
+        <Input id={nameId} placeholder="Ej: Almuerzo, Nomina..." {...form.register('name')} />
+        {form.formState.errors.name && (
+          <p className="text-sm text-destructive mt-1">{form.formState.errors.name.message}</p>
+        )}
+      </div>
+
+      {/* Monto con selector de moneda opcional */}
       <div className="space-y-1.5">
         <label htmlFor={amountId} className="text-sm font-medium">
-          Monto ({currency})
+          Monto
         </label>
-        <Input
-          id={amountId}
-          type="text"
-          inputMode="decimal"
-          placeholder="0.00"
-          {...form.register('amount')}
-        />
+        <div className="flex gap-2">
+          <Input
+            id={amountId}
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            className={showCurrencySelector ? 'flex-1' : undefined}
+            {...form.register('amount')}
+          />
+          {showCurrencySelector ? (
+            <div className="flex">
+              {currencies.map((cur) => (
+                <Button
+                  key={cur}
+                  type="button"
+                  size="sm"
+                  variant={selectedCurrency === cur ? 'default' : 'outline'}
+                  className={
+                    selectedCurrency === cur
+                      ? 'rounded-l-none first:rounded-l-md last:rounded-r-md border-l-0 first:border-l'
+                      : 'rounded-l-none first:rounded-l-md last:rounded-r-md border-l-0 first:border-l'
+                  }
+                  onClick={() => form.setValue('currency', cur, { shouldValidate: true })}
+                >
+                  {cur}
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <span className="flex items-center px-3 text-sm text-muted-foreground">{currency}</span>
+          )}
+        </div>
         {form.formState.errors.amount && (
           <p className="text-sm text-destructive mt-1">{form.formState.errors.amount.message}</p>
         )}

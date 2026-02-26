@@ -1,6 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiArrowLeftLine } from '@remixicon/react';
-import type { CreateTransaction } from '@rumbo/shared';
+import {
+  type CreateTransaction,
+  type CreditCardMetadata,
+  type Currency,
+  DUAL_CURRENCY_NETWORKS,
+} from '@rumbo/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -17,6 +22,31 @@ import {
 import { useCreateTransactionMutation } from '../model/transaction-queries';
 import { ProductSelector } from './ProductSelector';
 import { TransactionFormFields } from './TransactionFormFields';
+
+function getAvailableCurrencies(
+  productType: string,
+  productCurrency: Currency,
+  metadata: Record<string, unknown> | null,
+): Currency[] {
+  // Cash always supports both currencies
+  if (productType === 'cash') {
+    return ['COP', 'USD'];
+  }
+
+  // Credit cards with dual-currency networks support both
+  if (productType === 'credit_card' && metadata) {
+    const network = (metadata as CreditCardMetadata).network;
+    if (
+      network &&
+      DUAL_CURRENCY_NETWORKS.includes(network as (typeof DUAL_CURRENCY_NETWORKS)[number])
+    ) {
+      return ['COP', 'USD'];
+    }
+  }
+
+  // Single currency product
+  return [productCurrency];
+}
 
 type CreateTransactionPageProps = {
   productId?: string;
@@ -54,8 +84,12 @@ export function CreateTransactionPage({ productId }: CreateTransactionPageProps)
 
   const categories = categoriesData?.categories ?? [];
 
+  const availableCurrencies = product
+    ? getAvailableCurrencies(product.type, product.currency, product.metadata)
+    : [];
+
   async function handleSubmit(values: TransactionFormValues) {
-    const currency = product?.currency ?? 'COP';
+    const currency = values.currency ?? product?.currency ?? 'COP';
     const body: Omit<CreateTransaction, 'productId'> = {
       name: values.name,
       type: values.type,
@@ -153,6 +187,7 @@ export function CreateTransactionPage({ productId }: CreateTransactionPageProps)
             <TransactionFormFields
               form={form}
               currency={product.currency}
+              currencies={availableCurrencies}
               categories={categories}
               excludedLabel="Excluir de reportes"
               idPrefix="txn"
