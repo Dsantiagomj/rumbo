@@ -1,5 +1,6 @@
 import { type Currency, TRANSACTION_TYPES } from '@rumbo/shared';
 import type { UseFormReturn } from 'react-hook-form';
+import { CategoryPickerField, DatePickerField } from '@/features/transactions/ui/components';
 import { Button, Input } from '@/shared/ui';
 import { TRANSACTION_TYPE_LABELS } from '../model/constants';
 import type { TransactionFormValues } from '../model/transaction-form-schema';
@@ -7,7 +8,7 @@ import type { TransactionFormValues } from '../model/transaction-form-schema';
 type TransactionFormFieldsProps = {
   form: UseFormReturn<TransactionFormValues>;
   currency: Currency;
-  categories: { id: string; name: string }[];
+  categories: { id: string; name: string; parentId: string | null; transactionCount: number }[];
   typeLabels?: Record<TransactionFormValues['type'], string>;
   excludedLabel?: string;
   idPrefix?: string;
@@ -82,34 +83,25 @@ export function TransactionFormFields({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor={dateId} className="text-sm font-medium">
-          Fecha
-        </label>
-        <Input id={dateId} type="date" {...form.register('date')} />
+        <span className="text-sm font-medium">Fecha</span>
+        <DatePickerField
+          id={dateId}
+          value={form.watch('date')}
+          onChange={(value) => form.setValue('date', value, { shouldValidate: true })}
+        />
         {form.formState.errors.date && (
           <p className="text-sm text-destructive mt-1">{form.formState.errors.date.message}</p>
         )}
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor={categoryId} className="text-sm font-medium">
-          Categoria
-        </label>
-        <select
+        <span className="text-sm font-medium">Categoria</span>
+        <CategoryPickerField
           id={categoryId}
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          {...form.register('categoryId', {
-            setValueAs: (value: string) => (value === '' ? null : value),
-          })}
-          defaultValue={form.getValues('categoryId') ?? ''}
-        >
-          <option value="">Sin categoria</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
+          categories={categories}
+          value={form.watch('categoryId') ?? null}
+          onChange={(value) => form.setValue('categoryId', value, { shouldValidate: true })}
+        />
         {form.formState.errors.categoryId && (
           <p className="text-sm text-destructive mt-1">
             {form.formState.errors.categoryId.message}
