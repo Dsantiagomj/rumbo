@@ -8,7 +8,7 @@ export function UpcomingPaymentsCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <RiCalendarCheckLine className="size-4 text-muted-foreground" />
-          Recordatorios
+          Transacciones recurrentes
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col items-center justify-center gap-3 py-6">
