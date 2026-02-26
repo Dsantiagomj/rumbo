@@ -241,7 +241,7 @@ function QuickActions() {
           <RiArrowDownSLine className="h-3.5 w-3.5" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="min-w-44">
         <DropdownMenuItem asChild disabled={isOnTransactionsNew}>
           <Link to="/transactions/new">Agregar Transaccion</Link>
         </DropdownMenuItem>
