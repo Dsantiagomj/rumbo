@@ -51,9 +51,15 @@ describe('useQuickActionsContext', () => {
     expect(result.current).toBe('product-only');
   });
 
-  it('returns product-only mode for /transactions/new', () => {
+  it('returns dropdown mode for /transactions/new (creation route)', () => {
     mocks.useLocation.mockReturnValue({ pathname: '/transactions/new' });
     const { result } = renderHook(() => useQuickActionsContext());
-    expect(result.current).toBe('product-only');
+    expect(result.current).toBe('dropdown');
+  });
+
+  it('returns dropdown mode for /products/new (creation route)', () => {
+    mocks.useLocation.mockReturnValue({ pathname: '/products/new' });
+    const { result } = renderHook(() => useQuickActionsContext());
+    expect(result.current).toBe('dropdown');
   });
 });
