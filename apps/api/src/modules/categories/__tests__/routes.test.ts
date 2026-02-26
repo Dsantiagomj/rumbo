@@ -31,6 +31,7 @@ type CategoryResponse = {
   name: string;
   parentId: string | null;
   isDefault: boolean;
+  transactionCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -125,6 +126,27 @@ describe('Categories API', () => {
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now')),
         FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+      )
+    `);
+
+    // 3b. Create transactions table for LEFT JOIN in listCategories
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS transactions (
+        id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-4' || substr(hex(randomblob(2)),2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(hex(randomblob(2)),2) || '-' || hex(randomblob(6)))),
+        product_id TEXT NOT NULL,
+        category_id TEXT,
+        transfer_id TEXT,
+        type TEXT NOT NULL,
+        name TEXT NOT NULL,
+        merchant TEXT,
+        excluded INTEGER NOT NULL DEFAULT 0,
+        amount TEXT NOT NULL,
+        currency TEXT NOT NULL,
+        date TEXT NOT NULL,
+        notes TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
       )
     `);
 

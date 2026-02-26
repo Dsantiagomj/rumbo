@@ -13,6 +13,7 @@ export const categoryResponseSchema = z.object({
   name: z.string(),
   parentId: z.string().uuid().nullable(),
   isDefault: z.boolean(),
+  transactionCount: z.number().int().min(0),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
