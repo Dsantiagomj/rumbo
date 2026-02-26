@@ -35,10 +35,10 @@ export function CategoryPickerField({ categories, value, onChange, id }: Categor
   const selectedParentId = selectedCategory?.parentId ?? value;
   const selectedParent = parentCategories.find((c) => c.id === selectedParentId);
 
-  // Subcategories with transactions for selected parent
+  // Subcategories for selected parent
   const subcategories = useMemo(() => {
     if (!selectedParentId) return [];
-    return categories.filter((c) => c.parentId === selectedParentId && c.transactionCount > 0);
+    return categories.filter((c) => c.parentId === selectedParentId);
   }, [categories, selectedParentId]);
 
   const showSubcategoryPicker = subcategories.length > 0;
