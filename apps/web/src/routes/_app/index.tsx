@@ -6,7 +6,6 @@ import {
   CashFlowCard,
   DashboardHero,
   FinancialOverviewCard,
-  GoalsProgressCard,
   MonthlySpendingCard,
   RecentTransactionsCard,
   UpcomingPaymentsCard,
@@ -150,10 +149,7 @@ function DashboardPage() {
         </div>
         <UpcomingPaymentsCard />
 
-        <div className="grid grid-cols-1 gap-4 md:col-span-3 md:grid-cols-2">
-          <GoalsProgressCard />
-          <MonthlySpendingCard />
-        </div>
+        <MonthlySpendingCard />
       </div>
     </div>
   );

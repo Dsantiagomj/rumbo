@@ -155,13 +155,17 @@ export function useAppLayout() {
     }
 
     // Default breadcrumb behavior
-    const hiddenSegments = new Set(['transactions']);
+    // Hide 'transactions' only when nested under products (e.g., /products/:id/transactions/:txId)
+    // but show it when it's the root segment (e.g., /transactions)
+    const isNestedTransactions = segments[0] === 'products' && segments.includes('transactions');
 
     let currentPath = '';
-    for (const segment of segments) {
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i] as string;
       currentPath += `/${segment}`;
 
-      if (hiddenSegments.has(segment)) continue;
+      // Only hide 'transactions' when it's nested under products
+      if (segment === 'transactions' && isNestedTransactions) continue;
 
       const staticLabel = segmentLabels[segment];
       const dynamicLabel = dynamicLabels[segment];

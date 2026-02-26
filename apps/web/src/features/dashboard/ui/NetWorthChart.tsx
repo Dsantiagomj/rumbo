@@ -129,6 +129,34 @@ export function NetWorthChart({
 
   return (
     <div className="flex h-full flex-col gap-3">
+      {/* Time period selector - top */}
+      <div className="flex items-center justify-end">
+        <Select value={period} onValueChange={(v) => onPeriodChange(v as TimePeriod)}>
+          <SelectTrigger size="sm">
+            <SelectValue>{PERIOD_SELECT_LABELS[period]}</SelectValue>
+          </SelectTrigger>
+          <SelectContent align="end">
+            <SelectGroup>
+              <SelectLabel>Al día</SelectLabel>
+              <SelectItem value="TODAY">Hoy</SelectItem>
+              <SelectItem value="WTD">Esta semana</SelectItem>
+              <SelectItem value="MTD">Este mes</SelectItem>
+              <SelectItem value="YTD">Este año</SelectItem>
+            </SelectGroup>
+            <SelectSeparator />
+            <SelectGroup>
+              <SelectLabel>Periodo</SelectLabel>
+              <SelectItem value="1W">Última semana</SelectItem>
+              <SelectItem value="1M">Último mes</SelectItem>
+              <SelectItem value="3M">3 meses</SelectItem>
+              <SelectItem value="6M">6 meses</SelectItem>
+              <SelectItem value="1Y">1 año</SelectItem>
+              <SelectItem value="ALL">Todo</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="min-h-[240px] w-full flex-1">
         {points.length > 1 ? (
           isFlat ? (
@@ -191,40 +219,14 @@ export function NetWorthChart({
         )}
       </div>
 
-      {/* Date range + time period selector */}
-      <div className="flex items-center gap-2">
-        {formatDateRange(periodStartDate) && (
+      {/* Date range */}
+      {formatDateRange(periodStartDate) && (
+        <div className="flex items-center">
           <span className="text-xs text-muted-foreground/60">
             {formatDateRange(periodStartDate)}
           </span>
-        )}
-        <div className="ml-auto">
-          <Select value={period} onValueChange={(v) => onPeriodChange(v as TimePeriod)}>
-            <SelectTrigger size="sm">
-              <SelectValue>{PERIOD_SELECT_LABELS[period]}</SelectValue>
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectGroup>
-                <SelectLabel>Al día</SelectLabel>
-                <SelectItem value="TODAY">Hoy</SelectItem>
-                <SelectItem value="WTD">Esta semana</SelectItem>
-                <SelectItem value="MTD">Este mes</SelectItem>
-                <SelectItem value="YTD">Este año</SelectItem>
-              </SelectGroup>
-              <SelectSeparator />
-              <SelectGroup>
-                <SelectLabel>Periodo</SelectLabel>
-                <SelectItem value="1W">Última semana</SelectItem>
-                <SelectItem value="1M">Último mes</SelectItem>
-                <SelectItem value="3M">3 meses</SelectItem>
-                <SelectItem value="6M">6 meses</SelectItem>
-                <SelectItem value="1Y">1 año</SelectItem>
-                <SelectItem value="ALL">Todo</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -43,7 +43,7 @@ export function DashboardHero({
   currencies,
   onCurrencyChange,
 }: DashboardHeroProps) {
-  const [period, setPeriod] = useState<TimePeriod>('1M');
+  const [period, setPeriod] = useState<TimePeriod>('WTD');
   const { points, currentBalance, changeAmount, changePercent, isPositive, periodStartDate } =
     useNetWorthTimeline(balanceHistory, totalBalance, period);
 
