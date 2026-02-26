@@ -28,6 +28,7 @@ import { Route as SettingsSettingsSecurityRouteImport } from './routes/_settings
 import { Route as SettingsSettingsPreferencesRouteImport } from './routes/_settings/settings/preferences'
 import { Route as SettingsSettingsNotificationsRouteImport } from './routes/_settings/settings/notifications'
 import { Route as SettingsSettingsDataRouteImport } from './routes/_settings/settings/data'
+import { Route as AppTransactionsNewRouteImport } from './routes/_app/transactions_.new'
 import { Route as AppProductsNewRouteImport } from './routes/_app/products.new'
 import { Route as AppProductsProductIdIndexRouteImport } from './routes/_app/products.$productId.index'
 import { Route as AppProductsProductIdEditRouteImport } from './routes/_app/products.$productId.edit'
@@ -129,6 +130,11 @@ const SettingsSettingsDataRoute = SettingsSettingsDataRouteImport.update({
   path: '/data',
   getParentRoute: () => SettingsSettingsRoute,
 } as any)
+const AppTransactionsNewRoute = AppTransactionsNewRouteImport.update({
+  id: '/transactions_/new',
+  path: '/transactions/new',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProductsNewRoute = AppProductsNewRouteImport.update({
   id: '/products/new',
   path: '/products/new',
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/settings': typeof SettingsSettingsRouteWithChildren
   '/products/new': typeof AppProductsNewRoute
+  '/transactions/new': typeof AppTransactionsNewRoute
   '/settings/data': typeof SettingsSettingsDataRoute
   '/settings/notifications': typeof SettingsSettingsNotificationsRoute
   '/settings/preferences': typeof SettingsSettingsPreferencesRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/products/new': typeof AppProductsNewRoute
+  '/transactions/new': typeof AppTransactionsNewRoute
   '/settings/data': typeof SettingsSettingsDataRoute
   '/settings/notifications': typeof SettingsSettingsNotificationsRoute
   '/settings/preferences': typeof SettingsSettingsPreferencesRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/_settings/settings': typeof SettingsSettingsRouteWithChildren
   '/_app/': typeof AppIndexRoute
   '/_app/products/new': typeof AppProductsNewRoute
+  '/_app/transactions_/new': typeof AppTransactionsNewRoute
   '/_settings/settings/data': typeof SettingsSettingsDataRoute
   '/_settings/settings/notifications': typeof SettingsSettingsNotificationsRoute
   '/_settings/settings/preferences': typeof SettingsSettingsPreferencesRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/settings'
     | '/products/new'
+    | '/transactions/new'
     | '/settings/data'
     | '/settings/notifications'
     | '/settings/preferences'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/products/new'
+    | '/transactions/new'
     | '/settings/data'
     | '/settings/notifications'
     | '/settings/preferences'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/_settings/settings'
     | '/_app/'
     | '/_app/products/new'
+    | '/_app/transactions_/new'
     | '/_settings/settings/data'
     | '/_settings/settings/notifications'
     | '/_settings/settings/preferences'
@@ -447,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsSettingsDataRouteImport
       parentRoute: typeof SettingsSettingsRoute
     }
+    '/_app/transactions_/new': {
+      id: '/_app/transactions_/new'
+      path: '/transactions/new'
+      fullPath: '/transactions/new'
+      preLoaderRoute: typeof AppTransactionsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/products/new': {
       id: '/_app/products/new'
       path: '/products/new'
@@ -491,6 +510,7 @@ interface AppRouteChildren {
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppProductsNewRoute: typeof AppProductsNewRoute
+  AppTransactionsNewRoute: typeof AppTransactionsNewRoute
   AppProductsIndexRoute: typeof AppProductsIndexRoute
   AppProductsProductIdEditRoute: typeof AppProductsProductIdEditRoute
   AppProductsProductIdIndexRoute: typeof AppProductsProductIdIndexRoute
@@ -504,6 +524,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTransactionsRoute: AppTransactionsRoute,
   AppIndexRoute: AppIndexRoute,
   AppProductsNewRoute: AppProductsNewRoute,
+  AppTransactionsNewRoute: AppTransactionsNewRoute,
   AppProductsIndexRoute: AppProductsIndexRoute,
   AppProductsProductIdEditRoute: AppProductsProductIdEditRoute,
   AppProductsProductIdIndexRoute: AppProductsProductIdIndexRoute,
