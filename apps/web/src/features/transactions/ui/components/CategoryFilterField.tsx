@@ -23,7 +23,7 @@ export function CategoryFilterField({ categories, value, onChange }: CategoryFil
   const [open, setOpen] = useState(false);
 
   const selectedCategory = value ? categories.find((c) => c.id === value) : null;
-  const displayText = selectedCategory?.name ?? 'Categoria';
+  const displayText = selectedCategory?.name ?? 'Categoría';
 
   const handleChange = (categoryId: string | null) => {
     onChange(categoryId);
@@ -34,7 +34,7 @@ export function CategoryFilterField({ categories, value, onChange }: CategoryFil
     <ResponsivePopover
       open={open}
       onOpenChange={setOpen}
-      title="Categoria"
+      title="Categoría"
       trigger={
         <Button variant="outline" size="sm" className="h-8 gap-2 text-xs">
           <RiPriceTag3Line className="h-4 w-4" />
