@@ -23,12 +23,31 @@ export function CategoryCascadePicker({
   categories,
   value,
   onChange,
-  hideEmpty = false,
+  hideEmpty = true,
 }: CategoryCascadePickerProps) {
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
 
+  // Get children with transactions for a parent
+  const getChildrenWithTransactions = (parentId: string) =>
+    categories.filter((c) => c.parentId === parentId && c.transactionCount > 0);
+
+  // A parent is visible if it has transactions OR any of its children do
+  const parentHasVisibleContent = (parentId: string) => {
+    const parent = categories.find((c) => c.id === parentId);
+    if (!parent) return false;
+    return parent.transactionCount > 0 || getChildrenWithTransactions(parentId).length > 0;
+  };
+
+  // Filter visible categories based on hideEmpty
   const visibleCategories = hideEmpty
-    ? categories.filter((c) => c.transactionCount > 0)
+    ? categories.filter((c) => {
+        if (c.parentId === null) {
+          // Parent: show if it has transactions OR any child has transactions
+          return parentHasVisibleContent(c.id);
+        }
+        // Child: show if it has transactions
+        return c.transactionCount > 0;
+      })
     : categories;
 
   const parentCategories = visibleCategories.filter((c) => c.parentId === null);

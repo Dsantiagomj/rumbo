@@ -23,18 +23,50 @@ describe('CategoryCascadePicker', () => {
     expect(screen.queryByRole('button', { name: /Bus/ })).not.toBeInTheDocument();
   });
 
-  it('shows categories with 0 transactions by default', () => {
+  it('hides categories with 0 transactions by default (hideEmpty=true)', () => {
     render(<CategoryCascadePicker categories={categories} value={null} onChange={vi.fn()} />);
+
+    // Entretenimiento has 0 transactions and no children with transactions
+    expect(screen.queryByRole('button', { name: /Entretenimiento/ })).not.toBeInTheDocument();
+  });
+
+  it('shows categories with 0 transactions when hideEmpty is false', () => {
+    render(
+      <CategoryCascadePicker
+        categories={categories}
+        value={null}
+        onChange={vi.fn()}
+        hideEmpty={false}
+      />,
+    );
 
     expect(screen.getByRole('button', { name: /Entretenimiento/ })).toBeInTheDocument();
   });
 
-  it('hides categories with 0 transactions when hideEmpty is true', () => {
+  it('shows parent with 0 transactions if children have transactions', () => {
+    const categoriesWithEmptyParent = [
+      { id: 'parent-hogar', name: 'Hogar', parentId: null, transactionCount: 0 },
+      {
+        id: 'child-mantenimiento',
+        name: 'Mantenimiento',
+        parentId: 'parent-hogar',
+        transactionCount: 2,
+      },
+      { id: 'parent-empty', name: 'Empty', parentId: null, transactionCount: 0 },
+    ];
+
     render(
-      <CategoryCascadePicker categories={categories} value={null} onChange={vi.fn()} hideEmpty />,
+      <CategoryCascadePicker
+        categories={categoriesWithEmptyParent}
+        value={null}
+        onChange={vi.fn()}
+      />,
     );
 
-    expect(screen.queryByRole('button', { name: /Entretenimiento/ })).not.toBeInTheDocument();
+    // Hogar should appear because its child Mantenimiento has transactions
+    expect(screen.getByRole('button', { name: /Hogar/ })).toBeInTheDocument();
+    // Empty should NOT appear - no transactions and no children with transactions
+    expect(screen.queryByRole('button', { name: /Empty/ })).not.toBeInTheDocument();
   });
 
   it('shows transaction count badge', () => {
