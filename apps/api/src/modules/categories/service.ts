@@ -1,4 +1,4 @@
-import { categories, transactions } from '@rumbo/db/schema';
+import { categories, financialProducts, transactions } from '@rumbo/db/schema';
 import type { CreateCategory, UpdateCategory } from '@rumbo/shared/schemas';
 import { and, count, eq, isNull, or } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
@@ -13,10 +13,14 @@ export async function listCategories(db: AppDatabase, userId: string) {
       isDefault: categories.isDefault,
       createdAt: categories.createdAt,
       updatedAt: categories.updatedAt,
-      transactionCount: count(transactions.id),
+      transactionCount: count(financialProducts.id),
     })
     .from(categories)
     .leftJoin(transactions, eq(transactions.categoryId, categories.id))
+    .leftJoin(
+      financialProducts,
+      and(eq(financialProducts.id, transactions.productId), eq(financialProducts.userId, userId)),
+    )
     .where(or(eq(categories.userId, userId), isNull(categories.userId)))
     .groupBy(categories.id);
 
@@ -34,7 +38,12 @@ export async function getCategory(db: AppDatabase, userId: string, categoryId: s
       ),
     );
 
-  return category ? serializeCategory(category) : null;
+  if (!category) {
+    return null;
+  }
+
+  const transactionCount = await countTransactionsForCategory(db, userId, category.id);
+  return serializeCategory(category, transactionCount);
 }
 
 export async function createCategory(db: AppDatabase, userId: string, data: CreateCategory) {
@@ -70,7 +79,12 @@ export async function updateCategory(
     .where(and(eq(categories.id, categoryId), eq(categories.userId, userId)))
     .returning();
 
-  return category ? serializeCategory(category) : null;
+  if (!category) {
+    return null;
+  }
+
+  const transactionCount = await countTransactionsForCategory(db, userId, category.id);
+  return serializeCategory(category, transactionCount);
 }
 
 export async function deleteCategory(db: AppDatabase, userId: string, categoryId: string) {
@@ -82,14 +96,29 @@ export async function deleteCategory(db: AppDatabase, userId: string, categoryId
   return category ? serializeCategory(category) : null;
 }
 
-function serializeCategory(category: typeof categories.$inferSelect) {
+async function countTransactionsForCategory(db: AppDatabase, userId: string, categoryId: string) {
+  const [result] = await db
+    .select({
+      transactionCount: count(financialProducts.id),
+    })
+    .from(transactions)
+    .innerJoin(
+      financialProducts,
+      and(eq(financialProducts.id, transactions.productId), eq(financialProducts.userId, userId)),
+    )
+    .where(eq(transactions.categoryId, categoryId));
+
+  return Number(result?.transactionCount ?? 0);
+}
+
+function serializeCategory(category: typeof categories.$inferSelect, transactionCount = 0) {
   return {
     id: category.id,
     userId: category.userId,
     name: category.name,
     parentId: category.parentId,
     isDefault: Boolean(category.isDefault),
-    transactionCount: 0,
+    transactionCount,
     createdAt:
       category.createdAt instanceof Date
         ? category.createdAt.toISOString()

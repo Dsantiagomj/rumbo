@@ -32,7 +32,12 @@ export function DatePickerField({ value, onChange, id }: DatePickerFieldProps) {
       onOpenChange={setOpen}
       title="Fecha"
       trigger={
-        <Button id={id} variant="outline" className="w-full justify-start text-left font-normal">
+        <Button
+          id={id}
+          type="button"
+          variant="outline"
+          className="w-full justify-start text-left font-normal"
+        >
           <RiCalendarLine className="mr-2 h-4 w-4" />
           {displayValue}
         </Button>

@@ -56,6 +56,7 @@ const DEFAULT_CATEGORY_ID = '11111111-1111-4111-a111-111111111111';
 describe('Categories API', () => {
   let db: InstanceType<typeof Database>;
   let sessionCookie: string;
+  let testUserId: string;
 
   // Helper functions
   const postJson = (path: string, body: Record<string, unknown>) =>
@@ -129,7 +130,24 @@ describe('Categories API', () => {
       )
     `);
 
-    // 3b. Create transactions table for LEFT JOIN in listCategories
+    // 3b. Create financial_products table for user-scoped transaction counts
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS financial_products (
+        id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-4' || substr(hex(randomblob(2)),2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(hex(randomblob(2)),2) || '-' || hex(randomblob(6)))),
+        user_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        name TEXT NOT NULL,
+        institution TEXT NOT NULL,
+        balance TEXT NOT NULL DEFAULT '0',
+        currency TEXT NOT NULL DEFAULT 'COP',
+        metadata TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+      )
+    `);
+
+    // 3c. Create transactions table for LEFT JOIN in listCategories
     db.exec(`
       CREATE TABLE IF NOT EXISTS transactions (
         id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-4' || substr(hex(randomblob(2)),2) || '-' || substr('89ab', abs(random()) % 4 + 1, 1) || substr(hex(randomblob(2)),2) || '-' || hex(randomblob(6)))),
@@ -169,6 +187,16 @@ describe('Categories API', () => {
       }),
     });
 
+    const userRecord = db.prepare("SELECT id FROM user WHERE email = 'test@example.com'").get() as
+      | { id: string }
+      | undefined;
+
+    if (!userRecord) {
+      throw new Error('Failed to load test user');
+    }
+
+    testUserId = userRecord.id;
+
     const setCookies = signUpRes.headers.getSetCookie();
     sessionCookie = setCookies.map((c) => c.split(';')[0]).join('; ');
   });
@@ -194,6 +222,7 @@ describe('Categories API', () => {
       expect(body.name).toBe('Transporte');
       expect(body.parentId).toBeNull();
       expect(body.isDefault).toBe(false);
+      expect(body.transactionCount).toBe(0);
       expect(body.createdAt).toBeDefined();
       expect(body.updatedAt).toBeDefined();
     });
@@ -267,6 +296,79 @@ describe('Categories API', () => {
       expect(defaultCategory?.userId).toBeNull();
     });
 
+    it('counts only current user transactions for default categories (200)', async () => {
+      const currentProductId = randomUUID();
+      const otherProductId = randomUUID();
+
+      db.prepare(
+        'INSERT INTO financial_products (id, user_id, type, name, institution, balance, currency) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      ).run(currentProductId, testUserId, 'cash', 'Wallet', 'Rumbo', '100.00', 'COP');
+
+      const otherSignUpRes = await app.request('/api/auth/sign-up/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Other User',
+          email: 'other@example.com',
+          password: 'securepassword123',
+        }),
+      });
+
+      expect(otherSignUpRes.status).toBe(200);
+
+      const otherUserRecord = db
+        .prepare("SELECT id FROM user WHERE email = 'other@example.com'")
+        .get() as { id: string } | undefined;
+
+      expect(otherUserRecord).toBeDefined();
+      const otherUserId = otherUserRecord?.id;
+
+      if (!otherUserId) {
+        throw new Error('Failed to load second test user');
+      }
+
+      db.prepare(
+        'INSERT INTO financial_products (id, user_id, type, name, institution, balance, currency) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      ).run(otherProductId, otherUserId, 'cash', 'Wallet Other', 'Rumbo', '100.00', 'COP');
+
+      db.prepare(
+        'INSERT INTO transactions (id, product_id, category_id, type, name, amount, currency, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      ).run(
+        randomUUID(),
+        currentProductId,
+        DEFAULT_CATEGORY_ID,
+        'expense',
+        'Current user tx',
+        '10.00',
+        'COP',
+        '2026-02-26',
+      );
+
+      db.prepare(
+        'INSERT INTO transactions (id, product_id, category_id, type, name, amount, currency, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      ).run(
+        randomUUID(),
+        otherProductId,
+        DEFAULT_CATEGORY_ID,
+        'expense',
+        'Other user tx',
+        '20.00',
+        'COP',
+        '2026-02-26',
+      );
+
+      const res = await getAuthed('/api/categories');
+
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as CategoryListResponse;
+      const defaultCategory = body.categories.find(
+        (category) => category.id === DEFAULT_CATEGORY_ID,
+      );
+
+      expect(defaultCategory).toBeDefined();
+      expect(defaultCategory?.transactionCount).toBe(1);
+    });
+
     it('returns 401 without authentication', async () => {
       const res = await app.request('/api/categories');
 
@@ -298,6 +400,39 @@ describe('Categories API', () => {
       expect(body.id).toBe(created.id);
       expect(body.name).toBe('Salud');
       expect(body.isDefault).toBe(false);
+    });
+
+    it('returns transactionCount for user category by ID (200)', async () => {
+      const createRes = await postJson('/api/categories', {
+        name: 'Hogar',
+      });
+
+      expect(createRes.status).toBe(201);
+      const createdCategory = (await createRes.json()) as CategoryResponse;
+
+      const productId = randomUUID();
+      db.prepare(
+        'INSERT INTO financial_products (id, user_id, type, name, institution, balance, currency) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      ).run(productId, testUserId, 'cash', 'Daily Wallet', 'Rumbo', '150.00', 'COP');
+
+      db.prepare(
+        'INSERT INTO transactions (id, product_id, category_id, type, name, amount, currency, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      ).run(
+        randomUUID(),
+        productId,
+        createdCategory.id,
+        'expense',
+        'Soap',
+        '12.00',
+        'COP',
+        '2026-02-26',
+      );
+
+      const getRes = await getAuthed(`/api/categories/${createdCategory.id}`);
+
+      expect(getRes.status).toBe(200);
+      const body = (await getRes.json()) as CategoryResponse;
+      expect(body.transactionCount).toBe(1);
     });
 
     it('returns 404 for non-existent category', async () => {

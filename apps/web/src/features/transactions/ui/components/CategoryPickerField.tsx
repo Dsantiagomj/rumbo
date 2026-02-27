@@ -68,7 +68,12 @@ export function CategoryPickerField({ categories, value, onChange, id }: Categor
         onOpenChange={setCategoryOpen}
         title="Categoria"
         trigger={
-          <Button id={id} variant="outline" className="w-full justify-between font-normal">
+          <Button
+            id={id}
+            type="button"
+            variant="outline"
+            className="w-full justify-between font-normal"
+          >
             {parentDisplayValue}
             <RiArrowDownSLine className="h-4 w-4 opacity-50" />
           </Button>
@@ -89,7 +94,7 @@ export function CategoryPickerField({ categories, value, onChange, id }: Categor
           onOpenChange={setSubcategoryOpen}
           title="Subcategoria"
           trigger={
-            <Button variant="outline" className="w-full justify-between font-normal">
+            <Button type="button" variant="outline" className="w-full justify-between font-normal">
               {subcategoryDisplayValue}
               <RiArrowDownSLine className="h-4 w-4 opacity-50" />
             </Button>
