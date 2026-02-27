@@ -1,11 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiArrowLeftLine } from '@remixicon/react';
-import {
-  type CreateTransaction,
-  type CreditCardMetadata,
-  type Currency,
-  DUAL_CURRENCY_NETWORKS,
-} from '@rumbo/shared';
+import type { CreateTransaction } from '@rumbo/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -14,6 +9,7 @@ import { sileo } from 'sileo';
 import { ApiError } from '@/shared/api';
 import { Button, Card, CardContent, Separator, Skeleton } from '@/shared/ui';
 import { listCategoriesQueryOptions } from '../model/category-queries';
+import { getAvailableCurrencies } from '../model/currency-options';
 import { getProductQueryOptions } from '../model/queries';
 import {
   type TransactionFormValues,
@@ -22,31 +18,6 @@ import {
 import { useCreateTransactionMutation } from '../model/transaction-queries';
 import { ProductSelector } from './ProductSelector';
 import { TransactionFormFields } from './TransactionFormFields';
-
-function getAvailableCurrencies(
-  productType: string,
-  productCurrency: Currency,
-  metadata: Record<string, unknown> | null,
-): Currency[] {
-  // Cash always supports both currencies
-  if (productType === 'cash') {
-    return ['COP', 'USD'];
-  }
-
-  // Credit cards with dual-currency networks support both
-  if (productType === 'credit_card' && metadata) {
-    const network = (metadata as CreditCardMetadata).network;
-    if (
-      network &&
-      DUAL_CURRENCY_NETWORKS.includes(network as (typeof DUAL_CURRENCY_NETWORKS)[number])
-    ) {
-      return ['COP', 'USD'];
-    }
-  }
-
-  // Single currency product
-  return [productCurrency];
-}
 
 type CreateTransactionPageProps = {
   productId?: string;

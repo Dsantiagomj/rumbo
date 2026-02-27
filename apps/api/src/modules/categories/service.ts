@@ -1,9 +1,23 @@
 import { categories, financialProducts, transactions } from '@rumbo/db/schema';
 import type { CreateCategory, UpdateCategory } from '@rumbo/shared/schemas';
-import { and, count, eq, isNull, or } from 'drizzle-orm';
+import { and, count, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
 
 export async function listCategories(db: AppDatabase, userId: string) {
+  const userTransactionCounts = db
+    .select({
+      categoryId: transactions.categoryId,
+      transactionCount: count(transactions.id).as('transactionCount'),
+    })
+    .from(transactions)
+    .innerJoin(
+      financialProducts,
+      and(eq(financialProducts.id, transactions.productId), eq(financialProducts.userId, userId)),
+    )
+    .where(isNotNull(transactions.categoryId))
+    .groupBy(transactions.categoryId)
+    .as('user_transaction_counts');
+
   const results = await db
     .select({
       id: categories.id,
@@ -13,16 +27,11 @@ export async function listCategories(db: AppDatabase, userId: string) {
       isDefault: categories.isDefault,
       createdAt: categories.createdAt,
       updatedAt: categories.updatedAt,
-      transactionCount: count(financialProducts.id),
+      transactionCount: userTransactionCounts.transactionCount,
     })
     .from(categories)
-    .leftJoin(transactions, eq(transactions.categoryId, categories.id))
-    .leftJoin(
-      financialProducts,
-      and(eq(financialProducts.id, transactions.productId), eq(financialProducts.userId, userId)),
-    )
-    .where(or(eq(categories.userId, userId), isNull(categories.userId)))
-    .groupBy(categories.id);
+    .leftJoin(userTransactionCounts, eq(userTransactionCounts.categoryId, categories.id))
+    .where(or(eq(categories.userId, userId), isNull(categories.userId)));
 
   return results.map(serializeCategoryWithCount);
 }
@@ -99,7 +108,7 @@ export async function deleteCategory(db: AppDatabase, userId: string, categoryId
 async function countTransactionsForCategory(db: AppDatabase, userId: string, categoryId: string) {
   const [result] = await db
     .select({
-      transactionCount: count(financialProducts.id),
+      transactionCount: count(transactions.id),
     })
     .from(transactions)
     .innerJoin(
@@ -136,9 +145,9 @@ interface CategoryWithCount {
   name: string;
   parentId: string | null;
   isDefault: boolean | null;
-  createdAt: Date;
-  updatedAt: Date;
-  transactionCount: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  transactionCount: number | string | null;
 }
 
 function serializeCategoryWithCount(category: CategoryWithCount) {
@@ -148,7 +157,7 @@ function serializeCategoryWithCount(category: CategoryWithCount) {
     name: category.name,
     parentId: category.parentId,
     isDefault: Boolean(category.isDefault),
-    transactionCount: Number(category.transactionCount),
+    transactionCount: Number(category.transactionCount ?? 0),
     createdAt:
       category.createdAt instanceof Date
         ? category.createdAt.toISOString()

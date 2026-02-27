@@ -1,4 +1,4 @@
-import { CURRENCIES, type Currency, TRANSACTION_TYPES } from '@rumbo/shared';
+import { type Currency, TRANSACTION_TYPES } from '@rumbo/shared';
 import type { UseFormReturn } from 'react-hook-form';
 import { CategoryPickerField, DatePickerField } from '@/features/transactions/ui/components';
 import { Button, Input } from '@/shared/ui';
