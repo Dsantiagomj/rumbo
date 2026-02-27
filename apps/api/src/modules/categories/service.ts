@@ -1,15 +1,39 @@
-import { categories } from '@rumbo/db/schema';
+import { categories, financialProducts, transactions } from '@rumbo/db/schema';
 import type { CreateCategory, UpdateCategory } from '@rumbo/shared/schemas';
-import { and, eq, isNull, or } from 'drizzle-orm';
+import { and, count, eq, isNotNull, isNull, or } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
 
 export async function listCategories(db: AppDatabase, userId: string) {
+  const userTransactionCounts = db
+    .select({
+      categoryId: transactions.categoryId,
+      transactionCount: count(transactions.id).as('transactionCount'),
+    })
+    .from(transactions)
+    .innerJoin(
+      financialProducts,
+      and(eq(financialProducts.id, transactions.productId), eq(financialProducts.userId, userId)),
+    )
+    .where(isNotNull(transactions.categoryId))
+    .groupBy(transactions.categoryId)
+    .as('user_transaction_counts');
+
   const results = await db
-    .select()
+    .select({
+      id: categories.id,
+      userId: categories.userId,
+      name: categories.name,
+      parentId: categories.parentId,
+      isDefault: categories.isDefault,
+      createdAt: categories.createdAt,
+      updatedAt: categories.updatedAt,
+      transactionCount: userTransactionCounts.transactionCount,
+    })
     .from(categories)
+    .leftJoin(userTransactionCounts, eq(userTransactionCounts.categoryId, categories.id))
     .where(or(eq(categories.userId, userId), isNull(categories.userId)));
 
-  return results.map(serializeCategory);
+  return results.map(serializeCategoryWithCount);
 }
 
 export async function getCategory(db: AppDatabase, userId: string, categoryId: string) {
@@ -23,7 +47,12 @@ export async function getCategory(db: AppDatabase, userId: string, categoryId: s
       ),
     );
 
-  return category ? serializeCategory(category) : null;
+  if (!category) {
+    return null;
+  }
+
+  const transactionCount = await countTransactionsForCategory(db, userId, category.id);
+  return serializeCategory(category, transactionCount);
 }
 
 export async function createCategory(db: AppDatabase, userId: string, data: CreateCategory) {
@@ -59,7 +88,12 @@ export async function updateCategory(
     .where(and(eq(categories.id, categoryId), eq(categories.userId, userId)))
     .returning();
 
-  return category ? serializeCategory(category) : null;
+  if (!category) {
+    return null;
+  }
+
+  const transactionCount = await countTransactionsForCategory(db, userId, category.id);
+  return serializeCategory(category, transactionCount);
 }
 
 export async function deleteCategory(db: AppDatabase, userId: string, categoryId: string) {
@@ -71,13 +105,59 @@ export async function deleteCategory(db: AppDatabase, userId: string, categoryId
   return category ? serializeCategory(category) : null;
 }
 
-function serializeCategory(category: typeof categories.$inferSelect) {
+async function countTransactionsForCategory(db: AppDatabase, userId: string, categoryId: string) {
+  const [result] = await db
+    .select({
+      transactionCount: count(transactions.id),
+    })
+    .from(transactions)
+    .innerJoin(
+      financialProducts,
+      and(eq(financialProducts.id, transactions.productId), eq(financialProducts.userId, userId)),
+    )
+    .where(eq(transactions.categoryId, categoryId));
+
+  return Number(result?.transactionCount ?? 0);
+}
+
+function serializeCategory(category: typeof categories.$inferSelect, transactionCount = 0) {
   return {
     id: category.id,
     userId: category.userId,
     name: category.name,
     parentId: category.parentId,
     isDefault: Boolean(category.isDefault),
+    transactionCount,
+    createdAt:
+      category.createdAt instanceof Date
+        ? category.createdAt.toISOString()
+        : String(category.createdAt),
+    updatedAt:
+      category.updatedAt instanceof Date
+        ? category.updatedAt.toISOString()
+        : String(category.updatedAt),
+  };
+}
+
+interface CategoryWithCount {
+  id: string;
+  userId: string | null;
+  name: string;
+  parentId: string | null;
+  isDefault: boolean | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  transactionCount: number | string | null;
+}
+
+function serializeCategoryWithCount(category: CategoryWithCount) {
+  return {
+    id: category.id,
+    userId: category.userId,
+    name: category.name,
+    parentId: category.parentId,
+    isDefault: Boolean(category.isDefault),
+    transactionCount: Number(category.transactionCount ?? 0),
     createdAt:
       category.createdAt instanceof Date
         ? category.createdAt.toISOString()

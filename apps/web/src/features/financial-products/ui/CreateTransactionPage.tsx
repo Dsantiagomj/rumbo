@@ -9,6 +9,7 @@ import { sileo } from 'sileo';
 import { ApiError } from '@/shared/api';
 import { Button, Card, CardContent, Separator, Skeleton } from '@/shared/ui';
 import { listCategoriesQueryOptions } from '../model/category-queries';
+import { getAvailableCurrencies } from '../model/currency-options';
 import { getProductQueryOptions } from '../model/queries';
 import {
   type TransactionFormValues,
@@ -54,8 +55,12 @@ export function CreateTransactionPage({ productId }: CreateTransactionPageProps)
 
   const categories = categoriesData?.categories ?? [];
 
+  const availableCurrencies = product
+    ? getAvailableCurrencies(product.type, product.currency, product.metadata)
+    : [];
+
   async function handleSubmit(values: TransactionFormValues) {
-    const currency = product?.currency ?? 'COP';
+    const currency = values.currency ?? product?.currency ?? 'COP';
     const body: Omit<CreateTransaction, 'productId'> = {
       name: values.name,
       type: values.type,
@@ -153,6 +158,7 @@ export function CreateTransactionPage({ productId }: CreateTransactionPageProps)
             <TransactionFormFields
               form={form}
               currency={product.currency}
+              currencies={availableCurrencies}
               categories={categories}
               excludedLabel="Excluir de reportes"
               idPrefix="txn"

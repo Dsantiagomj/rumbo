@@ -25,3 +25,4 @@ export { Separator } from '@/components/ui/separator';
 export { Skeleton } from '@/components/ui/skeleton';
 export type { NavItem } from './layouts';
 export { AppLayout, navItems } from './layouts';
+export { ResponsivePopover } from './responsive-popover';
