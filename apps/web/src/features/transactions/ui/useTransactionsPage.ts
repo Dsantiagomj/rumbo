@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { listProductsQueryOptions } from '@/features/financial-products';
 import { listCategoriesQueryOptions } from '@/features/financial-products/model/category-queries';
+import type { DatePreset } from '../model/date-presets';
 import { type GlobalTransactionFilters, globalTransactionsQueryOptions } from '../model/queries';
 
 const ALL_SENTINEL = 'all';
@@ -10,7 +11,8 @@ export function useTransactionsPage() {
   const [search, setSearch] = useState('');
   const [selectedProductId, setSelectedProductId] = useState<string>(ALL_SENTINEL);
   const [selectedType, setSelectedType] = useState<string>(ALL_SENTINEL);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(ALL_SENTINEL);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -19,7 +21,7 @@ export function useTransactionsPage() {
       search: search || undefined,
       productIds: selectedProductId !== ALL_SENTINEL ? selectedProductId : undefined,
       types: selectedType !== ALL_SENTINEL ? selectedType : undefined,
-      categories: selectedCategoryId !== ALL_SENTINEL ? selectedCategoryId : undefined,
+      categories: selectedCategoryId ?? undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     }),
@@ -53,7 +55,8 @@ export function useTransactionsPage() {
     setSearch('');
     setSelectedProductId(ALL_SENTINEL);
     setSelectedType(ALL_SENTINEL);
-    setSelectedCategoryId(ALL_SENTINEL);
+    setSelectedCategoryId(null);
+    setDatePreset('all');
     setStartDate('');
     setEndDate('');
   }, []);
@@ -62,7 +65,7 @@ export function useTransactionsPage() {
     search ||
     selectedProductId !== ALL_SENTINEL ||
     selectedType !== ALL_SENTINEL ||
-    selectedCategoryId !== ALL_SENTINEL ||
+    selectedCategoryId !== null ||
     startDate ||
     endDate
   );
@@ -86,6 +89,8 @@ export function useTransactionsPage() {
     setSelectedType,
     selectedCategoryId,
     setSelectedCategoryId,
+    datePreset,
+    setDatePreset,
     startDate,
     setStartDate,
     endDate,
