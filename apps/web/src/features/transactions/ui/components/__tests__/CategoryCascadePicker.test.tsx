@@ -43,7 +43,7 @@ describe('CategoryCascadePicker', () => {
     expect(screen.getByRole('button', { name: /Entretenimiento/ })).toBeInTheDocument();
   });
 
-  it('shows parent with 0 transactions if children have transactions', () => {
+  it('shows parent with 0 transactions if children have transactions, with total count', () => {
     const categoriesWithEmptyParent = [
       { id: 'parent-hogar', name: 'Hogar', parentId: null, transactionCount: 0 },
       {
@@ -65,15 +65,19 @@ describe('CategoryCascadePicker', () => {
 
     // Hogar should appear because its child Mantenimiento has transactions
     expect(screen.getByRole('button', { name: /Hogar/ })).toBeInTheDocument();
+    // Hogar should show count of 2 (sum of children's transactions)
+    expect(screen.getByText('(2)')).toBeInTheDocument();
     // Empty should NOT appear - no transactions and no children with transactions
     expect(screen.queryByRole('button', { name: /Empty/ })).not.toBeInTheDocument();
   });
 
-  it('shows transaction count badge', () => {
+  it('shows total transaction count for parents (own + children)', () => {
     render(<CategoryCascadePicker categories={categories} value={null} onChange={vi.fn()} />);
 
-    expect(screen.getByText('(5)')).toBeInTheDocument();
-    expect(screen.getByText('(3)')).toBeInTheDocument();
+    // Comida: 5 (own) + 2 (Restaurantes) + 3 (Supermercado) = 10
+    expect(screen.getByText('(10)')).toBeInTheDocument();
+    // Transporte: 3 (own) + 3 (Bus) = 6
+    expect(screen.getByText('(6)')).toBeInTheDocument();
   });
 
   it('shows subcategories when parent with children is clicked', async () => {

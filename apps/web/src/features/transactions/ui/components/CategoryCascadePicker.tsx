@@ -27,16 +27,27 @@ export function CategoryCascadePicker({
 }: CategoryCascadePickerProps) {
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
 
+  // Get all children for a parent
+  const getAllChildrenForParent = (parentId: string) =>
+    categories.filter((c) => c.parentId === parentId);
+
   // Get children with transactions for a parent
   const getChildrenWithTransactions = (parentId: string) =>
-    categories.filter((c) => c.parentId === parentId && c.transactionCount > 0);
+    getAllChildrenForParent(parentId).filter((c) => c.transactionCount > 0);
 
-  // A parent is visible if it has transactions OR any of its children do
-  const parentHasVisibleContent = (parentId: string) => {
+  // Calculate total transaction count for a parent (own + children)
+  const getTotalTransactionCount = (parentId: string) => {
     const parent = categories.find((c) => c.id === parentId);
-    if (!parent) return false;
-    return parent.transactionCount > 0 || getChildrenWithTransactions(parentId).length > 0;
+    const parentCount = parent?.transactionCount ?? 0;
+    const childrenCount = getAllChildrenForParent(parentId).reduce(
+      (sum, child) => sum + child.transactionCount,
+      0,
+    );
+    return parentCount + childrenCount;
   };
+
+  // A parent is visible if total transactions (own + children) > 0
+  const parentHasVisibleContent = (parentId: string) => getTotalTransactionCount(parentId) > 0;
 
   // Filter visible categories based on hideEmpty
   const visibleCategories = hideEmpty
@@ -126,24 +137,28 @@ export function CategoryCascadePicker({
         {value === null && <RiCheckLine className="h-4 w-4" />}
       </button>
       <div className="my-1 h-px bg-border" />
-      {parentCategories.map((category) => (
-        <button
-          key={category.id}
-          type="button"
-          className={cn(
-            'flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent',
-            isSelected(category.id) && 'bg-accent',
-          )}
-          onClick={() => handleParentClick(category)}
-        >
-          <span>{category.name}</span>
-          <span className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">({category.transactionCount})</span>
-            {isSelected(category.id) && <RiCheckLine className="h-4 w-4" />}
-            {hasChildren(category.id) && <RiArrowRightSLine className="h-4 w-4" />}
-          </span>
-        </button>
-      ))}
+      {parentCategories.map((category) => {
+        // Show total count (parent + children) for parent categories
+        const totalCount = getTotalTransactionCount(category.id);
+        return (
+          <button
+            key={category.id}
+            type="button"
+            className={cn(
+              'flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent',
+              isSelected(category.id) && 'bg-accent',
+            )}
+            onClick={() => handleParentClick(category)}
+          >
+            <span>{category.name}</span>
+            <span className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">({totalCount})</span>
+              {isSelected(category.id) && <RiCheckLine className="h-4 w-4" />}
+              {hasChildren(category.id) && <RiArrowRightSLine className="h-4 w-4" />}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { format, startOfMonth, startOfWeek, subDays } from 'date-fns';
+import { format, parse, startOfMonth, startOfWeek, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export type DatePreset = 'week' | 'month' | '30days' | 'custom' | 'all';
@@ -75,20 +75,23 @@ export function formatDateRangeDisplay(
     return 'Todo';
   }
 
+  // Parse YYYY-MM-DD in local timezone (not UTC) to avoid day-shift bugs
+  const parseLocalDate = (dateStr: string) => parse(dateStr, 'yyyy-MM-dd', new Date());
+
   // For custom dates, format based on what's available
   if (startDate && endDate) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = parseLocalDate(startDate);
+    const end = parseLocalDate(endDate);
     return `${format(start, 'd MMM', { locale: es })} - ${format(end, 'd MMM', { locale: es })}`;
   }
 
   if (startDate) {
-    const start = new Date(startDate);
+    const start = parseLocalDate(startDate);
     return `Desde ${format(start, 'd MMM', { locale: es })}`;
   }
 
   if (endDate) {
-    const end = new Date(endDate);
+    const end = parseLocalDate(endDate);
     return `Hasta ${format(end, 'd MMM', { locale: es })}`;
   }
 
