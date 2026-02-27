@@ -31,18 +31,25 @@ export function ResponsivePopover({
 }: ResponsivePopoverProps) {
   const isMobile = useIsMobile();
 
-  const triggerWithMobileHandler = isValidElement(trigger)
+  const originalOnClick = trigger.props.onClick;
+
+  const triggerWithDefaultType = isValidElement(trigger)
     ? cloneElement(trigger, {
+        type: trigger.props.type ?? 'button',
+      } as React.HTMLAttributes<HTMLElement>)
+    : trigger;
+
+  const triggerWithMobileHandler = isValidElement(triggerWithDefaultType)
+    ? cloneElement(triggerWithDefaultType, {
         onClick: (event: MouseEvent<HTMLElement>) => {
-          trigger.props.onClick?.(event);
+          originalOnClick?.(event);
 
           if (!event.defaultPrevented) {
             onOpenChange(true);
           }
         },
-        type: trigger.props.type ?? 'button',
       } as React.HTMLAttributes<HTMLElement>)
-    : trigger;
+    : triggerWithDefaultType;
 
   if (isMobile) {
     return (
@@ -64,7 +71,7 @@ export function ResponsivePopover({
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverTrigger asChild>{triggerWithDefaultType}</PopoverTrigger>
       <PopoverContent align={align} className="w-auto p-0">
         {children}
       </PopoverContent>
