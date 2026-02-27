@@ -20,7 +20,8 @@ describe('ResponsivePopover', () => {
       <ResponsivePopover
         open={false}
         onOpenChange={vi.fn()}
-        trigger={<button type="button">Abrir</button>}
+        // biome-ignore lint/a11y/useButtonType: Testing that component adds type="button" by default
+        trigger={<button>Abrir</button>}
       >
         <div>Contenido</div>
       </ResponsivePopover>,
