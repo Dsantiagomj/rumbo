@@ -43,8 +43,9 @@ export function DateRangeFilter({
     onStartDateChange(start ?? '');
     onEndDateChange(end ?? '');
 
-    // Close popover only when both dates are set
-    if (start && end) {
+    // Close popover only when range is complete (both dates set AND different)
+    // react-day-picker may set from===to on first click, so we check they differ
+    if (start && end && start !== end) {
       setOpen(false);
     }
   };

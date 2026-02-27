@@ -15,12 +15,21 @@ interface CategoryCascadePickerProps {
   categories: Category[];
   value: string | null;
   onChange: (categoryId: string | null) => void;
+  /** If true, hide categories with transactionCount === 0 */
+  hideEmpty?: boolean;
 }
 
-export function CategoryCascadePicker({ categories, value, onChange }: CategoryCascadePickerProps) {
+export function CategoryCascadePicker({
+  categories,
+  value,
+  onChange,
+  hideEmpty = false,
+}: CategoryCascadePickerProps) {
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
 
-  const visibleCategories = categories.filter((c) => c.transactionCount > 0);
+  const visibleCategories = hideEmpty
+    ? categories.filter((c) => c.transactionCount > 0)
+    : categories;
 
   const parentCategories = visibleCategories.filter((c) => c.parentId === null);
 

@@ -23,8 +23,16 @@ describe('CategoryCascadePicker', () => {
     expect(screen.queryByRole('button', { name: /Bus/ })).not.toBeInTheDocument();
   });
 
-  it('hides categories with 0 transactions', () => {
+  it('shows categories with 0 transactions by default', () => {
     render(<CategoryCascadePicker categories={categories} value={null} onChange={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: /Entretenimiento/ })).toBeInTheDocument();
+  });
+
+  it('hides categories with 0 transactions when hideEmpty is true', () => {
+    render(
+      <CategoryCascadePicker categories={categories} value={null} onChange={vi.fn()} hideEmpty />,
+    );
 
     expect(screen.queryByRole('button', { name: /Entretenimiento/ })).not.toBeInTheDocument();
   });
