@@ -1,5 +1,6 @@
 'use client';
 
+import type React from 'react';
 import {
   cloneElement,
   isValidElement,
@@ -40,9 +41,7 @@ export function ResponsivePopover({
           }
         },
         type: trigger.props.type ?? 'button',
-        'aria-haspopup': 'dialog',
-        'aria-expanded': open,
-      })
+      } as React.HTMLAttributes<HTMLElement>)
     : trigger;
 
   if (isMobile) {

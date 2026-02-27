@@ -54,6 +54,7 @@ function createCategory(partial: Partial<CategoryResponse>): CategoryResponse {
     name: 'Category',
     parentId: null,
     isDefault: false,
+    transactionCount: 0,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
     ...partial,
