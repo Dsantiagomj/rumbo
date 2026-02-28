@@ -511,10 +511,11 @@ export async function bulkDeleteTransactions(
       totalDelta += row.transaction.type === 'income' ? -amount : amount;
     }
 
-    const currency = group[0]!.transaction.currency;
+    const firstRow = group[0];
+    const currency = firstRow.transaction.currency;
 
     try {
-      if (NON_NEGATIVE_BALANCE_TYPES.has(group[0]!.productType)) {
+      if (NON_NEGATIVE_BALANCE_TYPES.has(firstRow.productType)) {
         await validateBalanceConstraint(db, productId, totalDelta, currency);
       }
 
