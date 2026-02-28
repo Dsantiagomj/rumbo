@@ -78,17 +78,31 @@ export function DateRangeContent({
 
       <div className="h-px bg-border" />
 
-      {/* Range calendar - 1 month on mobile, 2 on desktop */}
-      <div className="flex w-full justify-center">
-        <Calendar
-          mode="range"
-          selected={selectedRange}
-          onSelect={handleCalendarSelect}
-          numberOfMonths={isMobile ? 1 : 2}
-          locale={es}
-          className="w-full"
-        />
-      </div>
+      {/* Range calendar - 1 month on mobile (full width), 2 on desktop */}
+      <Calendar
+        mode="range"
+        selected={selectedRange}
+        onSelect={handleCalendarSelect}
+        numberOfMonths={isMobile ? 1 : 2}
+        locale={es}
+        className="w-full"
+        classNames={
+          isMobile
+            ? {
+                // Make calendar stretch to full width on mobile
+                months: 'flex w-full',
+                month: 'flex flex-col gap-4 w-full',
+                month_grid: 'w-full',
+                weekdays: 'flex w-full justify-between',
+                weekday: 'text-muted-foreground font-normal text-[0.8rem] flex-1 text-center',
+                week: 'flex w-full justify-between mt-2',
+                day: 'flex-1 aspect-square text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
+                day_button:
+                  'w-full h-full p-0 font-normal aria-selected:opacity-100 hover:bg-accent rounded-md',
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }

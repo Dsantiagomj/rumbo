@@ -1,4 +1,4 @@
-import { financialProducts, transactions } from '@rumbo/db/schema';
+import { categories, financialProducts, transactions } from '@rumbo/db/schema';
 import type { CreateTransaction, TransactionType, UpdateTransaction } from '@rumbo/shared/schemas';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
@@ -26,6 +26,26 @@ function decodeCursor(cursor: string): { date: string; id: string } {
   const decoded = Buffer.from(cursor, 'base64url').toString();
   const parts = decoded.split('|');
   return { date: parts[0] ?? '', id: parts[1] ?? '' };
+}
+
+/**
+ * Expand category IDs to include all their children.
+ * When filtering by a parent category, we should include transactions
+ * assigned to any of its subcategories as well.
+ */
+async function expandCategoryIds(db: AppDatabase, categoryIds: string[]): Promise<string[]> {
+  if (categoryIds.length === 0) return [];
+
+  // Get all children of the provided category IDs
+  const children = await db
+    .select({ id: categories.id })
+    .from(categories)
+    .where(inArray(categories.parentId, categoryIds));
+
+  const childIds = children.map((c) => c.id);
+
+  // Combine original IDs with child IDs (deduplicated)
+  return [...new Set([...categoryIds, ...childIds])];
 }
 
 function serializeTransaction(tx: typeof transactions.$inferSelect) {
@@ -201,7 +221,9 @@ export async function listTransactions(
   }
 
   if (filters.categories && filters.categories.length > 0) {
-    conditions.push(inArray(transactions.categoryId, filters.categories));
+    // Expand parent categories to include their children
+    const expandedCategoryIds = await expandCategoryIds(db, filters.categories);
+    conditions.push(inArray(transactions.categoryId, expandedCategoryIds));
   }
 
   if (filters.amountMin) {
@@ -300,7 +322,9 @@ export async function listAllTransactions(
   }
 
   if (filters.categories && filters.categories.length > 0) {
-    conditions.push(inArray(transactions.categoryId, filters.categories));
+    // Expand parent categories to include their children
+    const expandedCategoryIds = await expandCategoryIds(db, filters.categories);
+    conditions.push(inArray(transactions.categoryId, expandedCategoryIds));
   }
 
   if (filters.amountMin) {
