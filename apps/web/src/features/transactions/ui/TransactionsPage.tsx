@@ -21,6 +21,8 @@ import {
 } from '@/features/financial-products/model/constants';
 import { setBreadcrumbLabel } from '@/shared/lib/useBreadcrumbStore';
 import { Button, Input, Skeleton } from '@/shared/ui';
+import { CategoryFilterField } from './components/CategoryFilterField';
+import { DateRangeFilter } from './components/DateRangeFilter';
 import { useTransactionsPage } from './useTransactionsPage';
 
 function groupByDate(
@@ -124,6 +126,8 @@ export function TransactionsPage() {
     setSelectedType,
     selectedCategoryId,
     setSelectedCategoryId,
+    datePreset,
+    setDatePreset,
     startDate,
     setStartDate,
     endDate,
@@ -180,35 +184,21 @@ export function TransactionsPage() {
           </SelectContent>
         </Select>
 
-        {/* Category filter */}
-        <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
-          <SelectTrigger className="h-8 w-[170px] text-xs">
-            <SelectValue placeholder="Todas las categorías" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las categorías</SelectItem>
-            {categories.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Date range */}
-        <Input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="h-8 w-[140px] text-xs"
-          placeholder="Desde"
+        {/* Category filter - cascade picker */}
+        <CategoryFilterField
+          categories={categories}
+          value={selectedCategoryId}
+          onChange={setSelectedCategoryId}
         />
-        <Input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="h-8 w-[140px] text-xs"
-          placeholder="Hasta"
+
+        {/* Date range filter */}
+        <DateRangeFilter
+          startDate={startDate || undefined}
+          endDate={endDate || undefined}
+          preset={datePreset}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onPresetChange={setDatePreset}
         />
 
         {/* Clear filters */}

@@ -57,6 +57,22 @@ function createTransaction(partial: Partial<GlobalTransactionResponse>): GlobalT
 describe('TransactionsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Mock window.matchMedia for ResponsivePopover
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+
     const transaction = createTransaction({});
     mocks.useTransactionsPage.mockReturnValue({
       transactions: [transaction],
@@ -73,12 +89,14 @@ describe('TransactionsPage', () => {
       setSelectedProductId: vi.fn(),
       selectedType: 'all',
       setSelectedType: vi.fn(),
-      selectedCategoryId: 'all',
+      selectedCategoryId: null,
       setSelectedCategoryId: vi.fn(),
       startDate: '',
       setStartDate: vi.fn(),
       endDate: '',
       setEndDate: vi.fn(),
+      datePreset: 'all',
+      setDatePreset: vi.fn(),
       clearFilters: vi.fn(),
       hasActiveFilters: false,
     });
