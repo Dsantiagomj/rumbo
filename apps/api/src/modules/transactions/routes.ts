@@ -4,6 +4,7 @@ import { createDb } from '../../lib/db.js';
 import { errorResponseSchema, validationErrorResponseSchema } from '../../lib/error-schemas.js';
 import { InsufficientBalanceError } from '../../lib/errors.js';
 import {
+  bulkDeleteTransactions,
   createTransaction,
   deleteTransaction,
   getBalanceHistory,
@@ -16,6 +17,8 @@ import {
 import {
   balanceHistoryQuerySchema,
   balanceHistoryResponse,
+  bulkDeleteTransactionsBodySchema,
+  bulkDeleteTransactionsResponseContent,
   createTransactionBodySchema,
   globalTransactionListResponse,
   globalTransactionQuerySchema,
@@ -152,6 +155,29 @@ const updateTransactionRoute = createRoute({
     404: {
       content: { 'application/json': { schema: errorResponseSchema } },
       description: 'Transaction not found',
+    },
+    422: {
+      content: { 'application/json': { schema: validationErrorResponseSchema } },
+      description: 'Validation error',
+    },
+  },
+});
+
+const bulkDeleteTransactionsRoute = createRoute({
+  method: 'delete',
+  path: '/bulk',
+  tags: ['Transactions'],
+  summary: 'Bulk delete transactions',
+  request: {
+    body: {
+      content: { 'application/json': { schema: bulkDeleteTransactionsBodySchema } },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: bulkDeleteTransactionsResponseContent } },
+      description: 'Bulk delete result',
     },
     422: {
       content: { 'application/json': { schema: validationErrorResponseSchema } },
@@ -329,6 +355,14 @@ transactionsRouter.openapi(balanceHistoryRoute, async (c) => {
   const { currency } = c.req.valid('query');
   const db = await createDb(c.env);
   const result = await getBalanceHistory(db, user.id, currency);
+  return c.json(result, 200);
+});
+
+transactionsRouter.openapi(bulkDeleteTransactionsRoute, async (c) => {
+  const user = c.get('user');
+  const { ids } = c.req.valid('json');
+  const db = await createDb(c.env);
+  const result = await bulkDeleteTransactions(db, user.id, ids);
   return c.json(result, 200);
 });
 

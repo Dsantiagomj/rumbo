@@ -457,6 +457,86 @@ export async function updateTransaction(
   return serializeTransaction(updated);
 }
 
+export async function bulkDeleteTransactions(
+  db: AppDatabase,
+  userId: string,
+  ids: string[],
+): Promise<{ deleted: number; failed: Array<{ id: string; reason: string }> }> {
+  const failed: Array<{ id: string; reason: string }> = [];
+  let totalDeleted = 0;
+
+  // Fetch all requested transactions with ownership verification
+  const rows = await db
+    .select({ transaction: transactions, productType: financialProducts.type })
+    .from(transactions)
+    .innerJoin(financialProducts, eq(transactions.productId, financialProducts.id))
+    .where(and(inArray(transactions.id, ids), eq(financialProducts.userId, userId)));
+
+  const foundMap = new Map(rows.map((r) => [r.transaction.id, r]));
+
+  // Mark not-found IDs as failed
+  for (const id of ids) {
+    if (!foundMap.has(id)) {
+      failed.push({ id, reason: 'Transaction not found' });
+    }
+  }
+
+  // Separate deletable from "Balance inicial" (undeletable)
+  const deletable: typeof rows = [];
+  for (const row of rows) {
+    if (row.transaction.name === 'Balance inicial' && row.transaction.categoryId === null) {
+      failed.push({ id: row.transaction.id, reason: 'Cannot delete initial balance transaction' });
+    } else {
+      deletable.push(row);
+    }
+  }
+
+  // Group by productId
+  const byProduct = new Map<string, typeof deletable>();
+  for (const row of deletable) {
+    const productId = row.transaction.productId;
+    const group = byProduct.get(productId);
+    if (group) {
+      group.push(row);
+    } else {
+      byProduct.set(productId, [row]);
+    }
+  }
+
+  // Process each product group independently
+  for (const [productId, group] of byProduct) {
+    let totalDelta = 0;
+    for (const row of group) {
+      const amount = Number.parseFloat(row.transaction.amount);
+      totalDelta += row.transaction.type === 'income' ? -amount : amount;
+    }
+
+    const currency = group[0]!.transaction.currency;
+
+    try {
+      if (NON_NEGATIVE_BALANCE_TYPES.has(group[0]!.productType)) {
+        await validateBalanceConstraint(db, productId, totalDelta, currency);
+      }
+
+      const groupIds = group.map((r) => r.transaction.id);
+      await db.delete(transactions).where(inArray(transactions.id, groupIds));
+      totalDeleted += groupIds.length;
+
+      await recalculateBalance(db, productId);
+    } catch (error) {
+      const reason =
+        error instanceof InsufficientBalanceError
+          ? 'Insufficient balance after deletion'
+          : 'Deletion failed';
+      for (const row of group) {
+        failed.push({ id: row.transaction.id, reason });
+      }
+    }
+  }
+
+  return { deleted: totalDeleted, failed };
+}
+
 export async function deleteTransaction(db: AppDatabase, userId: string, transactionId: string) {
   const existing = await getTransaction(db, userId, transactionId);
   if (!existing) return null;

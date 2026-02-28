@@ -1,6 +1,8 @@
 import { z } from '@hono/zod-openapi';
 import {
   balanceHistoryResponseSchema,
+  bulkDeleteTransactionsResponseSchema,
+  bulkDeleteTransactionsSchema,
   createTransactionSchema,
   globalTransactionListResponseSchema,
   transactionListResponseSchema,
@@ -60,6 +62,12 @@ export const transactionQuerySchema = z.object({
 
 export const globalTransactionListResponse =
   globalTransactionListResponseSchema.openapi('GlobalTransactionList');
+
+export const bulkDeleteTransactionsBodySchema =
+  bulkDeleteTransactionsSchema.openapi('BulkDeleteTransactions');
+export const bulkDeleteTransactionsResponseContent = bulkDeleteTransactionsResponseSchema.openapi(
+  'BulkDeleteTransactionsResponse',
+);
 
 export const globalTransactionQuerySchema = z.object({
   search: z.string().optional().openapi({ description: 'Text search (name, merchant, notes)' }),

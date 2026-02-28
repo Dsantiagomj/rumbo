@@ -58,6 +58,21 @@ export const globalTransactionListResponseSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 
+// Bulk delete
+export const bulkDeleteTransactionsSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1).max(100),
+});
+
+export const bulkDeleteFailedItemSchema = z.object({
+  id: z.string().uuid(),
+  reason: z.string(),
+});
+
+export const bulkDeleteTransactionsResponseSchema = z.object({
+  deleted: z.number().int().min(0),
+  failed: z.array(bulkDeleteFailedItemSchema),
+});
+
 export type CreateTransaction = z.infer<typeof createTransactionSchema>;
 export type UpdateTransaction = z.infer<typeof updateTransactionSchema>;
 export type TransactionResponse = z.infer<typeof transactionResponseSchema>;
@@ -66,3 +81,5 @@ export type GlobalTransactionResponse = z.infer<typeof globalTransactionResponse
 export type GlobalTransactionListResponse = z.infer<typeof globalTransactionListResponseSchema>;
 export type BalanceHistoryPoint = z.infer<typeof balanceHistoryPointSchema>;
 export type BalanceHistoryResponse = z.infer<typeof balanceHistoryResponseSchema>;
+export type BulkDeleteTransactions = z.infer<typeof bulkDeleteTransactionsSchema>;
+export type BulkDeleteTransactionsResponse = z.infer<typeof bulkDeleteTransactionsResponseSchema>;
