@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import type { DateRange as DayPickerRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { useIsMobile } from '@/shared/lib/useIsMobile';
 import { DATE_PRESETS, type DatePreset } from '../../model/date-presets';
 
 interface DateRangeContentProps {
@@ -40,6 +41,8 @@ export function DateRangeContent({
   onPresetChange,
   onRangeChange,
 }: DateRangeContentProps) {
+  const isMobile = useIsMobile();
+
   // Convert string dates to Date objects for Calendar
   const selectedRange: DayPickerRange | undefined =
     startDate || endDate
@@ -54,9 +57,9 @@ export function DateRangeContent({
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex w-full flex-col gap-3">
       {/* Preset buttons */}
-      <div className="flex flex-wrap gap-2 px-3 pt-3">
+      <div className="flex flex-wrap gap-2">
         {DATE_PRESETS.map((presetOption) => {
           const isActive = preset === presetOption.id;
           return (
@@ -75,14 +78,17 @@ export function DateRangeContent({
 
       <div className="h-px bg-border" />
 
-      {/* Range calendar */}
-      <Calendar
-        mode="range"
-        selected={selectedRange}
-        onSelect={handleCalendarSelect}
-        numberOfMonths={2}
-        locale={es}
-      />
+      {/* Range calendar - 1 month on mobile, 2 on desktop */}
+      <div className="flex w-full justify-center">
+        <Calendar
+          mode="range"
+          selected={selectedRange}
+          onSelect={handleCalendarSelect}
+          numberOfMonths={isMobile ? 1 : 2}
+          locale={es}
+          className="w-full"
+        />
+      </div>
     </div>
   );
 }

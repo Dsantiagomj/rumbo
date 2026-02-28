@@ -89,6 +89,7 @@ export function CategoryCascadePicker({
   if (selectedParentId !== null) {
     const subcategories = getChildrenForParent(selectedParentId);
     const parent = categories.find((c) => c.id === selectedParentId);
+    const parentTotalCount = getTotalTransactionCount(selectedParentId);
 
     return (
       <div className="flex flex-col gap-1 p-3">
@@ -101,7 +102,22 @@ export function CategoryCascadePicker({
           <span>Volver</span>
         </button>
         <div className="my-1 h-px bg-border" />
-        <div className="text-xs font-medium text-muted-foreground px-2 py-1">{parent?.name}</div>
+        {/* "All parent" option - selects the parent category */}
+        <button
+          type="button"
+          className={cn(
+            'flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent',
+            isSelected(selectedParentId) && 'bg-accent',
+          )}
+          onClick={() => onChange(selectedParentId)}
+        >
+          <span>Todas {parent?.name}</span>
+          <span className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">({parentTotalCount})</span>
+            {isSelected(selectedParentId) && <RiCheckLine className="h-4 w-4" />}
+          </span>
+        </button>
+        <div className="my-1 h-px bg-border" />
         {subcategories.map((category) => (
           <button
             key={category.id}

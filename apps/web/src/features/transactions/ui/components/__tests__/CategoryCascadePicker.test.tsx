@@ -156,4 +156,27 @@ describe('CategoryCascadePicker', () => {
     const comidaButton = screen.getByRole('button', { name: /Comida/ });
     expect(comidaButton).toHaveClass('bg-accent');
   });
+
+  it('shows "Todas [Parent]" option in subcategory view', async () => {
+    const user = userEvent.setup();
+    render(<CategoryCascadePicker categories={categories} value={null} onChange={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /Comida/ }));
+
+    // Should show "Todas Comida" option with total count
+    expect(screen.getByRole('button', { name: /Todas Comida/ })).toBeInTheDocument();
+    // Total: 5 (Comida) + 2 (Restaurantes) + 3 (Supermercado) = 10
+    expect(screen.getByText('(10)')).toBeInTheDocument();
+  });
+
+  it('calls onChange with parent id when "Todas [Parent]" is clicked', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<CategoryCascadePicker categories={categories} value={null} onChange={onChange} />);
+
+    await user.click(screen.getByRole('button', { name: /Comida/ }));
+    await user.click(screen.getByRole('button', { name: /Todas Comida/ }));
+
+    expect(onChange).toHaveBeenCalledWith('parent-1');
+  });
 });
