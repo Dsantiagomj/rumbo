@@ -2,7 +2,7 @@ import {
   RiArrowRightSLine,
   RiCloseLine,
   RiDeleteBinLine,
-  RiFilterLine,
+  RiEqualizerLine,
   RiPriceTag3Line,
   RiSearchLine,
 } from '@remixicon/react';
@@ -172,6 +172,9 @@ export function TransactionsPage() {
     setEndDate,
     clearFilters,
     hasActiveFilters,
+    activeFilterCount,
+    showFilters,
+    setShowFilters,
     // Selection
     selectedIds,
     selectableIds,
@@ -229,79 +232,104 @@ export function TransactionsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Search bar */}
-      <div className="relative">
-        <RiSearchLine className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Buscar por nombre o comercio..."
-          className="pl-9"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* Search bar + Filters toggle */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <RiSearchLine className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Buscar por nombre o comercio..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Button
+          variant={showFilters || activeFilterCount > 0 ? 'secondary' : 'outline'}
+          size="sm"
+          onClick={() => setShowFilters((prev) => !prev)}
+          className="h-9 gap-1.5 text-xs"
+        >
+          <RiEqualizerLine className="h-4 w-4" />
+          Filtros
+          {activeFilterCount > 0 && (
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+              {activeFilterCount}
+            </span>
+          )}
+        </Button>
       </div>
 
-      {/* Filters row */}
-      <div className="flex flex-wrap items-center gap-2">
-        <RiFilterLine className="h-4 w-4 text-muted-foreground" />
+      {/* Collapsible filters panel */}
+      {showFilters && (
+        <div className="rounded-lg border border-border bg-muted/50 p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Product filter */}
+            <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+              <SelectTrigger className="h-8 w-[180px] text-xs">
+                <SelectValue placeholder="Todas las cuentas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las cuentas</SelectItem>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-        {/* Product filter */}
-        <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-          <SelectTrigger className="h-8 w-[180px] text-xs">
-            <SelectValue placeholder="Todas las cuentas" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las cuentas</SelectItem>
-            {products.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            {/* Type filter */}
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="h-8 w-[150px] text-xs">
+                <SelectValue placeholder="Todos los tipos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="income">Ingreso</SelectItem>
+                <SelectItem value="expense">Gasto</SelectItem>
+                <SelectItem value="transfer">Transferencia</SelectItem>
+              </SelectContent>
+            </Select>
 
-        {/* Type filter */}
-        <Select value={selectedType} onValueChange={setSelectedType}>
-          <SelectTrigger className="h-8 w-[150px] text-xs">
-            <SelectValue placeholder="Todos los tipos" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos los tipos</SelectItem>
-            <SelectItem value="income">Ingreso</SelectItem>
-            <SelectItem value="expense">Gasto</SelectItem>
-            <SelectItem value="transfer">Transferencia</SelectItem>
-          </SelectContent>
-        </Select>
+            {/* Category filter — hidden when all transactions are Balance inicial */}
+            {selectableIds.length > 0 && (
+              <CategoryFilterField
+                categories={categories}
+                value={selectedCategoryId}
+                onChange={setSelectedCategoryId}
+              />
+            )}
 
-        {/* Category filter - cascade picker */}
-        <CategoryFilterField
-          categories={categories}
-          value={selectedCategoryId}
-          onChange={setSelectedCategoryId}
-        />
+            {/* Date range filter */}
+            <DateRangeFilter
+              startDate={startDate || undefined}
+              endDate={endDate || undefined}
+              preset={datePreset}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              onPresetChange={setDatePreset}
+            />
 
-        {/* Date range filter */}
-        <DateRangeFilter
-          startDate={startDate || undefined}
-          endDate={endDate || undefined}
-          preset={datePreset}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
-          onPresetChange={setDatePreset}
-        />
+            {/* Clear filters */}
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="h-8 gap-1 text-xs"
+              >
+                <RiCloseLine className="h-3.5 w-3.5" />
+                Limpiar
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
-        {/* Clear filters */}
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 gap-1 text-xs">
-            <RiCloseLine className="h-3.5 w-3.5" />
-            Limpiar
-          </Button>
-        )}
-      </div>
-
-      {/* Transaction count / selection bar */}
+      {/* Count / selection strip */}
       {!isPending && transactions.length > 0 && (
-        <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-2.5">
+        <div className="flex items-center justify-between px-1 py-1.5">
           <div className="flex items-center gap-3">
             {selectableIds.length > 0 && (
               <Checkbox

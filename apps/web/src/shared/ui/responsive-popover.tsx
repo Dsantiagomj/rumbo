@@ -72,7 +72,7 @@ export function ResponsivePopover({
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>{triggerWithDefaultType}</PopoverTrigger>
-      <PopoverContent align={align} className="w-auto p-0">
+      <PopoverContent align={align} collisionPadding={12} className="w-auto p-4">
         {children}
       </PopoverContent>
     </Popover>

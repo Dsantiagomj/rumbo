@@ -57,6 +57,7 @@ export function DateRangeFilter({
       open={open}
       onOpenChange={setOpen}
       title="Rango de fechas"
+      align="end"
       trigger={
         <Button variant="outline" size="sm" className="h-8 gap-2 text-xs">
           <RiCalendarLine className="h-4 w-4" />

@@ -15,6 +15,7 @@ export function useTransactionsPage() {
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   const filters: GlobalTransactionFilters = useMemo(
     () => ({
@@ -126,6 +127,13 @@ export function useTransactionsPage() {
     endDate
   );
 
+  const activeFilterCount = [
+    selectedProductId !== ALL_SENTINEL,
+    selectedType !== ALL_SENTINEL,
+    selectedCategoryId !== null,
+    startDate || endDate,
+  ].filter(Boolean).length;
+
   return {
     // Data
     transactions,
@@ -153,6 +161,9 @@ export function useTransactionsPage() {
     setEndDate,
     clearFilters,
     hasActiveFilters,
+    activeFilterCount,
+    showFilters,
+    setShowFilters,
     // Selection
     selectedIds,
     selectableIds,
