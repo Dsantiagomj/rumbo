@@ -1,5 +1,5 @@
-import type { GlobalTransactionListResponse } from '@rumbo/shared';
-import { infiniteQueryOptions } from '@tanstack/react-query';
+import type { BulkDeleteTransactionsResponse, GlobalTransactionListResponse } from '@rumbo/shared';
+import { infiniteQueryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/shared/api';
 
 export type GlobalTransactionFilters = {
@@ -26,6 +26,22 @@ function buildQueryString(filters: GlobalTransactionFilters, cursor?: string): s
   if (cursor) params.set('cursor', cursor);
   const qs = params.toString();
   return qs ? `?${qs}` : '';
+}
+
+export function useBulkDeleteTransactionsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      apiClient<BulkDeleteTransactionsResponse>('/api/transactions/bulk', {
+        method: 'DELETE',
+        body: JSON.stringify({ ids }),
+      }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['global-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['financial-products'] });
+    },
+  });
 }
 
 export function globalTransactionsQueryOptions(filters: GlobalTransactionFilters) {

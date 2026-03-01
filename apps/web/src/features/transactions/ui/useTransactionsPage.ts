@@ -1,5 +1,6 @@
+import { isInitialBalance } from '@rumbo/shared';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { listProductsQueryOptions } from '@/features/financial-products';
 import { listCategoriesQueryOptions } from '@/features/financial-products/model/category-queries';
 import type { DatePreset } from '../model/date-presets';
@@ -15,6 +16,7 @@ export function useTransactionsPage() {
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   const filters: GlobalTransactionFilters = useMemo(
     () => ({
@@ -51,6 +53,59 @@ export function useTransactionsPage() {
     return map;
   }, [categoriesData]);
 
+  // --- Selection state ---
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const selectableIds = useMemo(
+    () => transactions.filter((tx) => !isInitialBalance(tx)).map((tx) => tx.id),
+    [transactions],
+  );
+
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleGroupSelection = useCallback((groupSelectableIds: string[]) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const allSelected = groupSelectableIds.every((id) => prev.has(id));
+      if (allSelected) {
+        for (const id of groupSelectableIds) next.delete(id);
+      } else {
+        for (const id of groupSelectableIds) next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      const allSelected = selectableIds.length > 0 && selectableIds.every((id) => prev.has(id));
+      return allSelected ? new Set<string>() : new Set(selectableIds);
+    });
+  }, [selectableIds]);
+
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+
+  const hasSelection = selectedIds.size > 0;
+  const isAllSelected =
+    selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id));
+  const isAllIndeterminate = hasSelection && !isAllSelected;
+
+  // Auto-clear selection when filters change
+  const filtersRef = useRef(filters);
+  useEffect(() => {
+    if (filtersRef.current !== filters) {
+      filtersRef.current = filters;
+      clearSelection();
+    }
+  }, [filters, clearSelection]);
+
   const clearFilters = useCallback(() => {
     setSearch('');
     setSelectedProductId(ALL_SENTINEL);
@@ -69,6 +124,13 @@ export function useTransactionsPage() {
     startDate ||
     endDate
   );
+
+  const activeFilterCount = [
+    selectedProductId !== ALL_SENTINEL,
+    selectedType !== ALL_SENTINEL,
+    selectedCategoryId !== null,
+    startDate || endDate,
+  ].filter(Boolean).length;
 
   return {
     // Data
@@ -97,5 +159,18 @@ export function useTransactionsPage() {
     setEndDate,
     clearFilters,
     hasActiveFilters,
+    activeFilterCount,
+    showFilters,
+    setShowFilters,
+    // Selection
+    selectedIds,
+    selectableIds,
+    hasSelection,
+    isAllSelected,
+    isAllIndeterminate,
+    toggleSelection,
+    toggleGroupSelection,
+    toggleSelectAll,
+    clearSelection,
   };
 }

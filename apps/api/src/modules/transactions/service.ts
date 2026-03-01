@@ -1,5 +1,10 @@
 import { categories, financialProducts, transactions } from '@rumbo/db/schema';
-import type { CreateTransaction, TransactionType, UpdateTransaction } from '@rumbo/shared/schemas';
+import {
+  type CreateTransaction,
+  isInitialBalance,
+  type TransactionType,
+  type UpdateTransaction,
+} from '@rumbo/shared/schemas';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
 import { InsufficientBalanceError } from '../../lib/errors.js';
@@ -455,6 +460,96 @@ export async function updateTransaction(
 
   await recalculateBalance(db, existing.productId);
   return serializeTransaction(updated);
+}
+
+export async function bulkDeleteTransactions(
+  db: AppDatabase,
+  userId: string,
+  ids: string[],
+): Promise<{ deleted: number; failed: Array<{ id: string; reason: string }> }> {
+  const failed: Array<{ id: string; reason: string }> = [];
+  let totalDeleted = 0;
+
+  // Fetch all requested transactions with ownership verification
+  const rows = await db
+    .select({ transaction: transactions, productType: financialProducts.type })
+    .from(transactions)
+    .innerJoin(financialProducts, eq(transactions.productId, financialProducts.id))
+    .where(and(inArray(transactions.id, ids), eq(financialProducts.userId, userId)));
+
+  const foundMap = new Map(rows.map((r) => [r.transaction.id, r]));
+
+  // Mark not-found IDs as failed
+  for (const id of ids) {
+    if (!foundMap.has(id)) {
+      failed.push({ id, reason: 'Transaction not found' });
+    }
+  }
+
+  // Separate deletable from "Balance inicial" (undeletable)
+  const deletable: typeof rows = [];
+  for (const row of rows) {
+    if (isInitialBalance(row.transaction)) {
+      failed.push({ id: row.transaction.id, reason: 'Cannot delete initial balance transaction' });
+    } else {
+      deletable.push(row);
+    }
+  }
+
+  // Group by productId
+  const byProduct = new Map<string, typeof deletable>();
+  for (const row of deletable) {
+    const productId = row.transaction.productId;
+    const group = byProduct.get(productId);
+    if (group) {
+      group.push(row);
+    } else {
+      byProduct.set(productId, [row]);
+    }
+  }
+
+  // Process each product group independently
+  for (const [productId, group] of byProduct) {
+    let totalDelta = 0;
+    for (const row of group) {
+      const amount = Number.parseFloat(row.transaction.amount);
+      totalDelta += row.transaction.type === 'income' ? -amount : amount;
+    }
+
+    const firstRow = group[0];
+    if (!firstRow) continue;
+    const currency = firstRow.transaction.currency;
+
+    try {
+      const groupIds = group.map((r) => r.transaction.id);
+
+      await db.transaction(async (tx) => {
+        if (NON_NEGATIVE_BALANCE_TYPES.has(firstRow.productType)) {
+          await validateBalanceConstraint(
+            tx as unknown as AppDatabase,
+            productId,
+            totalDelta,
+            currency,
+          );
+        }
+
+        await tx.delete(transactions).where(inArray(transactions.id, groupIds));
+        await recalculateBalance(tx as unknown as AppDatabase, productId);
+      });
+
+      totalDeleted += groupIds.length;
+    } catch (error) {
+      const reason =
+        error instanceof InsufficientBalanceError
+          ? 'Insufficient balance after deletion'
+          : 'Deletion failed';
+      for (const row of group) {
+        failed.push({ id: row.transaction.id, reason });
+      }
+    }
+  }
+
+  return { deleted: totalDeleted, failed };
 }
 
 export async function deleteTransaction(db: AppDatabase, userId: string, transactionId: string) {
