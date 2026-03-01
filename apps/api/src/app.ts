@@ -10,6 +10,8 @@ import { categoriesRouter } from './modules/categories/index.js';
 import { financialProductsRouter } from './modules/financial-products/index.js';
 import { health } from './modules/health/index.js';
 import { productTransactionsRouter, transactionsRouter } from './modules/transactions/index.js';
+import { transfersRouter } from './modules/transfers/index.js';
+import { trmRouter } from './modules/trm/index.js';
 
 export type Bindings = {
   ENVIRONMENT: string;
@@ -116,6 +118,14 @@ app.route('/api/financial-products', productTransactionsRouter);
 app.use('/api/transactions', authMiddleware);
 app.use('/api/transactions/*', authMiddleware);
 app.route('/api/transactions', transactionsRouter);
+
+app.use('/api/transfers', authMiddleware);
+app.use('/api/transfers/*', authMiddleware);
+app.route('/api/transfers', transfersRouter);
+
+app.use('/api/trm', authMiddleware);
+app.use('/api/trm/*', authMiddleware);
+app.route('/api/trm', trmRouter);
 
 // Auth routes (Better Auth handles /api/auth/* automatically)
 app.on(['POST', 'GET'], '/api/auth/*', async (c) => {

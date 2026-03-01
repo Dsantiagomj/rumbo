@@ -42,7 +42,7 @@ export function TransactionFormFields({
       <div className="space-y-1.5">
         <span className="text-sm font-medium">Tipo</span>
         <div className="flex gap-2">
-          {TRANSACTION_TYPES.map((type) => (
+          {TRANSACTION_TYPES.filter((t) => t !== 'transfer').map((type) => (
             <Button
               key={type}
               type="button"

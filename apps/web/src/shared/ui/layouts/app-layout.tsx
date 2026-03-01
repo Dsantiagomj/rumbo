@@ -227,6 +227,7 @@ function DesktopSidebar({ collapsed, initials, pathname }: DesktopSidebarProps) 
 function QuickActions() {
   const { pathname } = useLocation();
   const isOnTransactionsNew = pathname === '/transactions/new';
+  const isOnTransfersNew = pathname === '/transfers/new';
   const isOnProductsNew = pathname === '/products/new';
 
   return (
@@ -244,6 +245,9 @@ function QuickActions() {
       <DropdownMenuContent align="end" className="min-w-44">
         <DropdownMenuItem asChild disabled={isOnTransactionsNew}>
           <Link to="/transactions/new">Agregar Transaccion</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild disabled={isOnTransfersNew}>
+          <Link to="/transfers/new">Agregar Transferencia</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild disabled={isOnProductsNew}>
           <Link to="/products/new">Agregar Producto</Link>
@@ -388,6 +392,9 @@ function MobileQuickActions() {
             <DropdownMenuSeparator />
           </>
         )}
+        <DropdownMenuItem asChild>
+          <Link to="/transfers/new">Nueva transferencia</Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/products/new">Nuevo producto</Link>
         </DropdownMenuItem>

@@ -72,7 +72,7 @@ function serializeTransaction(tx: typeof transactions.$inferSelect) {
   };
 }
 
-async function recalculateBalance(db: AppDatabase, productId: string) {
+export async function recalculateBalance(db: AppDatabase, productId: string) {
   const [product] = await db
     .select({ currency: financialProducts.currency, metadata: financialProducts.metadata })
     .from(financialProducts)
@@ -117,7 +117,7 @@ async function recalculateBalance(db: AppDatabase, productId: string) {
     .where(eq(financialProducts.id, productId));
 }
 
-async function validateBalanceConstraint(
+export async function validateBalanceConstraint(
   db: AppDatabase,
   productId: string,
   balanceDelta: number,
@@ -486,6 +486,34 @@ export async function bulkDeleteTransactions(
     }
   }
 
+  // Collect transfer counterparts not already in the selection
+  const transferIds = new Set<string>();
+  for (const row of rows) {
+    if (row.transaction.transferId) {
+      transferIds.add(row.transaction.transferId);
+    }
+  }
+
+  if (transferIds.size > 0) {
+    const counterparts = await db
+      .select({ transaction: transactions, productType: financialProducts.type })
+      .from(transactions)
+      .innerJoin(financialProducts, eq(transactions.productId, financialProducts.id))
+      .where(
+        and(
+          inArray(transactions.transferId, Array.from(transferIds)),
+          eq(financialProducts.userId, userId),
+        ),
+      );
+
+    for (const cp of counterparts) {
+      if (!foundMap.has(cp.transaction.id)) {
+        foundMap.set(cp.transaction.id, cp);
+        rows.push(cp);
+      }
+    }
+  }
+
   // Separate deletable from "Balance inicial" (undeletable)
   const deletable: typeof rows = [];
   for (const row of rows) {
@@ -556,6 +584,38 @@ export async function deleteTransaction(db: AppDatabase, userId: string, transac
   const existing = await getTransaction(db, userId, transactionId);
   if (!existing) return null;
 
+  // If this is a transfer leg, cascade delete the paired transaction
+  if (existing.transferId) {
+    const otherLegs = await db
+      .select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.transferId, existing.transferId),
+          sql`${transactions.id} != ${existing.id}`,
+        ),
+      );
+
+    const otherLeg = otherLegs[0];
+
+    if (otherLeg) {
+      await db.transaction(async (tx) => {
+        const txDb = tx as unknown as AppDatabase;
+
+        await tx.delete(transactions).where(eq(transactions.id, existing.id));
+        await tx.delete(transactions).where(eq(transactions.id, otherLeg.id));
+
+        await recalculateBalance(txDb, existing.productId);
+        if (otherLeg.productId !== existing.productId) {
+          await recalculateBalance(txDb, otherLeg.productId);
+        }
+      });
+
+      return existing;
+    }
+  }
+
+  // Non-transfer deletion (original logic)
   const amount = Number.parseFloat(existing.amount);
   const delta = existing.type === 'income' ? -amount : amount;
   await validateBalanceConstraint(db, existing.productId, delta, existing.currency);
