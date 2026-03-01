@@ -1,4 +1,5 @@
 import type { GlobalTransactionResponse } from '@rumbo/shared';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TransactionsPage } from '../TransactionsPage';
@@ -54,11 +55,17 @@ function createTransaction(partial: Partial<GlobalTransactionResponse>): GlobalT
   };
 }
 
+function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
+
 describe('TransactionsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock window.matchMedia for ResponsivePopover
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: vi.fn().mockImplementation((query) => ({
@@ -99,11 +106,23 @@ describe('TransactionsPage', () => {
       setDatePreset: vi.fn(),
       clearFilters: vi.fn(),
       hasActiveFilters: false,
+      activeFilterCount: 0,
+      showFilters: false,
+      setShowFilters: vi.fn(),
+      selectedIds: new Set<string>(),
+      selectableIds: [],
+      hasSelection: false,
+      isAllSelected: false,
+      isAllIndeterminate: false,
+      toggleSelection: vi.fn(),
+      toggleGroupSelection: vi.fn(),
+      toggleSelectAll: vi.fn(),
+      clearSelection: vi.fn(),
     });
   });
 
   it('sets transaction breadcrumb label when opening a global transaction', () => {
-    render(<TransactionsPage />);
+    renderWithProviders(<TransactionsPage />);
 
     fireEvent.click(screen.getByText('Pago Internet'));
 

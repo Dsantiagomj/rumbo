@@ -137,7 +137,9 @@
   html.theme-transition *,
   html.theme-transition *::before,
   html.theme-transition *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: must override all element animations during theme switch */
     animation: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must override all element transitions during theme switch */
     transition: none !important;
   }
 

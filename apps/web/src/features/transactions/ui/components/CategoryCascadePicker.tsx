@@ -31,10 +31,6 @@ export function CategoryCascadePicker({
   const getAllChildrenForParent = (parentId: string) =>
     categories.filter((c) => c.parentId === parentId);
 
-  // Get children with transactions for a parent
-  const getChildrenWithTransactions = (parentId: string) =>
-    getAllChildrenForParent(parentId).filter((c) => c.transactionCount > 0);
-
   // Calculate total transaction count for a parent (own + children)
   const getTotalTransactionCount = (parentId: string) => {
     const parent = categories.find((c) => c.id === parentId);

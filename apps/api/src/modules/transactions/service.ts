@@ -512,6 +512,7 @@ export async function bulkDeleteTransactions(
     }
 
     const firstRow = group[0];
+    if (!firstRow) continue;
     const currency = firstRow.transaction.currency;
 
     try {
