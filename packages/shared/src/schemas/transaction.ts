@@ -83,3 +83,8 @@ export type BalanceHistoryPoint = z.infer<typeof balanceHistoryPointSchema>;
 export type BalanceHistoryResponse = z.infer<typeof balanceHistoryResponseSchema>;
 export type BulkDeleteTransactions = z.infer<typeof bulkDeleteTransactionsSchema>;
 export type BulkDeleteTransactionsResponse = z.infer<typeof bulkDeleteTransactionsResponseSchema>;
+
+/** Predicate: true when a transaction is the undeletable "Balance inicial" seed. */
+export function isInitialBalance(tx: { name: string; categoryId: string | null }): boolean {
+  return tx.name === 'Balance inicial' && tx.categoryId === null;
+}

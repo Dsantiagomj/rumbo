@@ -6,8 +6,7 @@ import {
   RiPriceTag3Line,
   RiSearchLine,
 } from '@remixicon/react';
-import type { Currency, GlobalTransactionResponse } from '@rumbo/shared';
-import { useQueryClient } from '@tanstack/react-query';
+import { type Currency, type GlobalTransactionResponse, isInitialBalance } from '@rumbo/shared';
 import { Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { sileo } from 'sileo';
@@ -39,10 +38,6 @@ import { useBulkDeleteTransactionsMutation } from '../model/queries';
 import { CategoryFilterField } from './components/CategoryFilterField';
 import { DateRangeFilter } from './components/DateRangeFilter';
 import { useTransactionsPage } from './useTransactionsPage';
-
-function isInitialBalance(tx: GlobalTransactionResponse): boolean {
-  return tx.name === 'Balance inicial' && !tx.categoryId;
-}
 
 function groupByDate(
   transactions: GlobalTransactionResponse[],
@@ -189,7 +184,6 @@ export function TransactionsPage() {
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const bulkDeleteMutation = useBulkDeleteTransactionsMutation();
-  const queryClient = useQueryClient();
 
   const dateGroups = useMemo(() => groupByDate(transactions), [transactions]);
 
@@ -200,25 +194,18 @@ export function TransactionsPage() {
       clearSelection();
       setShowDeleteDialog(false);
 
-      queryClient.invalidateQueries({ queryKey: ['global-transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['financial-products'] });
-
-      if (result.deleted > 0 && result.failed.length === 0) {
+      if (result.deleted > 0) {
         sileo.success({
           title: `${result.deleted} transaccion${result.deleted !== 1 ? 'es' : ''} eliminada${result.deleted !== 1 ? 's' : ''}`,
         });
-      } else if (result.deleted > 0 && result.failed.length > 0) {
-        sileo.success({
-          title: `${result.deleted} transaccion${result.deleted !== 1 ? 'es' : ''} eliminada${result.deleted !== 1 ? 's' : ''}`,
-        });
+      }
+      if (result.failed.length > 0) {
         sileo.error({
-          title: `${result.failed.length} no pudieron ser eliminadas`,
+          title:
+            result.deleted > 0
+              ? `${result.failed.length} no pudieron ser eliminadas`
+              : 'No se pudieron eliminar las transacciones',
           description: result.failed.map((f) => f.reason).join(', '),
-        });
-      } else {
-        sileo.error({
-          title: 'No se pudieron eliminar las transacciones',
-          description: result.failed[0]?.reason ?? 'Error desconocido',
         });
       }
     } catch {
@@ -454,7 +441,7 @@ export function TransactionsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {`\u00bfEliminar ${selectedIds.size} transaccion${selectedIds.size !== 1 ? 'es' : ''}?`}
+              {`¿Eliminar ${selectedIds.size} transaccion${selectedIds.size !== 1 ? 'es' : ''}?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
               Esta accion no se puede deshacer. Las transacciones seleccionadas seran eliminadas

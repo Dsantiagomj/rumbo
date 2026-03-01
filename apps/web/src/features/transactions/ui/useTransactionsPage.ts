@@ -1,3 +1,4 @@
+import { isInitialBalance } from '@rumbo/shared';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { listProductsQueryOptions } from '@/features/financial-products';
@@ -56,10 +57,7 @@ export function useTransactionsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const selectableIds = useMemo(
-    () =>
-      transactions
-        .filter((tx) => !(tx.name === 'Balance inicial' && !tx.categoryId))
-        .map((tx) => tx.id),
+    () => transactions.filter((tx) => !isInitialBalance(tx)).map((tx) => tx.id),
     [transactions],
   );
 

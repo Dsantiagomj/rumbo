@@ -1,5 +1,10 @@
 import { categories, financialProducts, transactions } from '@rumbo/db/schema';
-import type { CreateTransaction, TransactionType, UpdateTransaction } from '@rumbo/shared/schemas';
+import {
+  type CreateTransaction,
+  isInitialBalance,
+  type TransactionType,
+  type UpdateTransaction,
+} from '@rumbo/shared/schemas';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../../lib/db.js';
 import { InsufficientBalanceError } from '../../lib/errors.js';
@@ -484,7 +489,7 @@ export async function bulkDeleteTransactions(
   // Separate deletable from "Balance inicial" (undeletable)
   const deletable: typeof rows = [];
   for (const row of rows) {
-    if (row.transaction.name === 'Balance inicial' && row.transaction.categoryId === null) {
+    if (isInitialBalance(row.transaction)) {
       failed.push({ id: row.transaction.id, reason: 'Cannot delete initial balance transaction' });
     } else {
       deletable.push(row);
@@ -516,15 +521,23 @@ export async function bulkDeleteTransactions(
     const currency = firstRow.transaction.currency;
 
     try {
-      if (NON_NEGATIVE_BALANCE_TYPES.has(firstRow.productType)) {
-        await validateBalanceConstraint(db, productId, totalDelta, currency);
-      }
-
       const groupIds = group.map((r) => r.transaction.id);
-      await db.delete(transactions).where(inArray(transactions.id, groupIds));
-      totalDeleted += groupIds.length;
 
-      await recalculateBalance(db, productId);
+      await db.transaction(async (tx) => {
+        if (NON_NEGATIVE_BALANCE_TYPES.has(firstRow.productType)) {
+          await validateBalanceConstraint(
+            tx as unknown as AppDatabase,
+            productId,
+            totalDelta,
+            currency,
+          );
+        }
+
+        await tx.delete(transactions).where(inArray(transactions.id, groupIds));
+        await recalculateBalance(tx as unknown as AppDatabase, productId);
+      });
+
+      totalDeleted += groupIds.length;
     } catch (error) {
       const reason =
         error instanceof InsufficientBalanceError
