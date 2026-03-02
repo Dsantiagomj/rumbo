@@ -5,3 +5,4 @@ export * from './goal';
 export * from './product';
 export * from './recurring';
 export * from './transaction';
+export * from './transfer';

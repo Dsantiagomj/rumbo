@@ -25,6 +25,7 @@ export function CashFlowCard({ activeCurrency }: CashFlowCardProps) {
     let expenses = 0;
     for (const tx of transactions) {
       if (tx.currency !== activeCurrency) continue;
+      if (tx.excluded) continue;
       const amount = Number.parseFloat(tx.amount);
       if (tx.type === 'income') income += amount;
       else if (tx.type === 'expense') expenses += amount;
